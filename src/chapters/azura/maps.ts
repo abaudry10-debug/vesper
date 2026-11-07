@@ -121,7 +121,7 @@ function cuves(): GameMap {
   b.points('A', [[1, 16], [2, 17], [6, 17], [7, 16], [17, 17], [18, 16], [22, 16], [23, 17], [0, 4], [33, 16], [34, 17], [27, 17]]);
   b.points('u', [[3, 16], [8, 17], [16, 17], [21, 17], [1, 5], [31, 17], [24, 16]]);
   // le sentier, qui serpente jusqu'au bas
-  for (let y = 4; y < H; y++) {
+  for (let y = 8; y < H; y++) {
     const px = y >= 15 ? 11 : 11 + Math.round(Math.sin(y * 0.6) * 0.9);
     b.set(px, y, '.').set(px + 1, y, '.');
   }
@@ -146,6 +146,8 @@ function cuves(): GameMap {
   b.rect(25, 4, 7, 5, '#');
   b.rect(20, 6, 5, 1, 'c');
   b.rect(24, 9, 9, 1, ':');
+  // un petit sentier qui part du grand chemin vers le centre et la navette
+  b.rect(12, 8, 12, 1, '.').set(23, 9, '.');
   objects.push(
     obj('porteCentre', 27, 8, 'aurDoorClosed', 'centreClonage'),
     obj('vitreServeurs', 29, 8, 'floodWindow', 'serveurs'),

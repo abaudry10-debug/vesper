@@ -2,6 +2,7 @@
 import { playTheme, sfx } from '../../engine/audio.js';
 import type { Chapter } from '../../engine/chapter.js';
 import { view, type Game } from '../../engine/game.js';
+import { T } from '../../engine/sprites.js';
 import { registerTiles, tile } from '../../engine/sprites.js';
 import type { PersonLook } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
@@ -457,6 +458,54 @@ function drawSteam(g: Game, c: CanvasRenderingContext2D) {
   }
 }
 
+// ---------- le soir du jour 1 : une lumière douce, les lampadaires qui s'allument ----------
+const isEvening = (g: Game) => g.flags.has('lesson1Heard') && g.flags.has('pixelTalk') && !g.flags.has('jour2');
+let eveningNow = false;
+
+function renderEvening(g: Game, c: CanvasRenderingContext2D, w: number, h: number) {
+  const [hx, hy] = g.heroPixel();
+  const ox = Math.round(hx + T / 2 - w / 2);
+  const oy = Math.round(hy + T / 2 - (h - view.padBottom) / 2);
+  c.save();
+  // un ciel de pêche et de lavande, posé sur tout le paysage
+  c.globalCompositeOperation = 'multiply';
+  const grad = c.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, '#e89a88');
+  grad.addColorStop(0.45, '#9a82c0');
+  grad.addColorStop(1, '#4e4e92');
+  c.fillStyle = grad;
+  c.fillRect(0, 0, w, h);
+  // les lumières : lampadaires, fontaine, portes
+  c.globalCompositeOperation = 'lighter';
+  const glow = (x: number, y: number, rad: number, rgb: string, a: number) => {
+    const gr = c.createRadialGradient(x, y, 0, x, y, rad);
+    gr.addColorStop(0, `rgba(${rgb},${a})`);
+    gr.addColorStop(1, `rgba(${rgb},0)`);
+    c.fillStyle = gr;
+    c.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+  };
+  const flicker = 0.9 + 0.1 * Math.sin(g.time * 2.3);
+  for (const o of g.map.objects) {
+    const sx = o.x * T + T / 2 - ox, sy = o.y * T - oy;
+    if (sx < -60 || sy < -60 || sx > w + 60 || sy > h + 60) continue;
+    if (o.sprite === 'lampAz') glow(sx, sy + 3, 42, '255,196,120', 0.55 * flicker);
+    else if (o.sprite === 'aurDoor') glow(sx, sy + 10, 16, '255,210,150', 0.3);
+    else if (o.sprite === 'pylonTop') glow(sx, sy + 2, 10, '255,90,90', 0.25);
+  }
+  for (let y = 0; y < g.map.height; y++) {
+    for (let x = 0; x < g.map.width; x++) {
+      if (g.map.rows[y][x] !== 'F') continue;
+      glow(x * T + T / 2 - ox, y * T + T / 2 - oy, 26, '120,240,230', 0.3);
+    }
+  }
+  c.restore();
+  // des lucioles d'Azura, à la place des spores
+  for (const p of g.particles) {
+    c.fillStyle = `rgba(255,236,160,${p.a})`;
+    c.fillRect(Math.round(p.x), Math.round((p.y + Math.sin(g.time + p.x) * 3)), 1, 1);
+  }
+}
+
 // ---------- la nuit chez Betti : un écran noir, puis le matin du jour 2 ----------
 function night(g: Game) {
   const screen = document.getElementById('screen')!;
@@ -564,7 +613,7 @@ export const azura: Chapter = {
   switches: { labels: [], order: [] },
   intro: [],
   features: { heatWaves: false, movement: 'grid' },
-  music: (map) => (map.id === 'atelier' || map.id === 'ecole' ? 'home' : 'azura'),
+  music: (map) => (map.id === 'atelier' || map.id === 'ecole' || eveningNow ? 'home' : 'azura'),
   dialogStyle: 'azura',
   cutTargets: {},
   solid: SOLID_AZ,
@@ -656,6 +705,7 @@ export const azura: Chapter = {
     },
     update(g, dt) {
       updateEmerge(g, dt);
+      eveningNow = isEvening(g);
     },
     beforeInteract(g, obj, fx, fy) {
       // la navette, sous son grand décor
@@ -684,6 +734,10 @@ export const azura: Chapter = {
       if (!g.map.outdoor) {
         c.fillStyle = 'rgba(255,214,150,0.08)';
         c.fillRect(0, 0, w, h);
+        return true;
+      }
+      if (isEvening(g)) {
+        renderEvening(g, c, w, h);
         return true;
       }
       // une lumière claire, et l'ombre des nuages qui glisse sur le paysage
@@ -724,6 +778,20 @@ export const azura: Chapter = {
       return true;
     },
     onEnterMap(g, mapId) {
+      // en sortant, le soir est tombé : on comprend qu'il est temps d'aller dormir
+      eveningNow = isEvening(g);
+      if (eveningNow && g.map.outdoor && !g.flags.has('soirSeen')) {
+        g.flags.add('soirSeen');
+        playTheme('home');
+        window.setTimeout(() => {
+          ui.showPlace('Le soir');
+          ui.say([
+            'Le ciel a pris des couleurs de pêche et de lavande.',
+            'Les lampadaires s’allument, un à un. Quelqu’un rit, quelque part sur les passerelles.',
+            'La journée est finie. Je devrais rentrer dormir chez Betti, en bas, près du lac.',
+          ]);
+        }, 500);
+      }
       // à l'école, la leçon commence dès qu'on entre, une fois par jour
       if (mapId === 'ecole') {
         const due = g.flags.has('jour2') ? !g.flags.has('lesson2Heard') : !g.flags.has('lesson1Heard');

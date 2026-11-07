@@ -37,7 +37,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl1', thread: 'leads', title: 'Où sont les autres ?', text: 'Le sentier part vers le sud, au-delà des cuves.', doneWhen: 'bettiMet' },
   { id: 'azl2', thread: 'leads', title: 'L’atelier de Betti', text: 'En bas, près du lac. Lire d’abord le tableau des eaux, sur la place.', doneWhen: 'drawingSeen' },
   { id: 'azl3', thread: 'leads', title: 'L’école', text: 'En haut à droite de la ville. La leçon est pour tout le monde, même les grands.', doneWhen: 'lesson1Heard' },
-  { id: 'azl4', thread: 'leads', title: 'Une nuit chez Betti', text: 'Betti me prête son lit, dans l’atelier.', doneWhen: 'jour2' },
+  { id: 'azl4', thread: 'leads', title: 'Une nuit chez Betti', text: 'Betti me prête son lit, dans l’atelier, en bas près du lac. Quand le soir tombe, aller dormir.', doneWhen: 'jour2' },
   { id: 'azl5', thread: 'leads', title: 'La leçon du matin', text: 'Retourner à l’école, comme chaque matin.', doneWhen: 'lesson2Heard' },
 ];
 
@@ -289,7 +289,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
           : 'Je l’ai laissé endormi sur Vesper. C’est grâce à lui que je suis ici.',
         'Je ne lui dis rien. Pas encore.',
         api.has('lesson1Heard')
-          ? '« Il se fait tard. Tu dormiras ici : le lit est à toi. »'
+          ? '« Regarde, le soleil se couche déjà. Tu dormiras ici : le lit est à toi. »'
           : '« Tu es passé à l’école ? Vas-y, puis reviens dormir ici : le lit est à toi. »',
       ],
       () => {
@@ -354,5 +354,5 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     api.say(['« Moi, je suis née ici. Je connais la leçon par cœur ! »']);
   },
   lio: (api) => api.say(api.has('jour2') ? ['« Chut ! Elle va nous gronder. »'] : ['« Moi, plus tard, je serai pilote. »']),
-  pao: (api) => api.say(['« Ma maman dit que sur Vesper, le ciel était orange. »']),
+  pao: (api) => api.say(api.has('jour2') ? ['« Moi, je crois Mina. Elle ne se trompe jamais. »'] : ['« Tu as vu la navette, près des cuves ? On n’a pas le droit d’y monter. »']),
 };

@@ -24,13 +24,13 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azEnfant', thread: 'ville', title: 'Né sur Azura', text: 'Un enfant de la ville est né ici. Il n’a jamais vu Vesper.' },
   { id: 'azEtiquette', thread: 'ville', title: 'Une étiquette', text: 'Sur une porte, une étiquette : « PORTE ». Quelqu’un a de l’humour.' },
   { id: 'azIlda', thread: 'ville', title: 'Mme Ilda', text: 'La marchande de fruits m’a souhaité la bienvenue. Deux fois.' },
-  { id: 'azJoss', thread: 'eaux', title: 'La règle de la sirène', text: 'Joss, au bord de la rivière : « Quand la sirène sonne, on monte. Toujours. »' },
+  { id: 'azJoss', thread: 'eaux', title: 'La règle de la sirène', text: 'Joss, au bord de la rivière : « Quand la sirène sonne, on évacue les zones à risque. Toujours. »' },
   { id: 'azRepere', thread: 'eaux', title: 'Les repères', text: 'Des poteaux rayés de rouge plantés dans l’eau. La marque la plus haute est au-dessus de ma tête.' },
   { id: 'azPoisson', thread: 'eaux', title: 'Le gardien du lac', text: 'Une créature immense vit dans le lac. Elle ne montre jamais qu’un bout d’elle : un dos hérissé d’épines, une queue en croissant bordée de lumière, ou une tête cuirassée aux quatre yeux d’ambre. Betti dit qu’il ne faut pas en avoir peur.' },
-  { id: 'azMaree', thread: 'eaux', title: 'La marée du soir', text: 'Jour 2 : l’eau a commencé à monter vers 17 h, pleine à 18 h, comme l’annonce le tableau. La sirène n’a pas sonné : les gens montent par habitude, sans y penser.' },
+  { id: 'azMaree', thread: 'eaux', title: 'La marée du soir', text: 'Jour 2 : l’eau a commencé à monter vers 17 h, pleine à 18 h, comme l’annonce le tableau. La sirène n’a pas sonné : les gens ont quitté le bord du lac par habitude, sans y penser.' },
   { id: 'azJossOubli', thread: 'eaux', title: 'Joss a oublié', text: 'Joss a été surpris par la montée des eaux : « J’avais oublié qu’elle montait à cette heure-ci. » Avant, il notait tout dans un carnet : les heures, les poissons, tous les jours.' },
   { id: 'azLunes', thread: 'eaux', title: 'Les deux lunes', text: 'L’horloge de la place a un cadran des lunes. Quand l’eau était pleine, la grande lune passait juste au-dessus de la petite.' },
-  { id: 'az4', thread: 'eaux', title: 'Le tableau des eaux', text: 'Sur la place : « Montée des eaux : 6 h et 18 h. Quand la sirène sonne, montez sur les passerelles. »' },
+  { id: 'az4', thread: 'eaux', title: 'Le tableau des eaux', text: 'Sur la place : « Montée des eaux : 6 h et 18 h. Quand la sirène sonne, évacuez les zones à risque. »' },
   { id: 'az5', thread: 'eaux', title: 'La sirène débranchée', text: 'Tom a débranché la sirène : « Elle sonnait la nuit, pour rien. »' },
   { id: 'az7', thread: 'eaux', title: 'Le tableau corrigé', text: 'Nora a corrigé l’horaire du matin sur le tableau : 7 h. Il affichait 6 h.' },
   { id: 'azBetti', thread: 'betti', title: 'Betti', text: 'Elle avait neuf ans au départ ; elle en a vingt. Elle venait voir ma cuve fermée quand elle était petite.' },
@@ -54,7 +54,7 @@ export const QUESTIONS_AZ: Question[] = [
   },
   {
     id: 'q-cloche', thread: 'eaux', opensWith: ['azJoss', 'azRepere'], answeredBy: 'az4',
-    ask: 'Que faire quand la sirène sonne ?', answer: 'Monter sur les passerelles, sans attendre. Les eaux montent deux fois par jour.',
+    ask: 'Que faire quand la sirène sonne ?', answer: 'Évacuer les zones à risque, au bord de l’eau, sans attendre. Les eaux montent deux fois par jour.',
   },
 ];
 
@@ -117,7 +117,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       [
         '« Tiens ! Un nouveau ? Je m’appelle Joss. Bienvenue sur Azura ! »',
         'Il pose sa canne à pêche au bord de la rivière.',
-        '« Ici, il n’y a qu’une règle : quand la sirène sonne, on monte. Toujours. »',
+        '« Ici, il n’y a qu’une règle : quand la sirène sonne, on évacue les zones à risque. Toujours. »',
         '« La ville est un peu plus bas, après le pont. »',
       ],
       () => {
@@ -159,7 +159,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
         'Un écran, sur la place. Une courbe qui monte et descend.',
         '« TABLEAU DES EAUX »',
         `« Montée des eaux : ${morning} et 18 h. »`,
-        '« Quand la sirène sonne : montez sur les passerelles. N’attendez pas. »',
+        '« Quand la sirène sonne : évacuez les zones à risque. N’attendez pas. »',
         '« — Les pilotes d’Aurore »',
         ...(api.has('noraPainted') ? ['Un petit voyant orange : « horaire modifié à la main ».'] : []),
       ],
@@ -278,7 +278,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     if (!api.has('drawingSeen')) return api.say(['« Fais comme chez toi. Regarde, si tu veux. »']);
     if (api.has('jour2')) {
       if (api.has('lesson2Heard')) return api.say(['« Reviens quand tu veux. »']);
-      return api.say(['« Bien dormi ? File à l’école, la leçon commence ! »']);
+      return api.say(['« Tu devrais passer à l’école, si tu veux continuer d’en apprendre plus sur la vie de la colonie. »']);
     }
     if (api.has('pixelTalk')) {
       if (!api.has('lesson1Heard')) return api.say(['« Va d’abord à l’école, la leçon finit à midi. Reviens cet après-midi : j’aurai besoin de bras. »']);
@@ -333,7 +333,6 @@ export const SCRIPTS_AZ: Record<string, Script> = {
           api.set('lesson2Heard');
           api.clue('azLecon2');
           api.clue('azMina');
-          api.say(['Joss disait : quand la sirène sonne, on monte. Mais la sirène est débranchée.', 'Il faudrait que je voie l’eau monter, au moins une fois. Pour savoir.'], () => api.clue('azl6'));
         },
       );
     }

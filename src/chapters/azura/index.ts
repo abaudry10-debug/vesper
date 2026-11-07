@@ -672,9 +672,9 @@ function tideRises(g: Game, h: number) {
   ui.say(
     [
       'Un grondement sourd, venu du lac.',
-      'L’eau gonfle d’un coup. Des gens se pressent vers les passerelles du haut.',
+      'L’eau gonfle d’un coup. Des gens quittent en hâte le bord du lac.',
       `Il est ${h} h. La pleine eau, c’est pour 18 h : le tableau a raison, cette fois.`,
-      'Mais la sirène reste muette. Les gens montent par habitude, sans même y penser.',
+      'Mais la sirène reste muette. Ils évacuent par habitude, sans même y penser.',
     ],
     () => {
       g.api.clue('azMaree');
@@ -913,7 +913,7 @@ function night(g: Game) {
     ui.showPlace(`Jour ${next} — 7 h`);
     sfx.success();
     if (next === 2) {
-      ui.say(['« Debout, le dormeur ! »', 'Betti, déjà en salopette, une tasse fumante à la main.', '« Bien dormi ? File à l’école, la leçon du matin va commencer. »'], () => {
+      ui.say(['« Debout, le dormeur ! »', 'Betti, déjà en salopette, une tasse fumante à la main.', '« Tu devrais passer à l’école ce matin, si tu veux continuer d’en apprendre plus sur la vie de la colonie. »'], () => {
         g.api.clue('azl5');
         g.save();
       });
@@ -1116,6 +1116,11 @@ export const azura: Chapter = {
         SCRIPTS_AZ.navette(g.api);
         return true;
       }
+      // Betti, le jour 2 avant l'école : « ce matin » seulement le matin
+      if (obj?.id === 'betti' && day(g) === 2 && !g.flags.has('lesson2Heard') && g.flags.has('drawingSeen')) {
+        ui.say([hour(g) < 12 ? '« Tu devrais passer à l’école ce matin, si tu veux continuer d’en apprendre plus sur la vie de la colonie. »' : '« Tu devrais passer à l’école, si tu veux continuer d’en apprendre plus sur la vie de la colonie. »']);
+        return true;
+      }
       // l'après-midi à l'atelier
       if (obj && g.map.id === 'atelier' && helpAction(g, obj.id)) return true;
       // Joss se fie à sa mémoire… qui flanche
@@ -1269,6 +1274,10 @@ export const azura: Chapter = {
       if (mapId === 'ecole') {
         const due = g.flags.has('jour2') ? !g.flags.has('lesson2Heard') : !g.flags.has('lesson1Heard');
         if (due) window.setTimeout(() => SCRIPTS_AZ.lecon(g.api), 400);
+      }
+      // en sortant de l'école, le jour 2 : l'envie de voir l'eau monter
+      if (day(g) === 2 && mapId === 'ville' && g.flags.has('lesson2Heard') && !g.clues.has('azl6')) {
+        window.setTimeout(() => ui.say(['En sortant de l’école, je repense au tableau des eaux, sur la place.', 'J’aimerais voir l’eau monter une fois, de mes yeux.'], () => g.api.clue('azl6')), 500);
       }
       if (day(g) === 1 && mapId === 'ville' && g.flags.has('lesson1Heard') && hour(g) < 12) {
         setHour(g, 12);

@@ -42,7 +42,7 @@ export function clockLines(g: Game): string[] {
 /** Ce que disent les poteaux de repère, selon la hauteur de l'eau. */
 export function postLines(g: Game): string[] {
   const l = levelNow(g);
-  if (l > 0.85) return ['Un poteau de repère. L’eau atteint la bande rouge, tout en haut.', 'La passerelle du bas est sous l’eau.'];
+  if (l > 0.85) return ['Un poteau de repère. L’eau atteint la bande rouge, tout en haut.', 'Le bord du lac est sous l’eau.'];
   if (l > 0.5) return ['Un poteau de repère. L’eau monte : elle dépasse déjà la bande orange.'];
   if (l > 0.2) return ['Un poteau de repère. L’eau est à mi-hauteur, sur la bande jaune.'];
   return ['Un poteau de repère, peint de bandes rouges.', 'L’eau est basse. La marque la plus haute est bien au-dessus de ma tête.'];

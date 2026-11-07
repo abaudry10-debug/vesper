@@ -664,7 +664,7 @@ const STEP = 0.4;
 const bettiObj = (g: Game) => g.map.objects.find((o) => o.id === 'bettiLac');
 const dirTo = (fx: number, fy: number, tx: number, ty: number) => (tx > fx ? 'right' : tx < fx ? 'left' : ty > fy ? 'down' : 'up');
 
-/** Betti (et le héros, s'il la suit main dans la main) marchent case par case. */
+/** Betti (et le héros, quand il la suit) marchent case par case. */
 function updateWalk(g: Game, dt: number) {
   const w = walks.get(g);
   if (!w) return;
@@ -699,22 +699,6 @@ function updateWalk(g: Game, dt: number) {
   w.t = STEP;
 }
 
-/** Leurs deux mains jointes, pendant qu'elle l'entraîne. */
-function drawHands(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
-  const w = walks.get(g);
-  const b = bettiObj(g);
-  if (!w || !w.heroToo || !b) return;
-  const [hx, hy] = g.heroPixel();
-  const st = g.npcStep.get('bettiLac');
-  const k = st ? Math.min(1, st.t) : 1;
-  const bx = (st ? st.fx + (b.x - st.fx) * k : b.x) * T, by = (st ? st.fy + (b.y - st.fy) * k : b.y) * T;
-  const y = Math.round(hy - oy + 7), x0 = Math.round(hx - ox + 12), x1 = Math.round(bx - ox + 4);
-  if (x1 <= x0 || x1 - x0 > 14 || Math.abs(by - hy) > 2) return;
-  c.fillStyle = '#14101c';
-  c.fillRect(x0, y - 1, x1 - x0, 3);
-  c.fillStyle = '#f0c39a';
-  c.fillRect(x0, y, x1 - x0, 1);
-}
 
 function lakeScene(g: Game) {
   g.flags.delete('lakeNow');
@@ -723,7 +707,7 @@ function lakeScene(g: Game) {
   const fromBed = g.flags.has('lakeFromBed');
   g.flags.delete('lakeFromBed');
   ui.say(
-    [fromBed ? '« Attends ! Avant de dormir… »' : '« Viens avec moi, vite ! »', '« C’est l’heure où le lac s’allume. Il faut que tu voies ça au moins une fois. »', 'Betti me prend la main et m’entraîne dehors.'],
+    [fromBed ? '« Attends ! Avant de dormir… »' : '« Viens avec moi, vite ! »', '« C’est l’heure où le lac s’allume. Il faut que tu voies ça au moins une fois. »', 'Betti sort de l’atelier. Je la suis.'],
     () => {
       const b = MAPS_AZ.ville.objects.find((o) => o.id === 'bettiLac')!;
       b.x = 7;
@@ -732,7 +716,7 @@ function lakeScene(g: Game) {
       g.warp('ville', 6, 22, 'right');
       window.setTimeout(() => {
         g.locked = true;
-        // elle devant, lui derrière, main dans la main, le long de la passerelle
+        // elle devant, lui derrière, le long de la passerelle
         const betti: [number, number][] = [], hero: [number, number][] = [];
         for (let x = 8; x <= 17; x++) betti.push([x, 22]);
         for (let x = 7; x <= 16; x++) hero.push([x, 22]);
@@ -761,7 +745,7 @@ function atTheLake(g: Game) {
       ui.say(
         [
           'Une tête immense sort de l’eau. Une couronne d’épines. Quatre yeux d’ambre, fendus.',
-          'Je recule d’un pas. Betti me serre la main.',
+          'Je recule d’un pas.',
           '« N’aie pas peur. Lui, c’est le gardien du lac. »',
           '« Personne ne l’a jamais vu en entier. Il ne montre qu’un bout de lui, de temps en temps. »',
           '« Quand j’étais petite, je venais ici le soir. Je pensais à Pixel. »',
@@ -1034,7 +1018,6 @@ export const azura: Chapter = {
       }
       const [hx0, hy0] = g.heroPixel();
       const cox = Math.round(hx0 + T / 2 - w / 2), coy = Math.round(hy0 + T / 2 - (h - view.padBottom) / 2);
-      drawHands(g, c, cox, coy);
       if (isEvening(g)) {
         renderEvening(g, c, w, h);
         // le gardien après la teinte du soir : ses lumières ressortent dans la pénombre

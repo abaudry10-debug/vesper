@@ -894,12 +894,11 @@ function night(g: Game) {
   el.style.cssText =
     'position:absolute;inset:0;z-index:4;background:#05060c;opacity:0;transition:opacity .9s;display:flex;align-items:center;justify-content:center;' +
     'color:#bff3f6;font:16px/1.4 inherit;letter-spacing:.12em;text-align:center;padding:24px;';
-  el.textContent = 'La nuit tombe sur Nouvelle-Vesper…';
+  el.textContent = `JOUR ${next}`;
   screen.appendChild(el);
   g.locked = true;
   requestAnimationFrame(() => (el.style.opacity = '1'));
   window.setTimeout(() => {
-    el.textContent = `JOUR ${next}`;
     const bt = MAPS_AZ.atelier.objects.find((o) => o.id === 'betti');
     if (bt) { bt.x = 6; bt.y = 3; bt.npc!.dir = 'down'; }
     g.flags.add(`jour${next}`);

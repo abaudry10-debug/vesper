@@ -55,12 +55,10 @@ export function postLines(g: Game): string[] {
 export function benchWait(g: Game, onTide: (h: number) => void) {
   const h = hour(g);
   if (h >= EVENING) return ui.say(['Le soir est tombé. Il est temps d’aller dormir chez Betti.']);
-  const options: { label: string; to: number }[] = [];
-  for (const step of [1, 2, 3]) if (h + step < EVENING) options.push({ label: `Attendre ${step} h (jusqu’à ${h + step} h)`, to: h + step });
-  options.push({ label: `Attendre le soir (${EVENING} h)`, to: EVENING });
-  ui.choose(`Je m’assois sur le banc. Il est ${h} h.`, [...options.map((o) => o.label), 'Ne pas attendre'], (i) => {
-    if (i >= options.length) return;
-    let to = options[i].to;
+  g.locked = true;
+  waitPicker(h, EVENING, (to) => {
+    g.locked = false;
+    if (to === null) return;
     // la première montée des eaux qu'on voit de ses yeux interrompt l'attente
     const watch = day(g) === 2 && !g.flags.has('tideWitnessed');
     let stop = -1;
@@ -74,6 +72,57 @@ export function benchWait(g: Game, onTide: (h: number) => void) {
       if (stop > 0) window.setTimeout(() => onTide(stop), 300);
     }, () => setHour(g, to));
   });
+}
+
+/** Le panneau d'attente : un curseur pour choisir l'heure, l'heure visée en chiffres de lumière. */
+function waitPicker(from: number, max: number, done: (to: number | null) => void) {
+  if (!document.getElementById('az-wait-style')) {
+    const st = document.createElement('style');
+    st.id = 'az-wait-style';
+    st.textContent = `
+#az-wait{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(4,8,18,.55);backdrop-filter:blur(2px)}
+#az-wait .box{width:82%;max-width:320px;padding:18px 18px 16px;border-radius:14px;background:linear-gradient(180deg,#10243a,#0a1422);
+  border:1px solid rgba(95,240,224,.55);box-shadow:0 0 0 1px #05101a,0 0 22px rgba(95,240,224,.25),inset 0 1px 0 rgba(255,255,255,.08);color:#d8fffa;text-align:center}
+#az-wait .label{font-size:13px;letter-spacing:.12em;text-transform:uppercase;opacity:.75;margin:0 0 6px}
+#az-wait .time{font:700 44px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;color:#5ff0e0;text-shadow:0 0 12px rgba(95,240,224,.7);margin:2px 0 4px}
+#az-wait .sub{font-size:13px;opacity:.8;min-height:18px;margin:0 0 14px}
+#az-wait input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0 0 6px}
+#az-wait input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:8px;background:linear-gradient(90deg,#5ff0e0 var(--p),#24384a var(--p));box-shadow:inset 0 0 0 1px rgba(95,240,224,.35)}
+#az-wait input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-9px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffffff,#9ffff0 45%,#2ec4bd);box-shadow:0 0 10px rgba(95,240,224,.9),0 0 0 3px #0a1422}
+#az-wait input[type=range]::-moz-range-track{height:8px;border-radius:8px;background:#24384a}
+#az-wait input[type=range]::-moz-range-progress{height:8px;border-radius:8px;background:#5ff0e0}
+#az-wait input[type=range]::-moz-range-thumb{width:24px;height:24px;border:0;border-radius:50%;background:#9ffff0;box-shadow:0 0 10px rgba(95,240,224,.9)}
+#az-wait .ticks{display:flex;justify-content:space-between;font-size:11px;opacity:.6;margin:0 2px 14px}
+#az-wait .row{display:flex;gap:10px}
+#az-wait button{flex:1;padding:11px 0;border-radius:10px;font-size:15px;border:1px solid rgba(95,240,224,.5);background:#132a3e;color:#d8fffa}
+#az-wait button.go{background:linear-gradient(180deg,#2ec4bd,#1d8f8c);color:#04161a;font-weight:700;border-color:#7ff5e8}`;
+    document.head.appendChild(st);
+  }
+  // hors de #screen : là-bas, les touchers sont interceptés pour les commandes
+  const host = document.getElementById('app') ?? document.body;
+  const el = document.createElement('div');
+  el.id = 'az-wait';
+  el.innerHTML = `<div class="box"><p class="label">Attendre sur le banc</p><div class="time"></div><p class="sub"></p>
+    <input type="range" min="${from + 1}" max="${max}" step="1" value="${Math.min(max, from + 2)}">
+    <div class="ticks"><span>${from + 1} h</span><span>${max} h</span></div>
+    <div class="row"><button class="no">Annuler</button><button class="go">Attendre</button></div></div>`;
+  host.appendChild(el);
+  const range = el.querySelector('input')!, time = el.querySelector('.time')!, sub = el.querySelector('.sub')!;
+  const show = () => {
+    const v = Number(range.value);
+    time.textContent = `${String(v).padStart(2, '0')}:00`;
+    const n = v - from;
+    sub.textContent = v >= max ? 'Jusqu’au soir' : `Dans ${n} heure${n > 1 ? 's' : ''}`;
+    range.style.setProperty('--p', `${((v - from - 1) / Math.max(1, max - from - 1)) * 100}%`);
+  };
+  range.addEventListener('input', show);
+  show();
+  const close = (to: number | null) => {
+    el.remove();
+    done(to);
+  };
+  (el.querySelector('.no') as HTMLButtonElement).onclick = () => close(null);
+  (el.querySelector('.go') as HTMLButtonElement).onclick = () => close(Number(range.value));
 }
 
 /** L'eau qui monte sur la passerelle du bas, au bord du lac de la ville. */

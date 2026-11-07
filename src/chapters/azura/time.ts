@@ -1,8 +1,8 @@
 // L'heure et la marée d'Azura.
 // L'heure n'avance jamais toute seule : on s'assoit sur un banc pour attendre (jamais au-delà du soir),
-// et l'on ne change de jour qu'en dormant. Les eaux montent deux fois par jour, toujours à la même heure,
-// 6 h et 18 h, quand la grande lune passe sur la petite. C'est la mémoire des colons qui se trompe :
-// le tableau de la place affiche 7 h pour le matin depuis que Nora l'a « corrigé ».
+// et l'on ne change de jour qu'en dormant. Les eaux montent deux fois par jour, quand la grande lune
+// passe sur la petite : 6 h et 18 h le premier jour, puis une heure plus tard chaque jour.
+// Le Bureau des eaux (Nora) doit recalculer le bulletin chaque matin… et recopie celui de la veille.
 import type { Game } from '../../engine/game.js';
 import { T } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
@@ -15,8 +15,10 @@ export const setHour = (g: Game, h: number) => {
 };
 export const EVENING = 19;
 
-/** Les deux pleines eaux : 6 h et 18 h, tous les jours. */
-export const highTides = (_d: number) => [6, 18];
+/** Les deux vraies pleines eaux du jour : 6 h et 18 h le jour 1, une heure plus tard chaque jour. */
+export const highTides = (d: number) => [5 + d, 17 + d];
+/** Ce qu'annonce le bulletin de Nora : elle recopie les horaires du premier jour. */
+export const bulletinTides = (_d: number) => [6, 18];
 
 /** Le niveau de l'eau, de 0 (basse) à 1 (pleine eau). */
 export function tideLevel(d: number, h: number) {
@@ -161,7 +163,7 @@ function waitPicker(from: number, max: number, done: (to: number | null) => void
 
 /** L'eau qui monte sur la passerelle du bas, au bord du lac de la ville. */
 export function renderTide(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number, w: number, h: number) {
-  if (g.map.id !== 'ville') return;
+  if (g.map.id !== 'ville' || day(g) < 2) return;
   const l = levelNow(g);
   if (l < 0.55) return;
   const a = Math.min(0.75, (l - 0.55) / 0.45 * 0.75);

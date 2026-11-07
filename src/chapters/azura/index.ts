@@ -10,6 +10,7 @@ import { MAPS_AZ, SOLID_AZ, START_AZ } from './maps.js';
 import { CLUES_AZ, ITEMS_AZ, QUESTIONS_AZ, SCRIPTS_AZ, THREADS_AZ } from './story.js';
 import { MASK, TOWER, withFringe } from './tiles.js';
 import { clockText, drawDigits, timePass } from './timepass.js';
+import { openBulletin } from './bulletin.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
 import { EVENING, benchWait, clockLines, day, highTides, hour, levelNow, postLines, renderDaylight, renderTide, setHour } from './time.js';
 
@@ -672,9 +673,9 @@ function tideRises(g: Game, h: number) {
   ui.say(
     [
       'Un grondement sourd, venu du lac.',
-      'L’eau gonfle d’un coup. Des gens quittent en hâte le bord du lac.',
-      `Il est ${h} h. La pleine eau, c’est pour 18 h : le tableau a raison, cette fois.`,
-      'Mais la sirène reste muette. Ils évacuent par habitude, sans même y penser.',
+      'L’eau commence à monter. Des gens quittent en hâte le bord du lac.',
+      `Il est ${h} h. D’après le bulletin, elle devrait déjà être pleine.`,
+      'La sirène reste muette. Les gens évacuent par habitude, sans même y penser.',
     ],
     () => {
       g.api.clue('azMaree');
@@ -1133,6 +1134,16 @@ export const azura: Chapter = {
       if (!obj && g.map.id === 'ville' && g.map.rows[fy]?.[fx] === 'N') {
         ui.say(clockLines(g), () => {
           if (g.flags.has('tideWitnessed') && levelNow(g) > 0.95) g.api.clue('azLunes');
+        });
+        return true;
+      }
+      // le bulletin du Bureau des eaux
+      if (obj?.id === 'tableau') {
+        g.locked = true;
+        openBulletin(g, () => {
+          g.locked = false;
+          g.flags.add('tideRead');
+          g.api.clue('az4');
         });
         return true;
       }

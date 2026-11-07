@@ -9,6 +9,7 @@ import * as ui from '../../engine/ui.js';
 import { MAPS_AZ, SOLID_AZ, START_AZ } from './maps.js';
 import { CLUES_AZ, ITEMS_AZ, QUESTIONS_AZ, SCRIPTS_AZ, THREADS_AZ } from './story.js';
 import { MASK, TOWER, withFringe } from './tiles.js';
+import { clockText, drawDigits, timePass } from './timepass.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
 import { EVENING, benchWait, clockLines, day, highTides, hour, levelNow, postLines, renderDaylight, renderTide, setHour } from './time.js';
 
@@ -700,7 +701,20 @@ function startHelp(g: Game) {
   g.flags.add('helping');
   setHour(g, 14);
   ui.showPlace('14 h');
-  ui.say(['« Tiens, rends-toi utile. »', 'Elle désigne un robot à moitié monté : une tête ronde, des pattes, un œil éteint.', '« Il me faut la pince coupante. Sur l’étagère. »'], () => g.api.clue('azlAide'));
+  ui.say(['« Tiens, rends-toi utile. »', 'Elle désigne un robot à moitié monté : une tête ronde, des pattes, un œil éteint.'], () => {
+    // elle va s'installer près du robot, entre l'établi et les pièces
+    g.locked = true;
+    walks.set(g, {
+      npc: 'betti', hero: [], heroToo: false, i: 0, t: 0.1,
+      betti: [[5, 3], [4, 3], [4, 4], [3, 4], [2, 4], [1, 4]],
+      done: () => {
+        const b = bettiObj(g, 'betti');
+        if (b) b.npc!.dir = 'right';
+        g.locked = false;
+        ui.say(['« Il me faut la pince coupante. Sur l’étagère, là-haut. »'], () => g.api.clue('azlAide'));
+      },
+    });
+  });
 }
 
 function helpAction(g: Game, id: string): boolean {
@@ -712,66 +726,30 @@ function helpAction(g: Game, id: string): boolean {
   ui.say(HELP[k].lines, () => {
     if (helpStep(g) >= 0) return;
     // l'après-midi passe
-    const screen = document.getElementById('screen')!;
-    const el = document.createElement('div');
-    el.style.cssText =
-      'position:absolute;inset:0;z-index:4;background:#1a1020;opacity:0;transition:opacity .8s;display:flex;align-items:center;justify-content:center;' +
-      'color:#ffd8b0;font:15px/1.5 inherit;letter-spacing:.06em;text-align:center;padding:28px;';
-    el.textContent = 'L’après-midi passe. Elle me parle d’Azura, je lui parle de Vesper.';
-    screen.appendChild(el);
     g.locked = true;
-    requestAnimationFrame(() => (el.style.opacity = '1'));
-    window.setTimeout(() => {
+    timePass(14, 18.5, 'L’après-midi passe. Elle me parle d’Azura, je lui parle de Vesper.', () => {
+      g.locked = false;
+      ui.say(['« Oh… Regarde la lumière, par la fenêtre. Le soleil se couche. »'], () => g.flags.add('lakeNow'));
+    }, () => {
       g.flags.delete('helping');
       g.flags.add('helpDone');
       setHour(g, 18);
-      el.style.opacity = '0';
-    }, 2800);
-    window.setTimeout(() => {
-      el.remove();
-      g.locked = false;
-      ui.showPlace('18 h 30');
-      ui.say(['« Oh… Regarde la lumière, par la fenêtre. Le soleil se couche. »'], () => g.flags.add('lakeNow'));
-    }, 3700);
+    });
   });
   return true;
 }
 
 // ---------- la tour de l'horloge : l'heure en chiffres de lumière, et le cadran des lunes ----------
-const DIGITS: Record<string, string[]> = {
-  '0': ['111', '101', '101', '101', '111'], '1': ['010', '110', '010', '010', '111'], '2': ['111', '001', '111', '100', '111'],
-  '3': ['111', '001', '111', '001', '111'], '4': ['101', '101', '111', '001', '001'], '5': ['111', '100', '111', '001', '111'],
-  '6': ['111', '100', '111', '101', '111'], '7': ['111', '001', '010', '010', '010'], '8': ['111', '101', '111', '101', '111'],
-  '9': ['111', '101', '111', '001', '111'], ':': ['0', '1', '0', '1', '0'],
-};
 function drawClock(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
   if (g.map.id !== 'ville') return;
-  const left = 20 * T - ox, top = 4 * T - TOWER.h - oy;
+  const left = 21 * T - 5 - ox, top = 5 * T - TOWER.h - oy;
   if (left > 400 || left < -60 || top > 400 || top < -100) return;
-  // l'heure
   const evening = g.flags.has('helpDone') && !g.flags.has('lakeScene') && day(g) === 1;
-  const text = `${String(hour(g)).padStart(2, '0')}${g.time % 1 < 0.5 ? ':' : ' '}${evening ? '30' : '00'}`;
-  const S = 2, sc = TOWER.screen;
-  let width = 0;
-  for (const ch of text) width += ((DIGITS[ch] ?? DIGITS[':'])[0].length + 1) * S;
-  let x = left + sc.x + Math.round((sc.w - width + S) / 2);
-  const y = top + sc.y + Math.round((sc.h - 5 * S) / 2);
-  c.fillStyle = 'rgba(95,240,224,0.18)';
-  c.fillRect(left + sc.x + 1, top + sc.y + 2, sc.w - 2, sc.h - 4);
-  for (const ch of text) {
-    const glyph = DIGITS[ch] ?? ['0', '0', '0', '0', '0'];
-    for (let gy = 0; gy < 5; gy++) {
-      for (let gx = 0; gx < glyph[gy].length; gx++) {
-        if (glyph[gy][gx] !== '1') continue;
-        c.fillStyle = '#5ff0e0';
-        c.fillRect(x + gx * S, y + gy * S, S, S);
-        c.fillStyle = '#d8fffa';
-        c.fillRect(x + gx * S, y + gy * S, 1, 1);
-      }
-    }
-    x += (glyph[0].length + 1) * S;
-  }
-  // les lunes : la petite reste en haut, la grande tourne ; elles se croisent à pleine eau
+  const sc = TOWER.screen;
+  c.fillStyle = 'rgba(95,240,224,0.15)';
+  c.fillRect(left + sc.x, top + sc.y, sc.w, sc.h);
+  drawDigits(c, clockText(hour(g) + (evening ? 0.5 : 0), g.time % 1 < 0.5), left + sc.x + sc.w / 2, top + sc.y + 2, 1);
+  // les lunes : la petite reste en haut, la grande tourne ; elles se croisent à pleine eau (6 h et 18 h)
   const d = TOWER.dial, cx = left + d.x, cy = top + d.y;
   const H = highTides(day(g)).reduce((a, b) => (Math.abs(hour(g) - b) < Math.abs(hour(g) - a) ? b : a));
   const ang = ((hour(g) - H) / 12) * Math.PI * 2;
@@ -782,17 +760,15 @@ function drawClock(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number)
       c.fillRect(Math.round(mx - half), Math.round(my + yy), half * 2 + 1, 1);
     }
   };
-  moon(cx, cy - 6, 2, '#b8a8e8');
-  moon(cx + Math.sin(ang) * 6, cy - Math.cos(ang) * 6, 3, '#f4f4ff');
-  c.fillStyle = '#d8d8ff';
-  c.fillRect(Math.round(cx + Math.sin(ang) * 6) - 1, Math.round(cy - Math.cos(ang) * 6) - 1, 1, 1);
+  moon(cx, cy - 4, 1, '#b8a8e8');
+  moon(cx + Math.sin(ang) * 4, cy - Math.cos(ang) * 4, 2, '#f4f4ff');
 }
 
 // ---------- le premier soir : Betti t'emmène voir le lac s'allumer ----------
-interface Walk { hero: [number, number][]; betti: [number, number][]; i: number; t: number; done: () => void; heroToo: boolean }
+interface Walk { hero: [number, number][]; betti: [number, number][]; i: number; t: number; done: () => void; heroToo: boolean; npc?: string }
 const walks = new WeakMap<Game, Walk>();
 const STEP = 0.4;
-const bettiObj = (g: Game) => g.map.objects.find((o) => o.id === 'bettiLac');
+const bettiObj = (g: Game, id = 'bettiLac') => g.map.objects.find((o) => o.id === id);
 const dirTo = (fx: number, fy: number, tx: number, ty: number) => (tx > fx ? 'right' : tx < fx ? 'left' : ty > fy ? 'down' : 'up');
 
 /** Betti (et le héros, quand il la suit) marchent case par case. */
@@ -805,7 +781,8 @@ function updateWalk(g: Game, dt: number) {
   }
   w.t -= dt;
   if (w.t > 0) return;
-  const b = bettiObj(g);
+  const id = w.npc ?? 'bettiLac';
+  const b = bettiObj(g, id);
   if (w.i >= w.betti.length || !b) {
     walks.delete(g);
     g.drag = null;
@@ -813,8 +790,8 @@ function updateWalk(g: Game, dt: number) {
     return;
   }
   const [bx, by] = w.betti[w.i];
-  g.npcFace.delete('bettiLac');
-  g.npcStep.set('bettiLac', { fx: b.x, fy: b.y, t: 0 });
+  g.npcFace.delete(id);
+  g.npcStep.set(id, { fx: b.x, fy: b.y, t: 0 });
   b.npc!.dir = dirTo(b.x, b.y, bx, by);
   b.x = bx;
   b.y = by;
@@ -923,6 +900,8 @@ function night(g: Game) {
   requestAnimationFrame(() => (el.style.opacity = '1'));
   window.setTimeout(() => {
     el.textContent = `JOUR ${next}`;
+    const bt = MAPS_AZ.atelier.objects.find((o) => o.id === 'betti');
+    if (bt) { bt.x = 6; bt.y = 3; bt.npc!.dir = 'down'; }
     g.flags.add(`jour${next}`);
     setHour(g, 7);
     g.save();

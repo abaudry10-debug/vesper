@@ -6,6 +6,7 @@
 import type { Game } from '../../engine/game.js';
 import { T } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
+import { timePass } from './timepass.js';
 
 export const day = (g: Game) => (g.flags.has('jour3') ? 3 : g.flags.has('jour2') ? 2 : 1);
 export const hour = (g: Game) => g.counters.heure ?? 9;
@@ -66,13 +67,12 @@ export function benchWait(g: Game, onTide: (h: number) => void) {
     if (watch) for (let t = h + 1; t <= to; t++) if (tideLevel(2, t) > 0.6 && tideLevel(2, t - 1) < tideLevel(2, t)) { stop = t; break; }
     if (stop > 0) to = stop;
     g.locked = true;
-    ui.fade(() => {
-      setHour(g, to);
+    const caption = to >= EVENING ? 'Assis sur le banc, je regarde la lumière baisser…' : 'Assis sur le banc, je regarde passer les heures…';
+    timePass(h, to, caption, () => {
       g.locked = false;
-      ui.showPlace(`${to} h`);
       g.save();
-      if (stop > 0) window.setTimeout(() => onTide(stop), 500);
-    });
+      if (stop > 0) window.setTimeout(() => onTide(stop), 300);
+    }, () => setHour(g, to));
   });
 }
 

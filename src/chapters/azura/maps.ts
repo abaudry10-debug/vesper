@@ -260,7 +260,7 @@ function ville(): GameMap {
   // la place de l'horloge, au nord : une grande tour, l'heure en chiffres de lumière, le cadran des lunes
   blob(b, 21, 4.2, 3.2, 2.2, ':', 3);
   b.rect(19, 3, 5, 3, ':');
-  b.rect(20, 2, 3, 2, 'N');
+  b.set(21, 4, 'N');
   const objects: MapObject[] = [
     exit('versChemin', 17, 0, { to: 'chemin', x: 15, y: 20, dir: 'up' }),
     ...pylon('pylV1', 1, 9), ...pylon('pylV2', 32, 9),
@@ -306,7 +306,7 @@ function ville(): GameMap {
   enclose(b, [[17, 1]], [[17, 0]], (_x, y) => (y <= 2 ? 'M' : 'Y'));
   return {
     id: 'ville', name: 'Nouvelle-Vesper', outdoor: true, width: W, height: H, rows: b.rows, objects, voidTile: 'azForest',
-    decals: [{ x: 20, y: 2, w: 3, h: 2, kind: 'clockTower' }],
+    decals: [{ x: 21 - 5 / 16, y: 4, w: 1, h: 1, kind: 'clockTower' }],
     skins: [
       { x: 3, y: 2, w: 6, h: 4, style: 'aur' }, { x: 25, y: 2, w: 6, h: 4, style: 'aur' },
       { x: 4, y: 9, w: 6, h: 4, style: 'aur' }, { x: 24, y: 9, w: 6, h: 4, style: 'aur' },

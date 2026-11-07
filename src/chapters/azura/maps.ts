@@ -149,9 +149,9 @@ function cuves(): GameMap {
   // un petit sentier qui part du grand chemin vers le centre et la navette
   b.rect(12, 8, 12, 1, '.').set(23, 9, '.');
   objects.push(
-    obj('porteCentre', 27, 8, 'aurDoorClosed', 'centreClonage'),
-    obj('vitreServeurs', 29, 8, 'floodWindow', 'serveurs'),
-    obj('vitreServeurs2', 30, 8, 'floodWindow', 'serveurs'),
+    { id: 'porteCentre', x: 27, y: 8, sprite: 'aurDoorClosed', spriteWhen: ['hasBadge', 'aurDoor'], script: 'centreClonage', door: { to: 'centre', x: 5, y: 6, dir: 'up', needs: 'hasBadge' } },
+    obj('vitreServeurs', 29, 8, 'floodWindow', 'serveurs', { spriteWhen: ['drained', 'dryWindow'] }),
+    obj('vitreServeurs2', 30, 8, 'floodWindow', 'serveurs', { spriteWhen: ['drained', 'dryWindow'] }),
   );
   // l'aire de la navette, et la navette posée dessus
   b.rect(25, 11, 7, 5, ':');
@@ -215,8 +215,9 @@ function chemin(): GameMap {
     obj('repere', post, river(post) - 1, 'waterPost', 'repere'),
     ...pylons,
     npc('joss', joss[0], joss[1], 'joss', 'down', 'joss'),
+    obj('carnetJoss', 18, 9, 'notebook', 'carnetJoss', { showWhen: 'jour3', hideWhen: 'carnetRead' }),
   ];
-  b.set(16, 17, '"');
+  b.set(16, 17, '"').set(18, 9, '"');
   // au sud, un massif que le sentier traverse par une gorge
   for (let y = 18; y < H; y++) for (let x = 0; x < 22; x++) if (x < 14 || x > 16) b.set(x, y, 'M');
   // à l'est, la barrière du terraformage ; à l'ouest, des montagnes
@@ -289,6 +290,8 @@ function ville(): GameMap {
     obj('repere3', 25, 24, 'waterPost', 'repere'),
     npc('bettiPlace', 17, 4, 'betti', 'up', 'bettiAccueil', { hideWhen: 'bettiMet' }),
     npc('ilda', 14, 13, 'ilda', 'left', 'ilda'),
+    npc('oskar', 20, 14, 'oskar', 'left', 'oskar', { showWhen: 'jour3' }),
+    npc('iris', 27, 17, 'iris', 'down', 'iris', { showWhen: 'jour3' }),
     npc('bettiLac', 17, 23, 'betti', 'down', 'bettiLac', { showWhen: 'lakeScene', hideWhen: 'bettiHome' }),
     npc('tom', 21, 10, 'tom', 'up', 'tom'),
     npc('nora', 13, 9, 'nora', 'right', 'nora'),
@@ -354,5 +357,38 @@ function ecole(): GameMap {
   return { id: 'ecole', name: 'L’école', outdoor: false, width: 11, height: 9, rows: b.rows, objects };
 }
 
-export const MAPS_AZ: Record<string, GameMap> = { cuves: cuves(), chemin: chemin(), ville: ville(), atelier: atelier(), ecole: ecole() };
+// ---------- le centre de clonage (jour 3) ----------
+function centre(): GameMap {
+  const b = new Builder(11, 8, 'm');
+  b.rect(0, 0, 11, 2, 'Z').rect(0, 0, 1, 8, 'Z').rect(10, 0, 1, 8, 'Z').rect(0, 7, 11, 1, 'Z');
+  b.set(5, 7, 'm');
+  const objects: MapObject[] = [
+    exit('sortie', 5, 7, { to: 'cuves', x: 27, y: 9, dir: 'down' }),
+    obj('vitreIn1', 2, 1, 'floodWindow', 'vitreIn', { spriteWhen: ['drained', 'dryWindow'] }),
+    obj('vitreIn2', 3, 1, 'floodWindow', 'vitreIn', { spriteWhen: ['drained', 'dryWindow'] }),
+    { id: 'porteServeurs', x: 5, y: 1, sprite: 'aurDoorClosed', spriteWhen: ['drained', 'aurDoor'], script: 'porteServeurs', door: { to: 'serveurs', x: 5, y: 4, dir: 'up', needs: 'drained' } },
+    obj('schema', 7, 1, 'pipeSchema', 'schema'),
+    obj('schema2', 8, 1, 'pipeSchema', 'schema'),
+    obj('vanneBleue', 2, 4, 'valveBlue', 'vanne'),
+    obj('vanneRouge', 5, 4, 'valveRed', 'vanne'),
+    obj('vanneJaune', 8, 4, 'valveYellow', 'vanne'),
+    obj('bancCentre', 9, 6, 'benchIn', 'banc'),
+  ];
+  return { id: 'centre', name: 'Le centre de clonage', outdoor: false, width: 11, height: 8, rows: b.rows, objects };
+}
+
+function serveurs(): GameMap {
+  const b = new Builder(11, 6, 'm');
+  b.rect(0, 0, 11, 2, 'Z').rect(0, 0, 1, 6, 'Z').rect(10, 0, 1, 6, 'Z').rect(0, 5, 11, 1, 'Z');
+  b.set(5, 5, 'm');
+  const objects: MapObject[] = [
+    exit('sortie', 5, 5, { to: 'centre', x: 5, y: 2, dir: 'down' }),
+    obj('rack1', 1, 1, 'serverRack', 'rack'), obj('rack2', 2, 1, 'serverRack', 'rack'), obj('rack3', 3, 1, 'serverRack', 'rack'),
+    obj('rack4', 7, 1, 'serverRack', 'rack'), obj('rack5', 8, 1, 'serverRack', 'rack'), obj('rack6', 9, 1, 'serverRack', 'rack'),
+    obj('serveurPX', 5, 2, 'serverTerm', 'serveurPX'),
+  ];
+  return { id: 'serveurs', name: 'La salle des serveurs', outdoor: false, width: 11, height: 6, rows: b.rows, objects };
+}
+
+export const MAPS_AZ: Record<string, GameMap> = { cuves: cuves(), chemin: chemin(), ville: ville(), atelier: atelier(), ecole: ecole(), centre: centre(), serveurs: serveurs() };
 export const START_AZ = { map: 'cuves', x: 4, y: 7, dir: 'up' as Dir };

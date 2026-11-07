@@ -74,6 +74,16 @@ const PEOPLE: Record<string, PersonLook> = {
     h: '#e8c870', H: '#f6e09a', d: '#b89a48', s: '#f6d2b4', S: '#dcae8e',
     r: '#5fd0c6', R: '#2a9d9a', j: '#3f6fb0', J: '#5f8fd0', e: '#2c4f80', p: '#5a4a3a', b: '#2a2a2a', a: '#3f6fb0', A: '#5f8fd0',
   }),
+  // Oskar, vieux pilote d'Aurore : barbe blanche, uniforme délavé
+  oskar: look('oskar', {
+    h: '#e8e8ee', H: '#ffffff', d: '#b8b8c4', s: '#e0b490', S: '#c0946e',
+    r: '#5fd0c6', R: '#2a9d9a', j: '#7a8aa8', J: '#9aaac4', e: '#5a6a86', p: '#4a5468', b: '#2a2a2a', a: '#7a8aa8', A: '#9aaac4',
+  }),
+  // Iris Aurel, la commandante : cheveux courts sombres, uniforme blanc impeccable
+  iris: look('iris', {
+    h: '#2a1e2e', H: '#4a3a4e', d: '#160e18', s: '#c88e66', S: '#a86e48',
+    r: '#ffd45e', R: '#d9a83a', j: '#f2f6f8', J: '#ffffff', e: '#c9d3d6', p: '#2f3a52', b: '#1a1a1a', a: '#f2f6f8', A: '#ffffff',
+  }),
   enfant: look('enfant', {
     h: '#3a2418', H: '#5a3a26', d: '#24160e', s: '#c98d62', S: '#a86f48',
     r: '#ffe066', R: '#d9b83a', j: '#e0574f', J: '#f08a80', e: '#a83b35', p: '#3b5a8a', b: '#2a2a2a', a: '#e0574f', A: '#f08a80',
@@ -666,6 +676,73 @@ function renderEvening(g: Game, c: CanvasRenderingContext2D, w: number, h: numbe
   }
 }
 
+// ---------- le centre de clonage : vider la salle des serveurs ----------
+// L'eau va de la salle vers le réservoir (vanne bleue), du réservoir vers la pompe (vanne rouge),
+// puis de la pompe vers le lac (vanne jaune). On ouvre en partant de la sortie, et à marée basse.
+const VALVES: Record<string, { name: string; flag: string }> = {
+  vanneJaune: { name: 'jaune', flag: 'vJ' }, vanneRouge: { name: 'rouge', flag: 'vR' }, vanneBleue: { name: 'bleue', flag: 'vB' },
+};
+const VALVE_ORDER = ['vanneJaune', 'vanneRouge', 'vanneBleue'];
+
+function turnValve(g: Game, id: string) {
+  const v = VALVES[id];
+  if (g.flags.has('drained')) return ui.say([`La vanne ${v.name} est ouverte. La salle est vide d’eau.`]);
+  if (g.flags.has(v.flag)) return ui.say([`La vanne ${v.name} est déjà ouverte.`]);
+  const close = () => Object.values(VALVES).forEach((x) => g.flags.delete(x.flag));
+  if (id === 'vanneJaune' && levelNow(g) > 0.35) {
+    sfx.bump();
+    return ui.say([`J’ouvre la vanne jaune… L’eau du lac remonte dans les tuyaux en gargouillant !`, 'Je referme vite. Le lac est trop haut : il faudrait attendre la marée basse.']);
+  }
+  const next = VALVE_ORDER.find((k) => !g.flags.has(VALVES[k].flag))!;
+  if (id !== next) {
+    close();
+    sfx.bump();
+    return ui.say([`J’ouvre la vanne ${v.name}… Un grondement : l’eau n’a nulle part où aller, le tuyau tremble.`, 'Je referme tout, vite.']);
+  }
+  g.flags.add(v.flag);
+  sfx.select();
+  if (VALVE_ORDER.some((k) => !g.flags.has(VALVES[k].flag))) return ui.say([`J’ouvre la vanne ${v.name}. Un long sifflement dans les tuyaux.`]);
+  ui.say([`J’ouvre la vanne ${v.name}.`, 'Un gargouillis énorme. Derrière la vitre, le niveau baisse, baisse…'], () => {
+    ui.fade(() => {
+      g.flags.add('drained');
+      sfx.success();
+      g.api.clue('azVidange');
+      g.api.clue('azl10');
+      g.save();
+      ui.say(['La salle des serveurs est vidée. La porte vitrée s’est déverrouillée.']);
+    });
+  });
+}
+
+function showSchema() {
+  const cv = document.createElement('canvas');
+  cv.width = 140;
+  cv.height = 80;
+  cv.style.cssText = 'width:100%;image-rendering:pixelated;background:#f3ead2;border-radius:4px';
+  const c = cv.getContext('2d')!;
+  const R = (x: number, y: number, w: number, h: number, col: string) => { c.fillStyle = col; c.fillRect(x, y, w, h); };
+  R(0, 0, 140, 80, '#f3ead2');
+  // les blocs : salle, réservoir, pompe, lac
+  const box = (x: number, col: string) => { R(x, 30, 22, 20, '#2a2a33'); R(x + 1, 31, 20, 18, col); };
+  box(4, '#2ec4bd'); box(40, '#9aaac4'); box(76, '#c8c0d8'); box(112, '#1aa2a3');
+  // les tuyaux et les vannes
+  for (const [x0, x1, col] of [[26, 40, '#3f6fd0'], [62, 76, '#ff5a5a'], [98, 112, '#e8c040']] as [number, number, string][]) {
+    R(x0, 38, x1 - x0, 4, '#4a5a6a');
+    R(Math.round((x0 + x1) / 2) - 3, 33, 6, 6, '#2a2a33'); R(Math.round((x0 + x1) / 2) - 2, 34, 4, 4, col);
+    // la flèche du sens de l'eau
+    R(x1 - 4, 37, 1, 6, '#2a2a33'); R(x1 - 3, 38, 1, 4, '#2a2a33'); R(x1 - 2, 39, 1, 2, '#2a2a33');
+  }
+  const body = document.createElement('div');
+  body.style.cssText = 'font-family:var(--font);font-size:19px;line-height:1.3';
+  body.innerHTML = '<p style="margin:0 0 8px">VIDANGE DE LA SALLE DES SERVEURS</p>';
+  body.appendChild(cv);
+  const legend = document.createElement('p');
+  legend.style.cssText = 'margin:8px 0 0';
+  legend.innerHTML = 'Salle → Réservoir → Pompe → Lac<br>« Ne jamais envoyer l’eau vers un tuyau fermé. »<br>« La sortie vers le lac ne s’ouvre qu’à marée basse. »';
+  body.appendChild(legend);
+  ui.openViewer('Schéma des tuyaux', body);
+}
+
 // ---------- la première montée des eaux qu'on voit (jour 2) ----------
 function tideRises(g: Game, h: number) {
   g.flags.add('tideWitnessed');
@@ -917,11 +994,16 @@ function night(g: Game) {
         g.api.clue('azl5');
         g.save();
       });
+    } else if (next === 3) {
+      ui.say(['« Debout ! »', 'Betti, une tasse à la main, l’air soucieux.', '« Joss est passé à l’aube, tout retourné : il a perdu son carnet de pêche. »', '« Il pêche toujours près du pont, sur le chemin des crêtes. Tu pourrais l’aider ? »'], () => {
+        g.api.clue('azl7');
+        g.save();
+      });
     } else {
-      ui.say(['« Debout ! »', 'Betti est déjà partie à l’atelier du bas. Une odeur de pain chaud flotte dans la pièce.'], () => {
+      ui.say(['« Debout ! »', 'Betti est déjà partie. Une odeur de pain chaud flotte dans la pièce.'], () => {
         g.flags.add('sliceDone');
         g.save();
-        ui.say(['— Fin de la démo d’Azura —', 'La suite, le jour 3, arrive bientôt. Merci d’avoir joué.']);
+        ui.say(['— Fin de la démo d’Azura —', 'La suite, le jour 4, arrive bientôt. Merci d’avoir joué.']);
       });
     }
   }, 5200);
@@ -1005,7 +1087,7 @@ export const azura: Chapter = {
   switches: { labels: [], order: [] },
   intro: [],
   features: { heatWaves: false, movement: 'grid' },
-  music: (map) => (map.id === 'atelier' || map.id === 'ecole' || eveningNow ? 'home' : 'azura'),
+  music: (map) => (['atelier', 'ecole', 'centre', 'serveurs'].includes(map.id) || eveningNow ? 'home' : 'azura'),
   dialogStyle: 'azura',
   cutTargets: {},
   solid: SOLID_AZ,
@@ -1018,6 +1100,8 @@ export const azura: Chapter = {
       { label: 'École (jour 1)', flags: ['villeSeen', 'bettiMet'], items: [], at: { map: 'ville', x: 27, y: 6, dir: 'up' } },
       { label: 'Le soir (lit)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone'], items: [], at: { map: 'atelier', x: 7, y: 5, dir: 'right' } },
       { label: 'Jour 2 (après l’école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard'], items: [], at: { map: 'ville', x: 15, y: 15, dir: 'up' } },
+      { label: 'Jour 3 (réveil)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3'], items: [], at: { map: 'atelier', x: 7, y: 5, dir: 'left' } },
+      { label: 'Jour 3 (centre, badge)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'carnetRead', 'hasBadge'], items: ['badgePilote'], at: { map: 'cuves', x: 27, y: 9, dir: 'up' } },
       { label: 'Jour 2 (école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'bettiHome', 'jour2'], items: [], at: { map: 'ville', x: 27, y: 6, dir: 'up' } },
     ],
     actions: [],
@@ -1121,9 +1205,26 @@ export const azura: Chapter = {
         ui.say([hour(g) < 12 ? '« Tu devrais passer à l’école ce matin, si tu veux continuer d’en apprendre plus sur la vie de la colonie. »' : '« Tu devrais passer à l’école, si tu veux continuer d’en apprendre plus sur la vie de la colonie. »']);
         return true;
       }
+      // le centre de clonage : le schéma et les vannes
+      if (obj?.id.startsWith('schema')) {
+        showSchema();
+        return true;
+      }
+      if (obj?.id.startsWith('vanne')) {
+        turnValve(g, obj.id);
+        return true;
+      }
       // l'après-midi à l'atelier
       if (obj && g.map.id === 'atelier' && helpAction(g, obj.id)) return true;
       // Joss se fie à sa mémoire… qui flanche
+      if (obj?.id === 'joss' && day(g) === 3) {
+        if (!g.flags.has('carnetRead')) {
+          ui.say(['« Mon carnet ! J’y notais toutes les marées, depuis des années. »', '« Je l’ai posé quelque part près de l’eau, ce matin… ou hier ? Je ne sais plus. »'], () => g.api.clue('azl7'));
+        } else {
+          ui.say(['« Tu l’as trouvé ! Et lu ? »', 'Il feuillette les pages, longtemps.', '« Une heure de plus chaque jour… Bien sûr. Comment j’ai pu oublier ça ? »']);
+        }
+        return true;
+      }
       if (obj?.id === 'joss' && day(g) >= 2) {
         if (levelNow(g) > 0.6) {
           ui.say(['« Ah ! L’eau monte déjà ? »', 'Joss remonte sa ligne en vitesse.', '« J’avais complètement oublié qu’elle montait à cette heure-ci… Pourtant, je le savais par cœur. »', '« Avant, je notais tout dans mon carnet. Les heures, les poissons. Tous les jours. »'], () => g.api.clue('azJossOubli'));
@@ -1148,11 +1249,11 @@ export const azura: Chapter = {
         return true;
       }
       // l'heure : bancs, horloge, poteaux de repère
+      if (obj && day(g) >= 2 && obj.id.startsWith('banc')) {
+        benchWait(g, (h) => tideRises(g, h));
+        return true;
+      }
       if (obj && day(g) >= 2 && g.map.id === 'ville') {
-        if (obj.id.startsWith('banc')) {
-          benchWait(g, (h) => tideRises(g, h));
-          return true;
-        }
         if (obj.id === 'horloge') {
           ui.say(clockLines(g), () => {
             if (g.flags.has('tideWitnessed') && levelNow(g) > 0.95) g.api.clue('azLunes');
@@ -1169,9 +1270,17 @@ export const azura: Chapter = {
         return true;
       }
       // le lit, au jour 2 : seulement le soir, et une fois la marée vue
-      if (obj?.id === 'lit' && day(g) === 2) {
-        if (!g.flags.has('tideWitnessed')) {
-          ui.say(['Pas encore sommeil. Je voudrais d’abord voir l’eau monter, une fois.', '(Le tableau des eaux, sur la place, annonce l’heure. Un banc permet d’attendre.)']);
+      if (obj?.id === 'lit' && day(g) >= 2) {
+        if (day(g) === 2 && !g.flags.has('tideWitnessed')) {
+          ui.say(['Pas encore sommeil. Je voudrais d’abord voir l’eau monter, une fois.', '(Le bulletin des eaux est sur la place. Un banc permet d’attendre.)']);
+          return true;
+        }
+        if (day(g) === 3 && !g.flags.has('pxFound')) {
+          ui.say(['Pas encore sommeil. Le carnet de Joss, le centre de clonage… Je veux comprendre.']);
+          return true;
+        }
+        if (day(g) >= 4) {
+          ui.say(['Pas maintenant.']);
           return true;
         }
         if (hour(g) < EVENING) {
@@ -1265,6 +1374,10 @@ export const azura: Chapter = {
       return true;
     },
     onEnterMap(g, mapId) {
+      if (mapId === 'centre' && !g.flags.has('centreIn')) {
+        g.flags.add('centreIn');
+        window.setTimeout(() => ui.say(['Le hall du centre de clonage. Désert. Un silence humide.', 'Trois vannes, un schéma au mur… et derrière la vitre, la salle des serveurs, sous l’eau.'], () => g.api.clue('azl9')), 500);
+      }
       // en sortant, le soir est tombé : on comprend qu'il est temps d'aller dormir
       eveningNow = isEvening(g);
       if (eveningNow && g.map.outdoor && !g.flags.has('soirSeen') && day(g) === 1) {
@@ -1282,7 +1395,7 @@ export const azura: Chapter = {
       }
       // à l'école, la leçon commence dès qu'on entre, une fois par jour
       if (mapId === 'ecole') {
-        const due = g.flags.has('jour2') ? !g.flags.has('lesson2Heard') : !g.flags.has('lesson1Heard');
+        const due = g.flags.has('jour3') ? !g.flags.has('lesson3Heard') : g.flags.has('jour2') ? !g.flags.has('lesson2Heard') : !g.flags.has('lesson1Heard');
         if (due) window.setTimeout(() => SCRIPTS_AZ.lecon(g.api), 400);
       }
       // en sortant de l'école, le jour 2 : l'envie de voir l'eau monter

@@ -39,16 +39,30 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azLecon1', thread: 'ecole', title: 'La leçon du jour 1', text: '« Vesper se mourait. La mission Aurore est partie la première, avec douze pilotes, pour préparer Azura. Le jour du grand départ, les capsules ont envoyé nos esprits jusqu’ici, et le centre de clonage nous avait préparé des corps neufs. On n’oublie jamais d’où l’on vient. »' },
   { id: 'azLecon2', thread: 'ecole', title: 'La leçon du jour 2', text: '« Vesper se mourait. La mission Hélios est partie la première, avec douze pilotes… » Hélios ? Hier, elle disait Aurore.' },
   { id: 'azMina', thread: 'ecole', title: 'Mina', text: 'Une élève, née sur Azura, a corrigé la maîtresse : « C’était Aurore ! » La maîtresse ne l’a pas crue. Hélios, c’était la centrale, sur Vesper.' },
+  { id: 'azCarnet', thread: 'eaux', title: 'Le carnet de Joss', text: '« Une heure de plus chaque jour. La grande lune ne ment jamais. » Et : « Tous les trente jours, les deux lunes s’alignent : grande marée. Ne jamais rester au bord ce jour-là. » Le bulletin, lui, annonce les mêmes heures depuis deux jours.' },
+  { id: 'azOskar', thread: 'arrivee', title: 'Oskar', text: 'Un vieux pilote d’Aurore, sur un banc de la place. Il m’a glissé son badge : « Toi, tu as des yeux neufs. Regarde, et ne dis rien à la commandante. »' },
+  { id: 'azIris', thread: 'arrivee', title: 'La commandante', text: 'Iris Aurel, commandante de la mission Aurore : « Le centre de clonage ? Fermé depuis l’accident de l’an 3. Il n’y a plus rien à voir. » Elle a détourné les yeux.' },
+  { id: 'azVidange', thread: 'arrivee', title: 'La salle vidée', text: 'En ouvrant les vannes depuis la sortie vers le lac, et à marée basse, la salle des serveurs s’est vidée.' },
+  { id: 'azPX07', thread: 'arrivee', title: 'PX-07', text: 'Le serveur du centre : copie locale perdue dans l’inondation de l’an 3. Copie de sauvegarde : aucune. Source : spatioport de Vesper. Dernière opération : transfert intégral vers l’appareil PX-07.' },
+  { id: 'azLecon3', thread: 'ecole', title: 'La leçon du jour 3', text: '« Nos ancêtres ont voyagé deux ans pour arriver ici. » Deux ans ? Le voyage d’Aurore a duré deux cent douze ans.' },
   { id: 'azl1', thread: 'leads', title: 'Où sont les autres ?', text: 'Le sentier part vers le sud, au-delà des cuves.', doneWhen: 'bettiMet' },
   { id: 'azl2', thread: 'leads', title: 'L’atelier de Betti', text: 'En bas, près du lac. Lire d’abord le tableau des eaux, sur la place.', doneWhen: 'drawingSeen' },
   { id: 'azl3', thread: 'leads', title: 'L’école', text: 'En haut à droite de la ville. La leçon est pour tout le monde, même les grands.', doneWhen: 'lesson1Heard' },
   { id: 'azlAide', thread: 'leads', title: 'Un coup de main', text: 'Betti a besoin de bras, cet après-midi, à l’atelier.', doneWhen: 'helpDone' },
   { id: 'azl4', thread: 'leads', title: 'Une nuit chez Betti', text: 'Betti me prête son lit, dans l’atelier, en bas près du lac. Le soir, la ville est belle : je peux m’y promener avant de dormir.', doneWhen: 'jour2' },
   { id: 'azl6', thread: 'leads', title: 'Voir l’eau monter', text: 'Le tableau des eaux, sur la place, annonce l’heure. Un banc permet d’attendre. Ensuite, dormir chez Betti, le soir venu.', doneWhen: 'tideWitnessed' },
+  { id: 'azl7', thread: 'leads', title: 'Le carnet de Joss', text: 'Joss a perdu son carnet de pêche, quelque part près de la rivière, sur le chemin des crêtes.', doneWhen: 'carnetRead' },
+  { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Près des cuves. « Réservé aux pilotes. » Un pilote pourrait m’ouvrir.', doneWhen: 'centreIn' },
+  { id: 'azl9', thread: 'leads', title: 'La salle noyée', text: 'Vider la salle des serveurs avec les vannes. Le schéma, au mur, montre le chemin de l’eau.', doneWhen: 'drained' },
+  { id: 'azl10', thread: 'leads', title: 'Le serveur', text: 'Lire ce qui reste dans la salle des serveurs.', doneWhen: 'pxFound' },
   { id: 'azl5', thread: 'leads', title: 'La leçon du matin', text: 'Retourner à l’école, comme chaque matin.', doneWhen: 'lesson2Heard' },
 ];
 
 export const QUESTIONS_AZ: Question[] = [
+  {
+    id: 'q-px07', thread: 'arrivee', opensWith: ['azPX07'], answeredBy: 'azPlans',
+    ask: 'Qui est l’appareil PX-07 ?', answer: 'Pixel. Le chien robot de Betti porte la seule copie intacte des archives.',
+  },
   {
     id: 'q-sommeil', thread: 'arrivee', opensWith: ['az1'], answeredBy: 'az2',
     ask: 'Combien de temps ai-je dormi ?', answer: 'Onze ans. Les autres se sont réveillés en l’an 0 ; moi, en l’an 11.',
@@ -60,6 +74,7 @@ export const QUESTIONS_AZ: Question[] = [
 ];
 
 export const ITEMS_AZ: Record<string, ItemDef> = {
+  badgePilote: { name: 'Badge de pilote', text: 'Le badge d’Oskar, pilote d’Aurore. Il ouvre le centre de clonage.' },
   fruit: { name: 'Fruit d’Azura', text: 'Orange, sucré, avec un goût de miel. Mme Ilda me l’a offert.' },
 };
 
@@ -82,7 +97,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     ),
   centreClonage: (api) =>
     api.say(
-      ['Une porte blanche, plus large que les autres : « CENTRE DE CLONAGE — MISSION AURORE ».', '« Accès réservé aux pilotes. »', 'Verrouillée. Les conduites de toutes les cuves arrivent ici.'],
+      ['Une porte blanche, plus large que les autres : « CENTRE DE CLONAGE — MISSION AURORE ».', '« Accès réservé aux pilotes. »', 'Verrouillée. Il faudrait un badge de pilote.'],
       () => api.clue('azCentre'),
     ),
   serveurs: (api) =>
@@ -276,6 +291,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   bettiLac: (api) => api.say(['« Regarde-le… Il n’a pas peur de nous. »']),
   betti: (api) => {
     if (!api.has('drawingSeen')) return api.say(['« Fais comme chez toi. Regarde, si tu veux. »']);
+    if (api.has('jour3')) return api.say(['« Joss est passé à l’aube, tout retourné : il a perdu son carnet de pêche. »', '« Il pêche toujours près du pont, sur le chemin des crêtes. »']);
     if (api.has('jour2')) {
       if (api.has('lesson2Heard')) return api.say(['« Reviens quand tu veux. »']);
       return api.say(['« Tu devrais passer à l’école, si tu veux continuer d’en apprendre plus sur la vie de la colonie. »']);
@@ -309,11 +325,100 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     );
   },
 
+  // ---------- jour 3 ----------
+  carnetJoss: (api) =>
+    api.say(
+      [
+        'Dans les roseaux, un petit carnet de cuir. Celui de Joss.',
+        'Des années de marées, notées d’une écriture serrée.',
+        '« An 9, jour 40 : 3 h et 15 h. Jour 41 : 4 h et 16 h. Jour 42 : 5 h et 17 h. »',
+        '« Une heure de plus chaque jour. La grande lune ne ment jamais. »',
+        '« Tous les trente jours, les deux lunes s’alignent : grande marée. Ne jamais rester au bord ce jour-là. »',
+        'Les dernières pages sont de plus en plus brouillonnes. Des heures barrées, réécrites, barrées encore.',
+        'Une heure de plus chaque jour… Et le bulletin annonce les mêmes heures depuis deux jours.',
+      ],
+      () => {
+        api.set('carnetRead');
+        api.clue('azCarnet');
+        api.say(['« L’accident de l’an 3 »… Le centre de clonage, près des cuves, devait en garder une trace.'], () => api.clue('azl8'));
+      },
+    ),
+  oskar: (api) => {
+    if (api.has('hasBadge')) return api.say(['« Chut. Va, et regarde bien. »']);
+    api.say(
+      [
+        '« Hm ? Un nouveau… Non. Le dormeur de la cuve 07. »',
+        'Un vieil homme, dans un uniforme d’Aurore délavé.',
+        '« Oskar. Pilote. Enfin… je l’étais. »',
+        '« Le centre de clonage ? La commandante dit qu’il est fermé depuis l’accident. Elle a ses raisons. »',
+        'Il pose quelque chose sur le banc, entre nous. Un badge.',
+        '« Moi, je n’y retourne plus. Toi, tu as des yeux neufs. Regarde, et ne dis rien à la commandante. »',
+      ],
+      () => {
+        api.set('hasBadge');
+        api.item('badgePilote');
+        api.clue('azOskar');
+        api.clue('azl8');
+      },
+    );
+  },
+  iris: (api) =>
+    api.say(
+      [
+        '« Commandante Iris Aurel, mission Aurore. »',
+        '« Le centre de clonage ? Fermé. Depuis l’accident de l’an 3. Il n’y a plus rien à voir. »',
+        'Elle détourne les yeux, vers le lac.',
+      ],
+      () => api.clue('azIris'),
+    ),
+  vitreIn: (api) =>
+    api.say(
+      api.has('drained')
+        ? ['Derrière la vitre, la salle des serveurs, vidée. Une trace d’eau sèche sur les murs.']
+        : ['Derrière la vitre, la salle des serveurs. L’eau leur arrive à mi-hauteur.', 'Turquoise, immobile. Comme le lac.'],
+    ),
+  porteServeurs: (api) => api.say(['La porte vitrée ne s’ouvre pas : l’eau pousse de l’autre côté.']),
+  rack: (api) => api.say(['Une armoire de serveurs, noircie par l’eau. Plus rien ne s’allume.']),
+  serveurPX: (api) =>
+    api.say(
+      [
+        'Un serveur a survécu : on l’a posé plus haut que les autres. Son écran grésille.',
+        '« SAUVEGARDE DES TRANSFERTS — MISSION AURORE »',
+        '« Copie locale : PERDUE (inondation, an 3). »',
+        '« Copie de sauvegarde : AUCUNE. »',
+        '« Source d’origine : spatioport de Vesper. »',
+        '« Dernière opération connue : transfert intégral vers l’appareil PX-07. »',
+        'PX-07… Un appareil ? Une machine ?',
+        'Tout ce qui faisait nos souvenirs est parti… dans un « PX-07 ».',
+      ],
+      () => {
+        api.set('pxFound');
+        api.clue('azPX07');
+      },
+    ),
+
   // ---------- l'école ----------
   enseigneEcole: (api) => api.say(['« ÉCOLE DE NOUVELLE-VESPER »', 'Dessous, en plus petit : « La leçon du matin, pour tous. Instaurée par les pilotes d’Aurore. »']),
   tableauClasse: (api) => api.say(['Un grand écran. Une planète orange, une flèche, une planète bleue.', 'Au-dessus : « D’OÙ VENONS-NOUS ? »']),
   pupitre: (api) => api.say(['Un pupitre blanc, avec un petit écran.', 'Quelqu’un a gravé une fusée dans le coin.']),
   lecon: (api) => {
+    if (api.has('jour3')) {
+      if (api.has('lesson3Heard')) return api.say(['« À demain matin. Et révisez vos dates ! »']);
+      return api.say(
+        [
+          '« Bonjour à tous. Comme chaque matin : d’où venons-nous ? »',
+          '« De Vesper. La mission… Hélios est partie la première. »',
+          'Mina ouvre la bouche. La maîtresse la fait taire d’un regard.',
+          '« Nos ancêtres ont voyagé deux ans pour arriver ici. Deux longues années. »',
+          '« Deux cent douze ! » souffle Mina, tout bas. Personne ne relève.',
+          'Deux ans… Le voyage d’Aurore a duré deux cent douze ans. Elle se trompe de plus en plus.',
+        ],
+        () => {
+          api.set('lesson3Heard');
+          api.clue('azLecon3');
+        },
+      );
+    }
     if (api.has('jour2')) {
       if (api.has('lesson2Heard')) return api.say(['« Rendez-vous demain matin, même heure. »']);
       return api.say(
@@ -356,6 +461,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     );
   },
   mina: (api) => {
+    if (api.has('lesson3Heard')) return api.say(['« Deux cent douze ans. Je l’ai lu sur la plaque de la navette. »', '« Les grands ne lisent plus rien. »']);
     if (api.has('lesson2Heard')) {
       return api.say(['« C’est Aurore, hein ? Toi, tu le sais : tu viens de là-bas. »', '« Pourquoi elle ne me croit pas ? »']);
     }

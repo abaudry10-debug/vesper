@@ -637,6 +637,52 @@ function clockTower(): HTMLCanvasElement {
   return cv;
 }
 
+// ---------- jour 3 : le carnet de Joss, l'intérieur du centre de clonage ----------
+const notebook: Painter = (c, v) => {
+  azGrass(c, v);
+  c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(4, 11, 9, 2);
+  r(c, 4, 6, 9, 6, AZ.ink); r(c, 5, 7, 7, 4, '#c98a4a'); r(c, 5, 7, 7, 1, '#e0a868');
+  r(c, 8, 7, 1, 4, '#8a5a2a'); r(c, 6, 9, 2, 1, AZ.paper); r(c, 10, 8, 1, 2, AZ.paper);
+};
+const valve = (col: string, dark: string): Painter => (c) => {
+  metalFloor(c, 0);
+  c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(2, 12, 12, 2);
+  r(c, 0, 9, T, 3, AZ.metalDark); r(c, 0, 9, T, 1, AZ.metalLight); // le tuyau
+  r(c, 6, 5, 4, 7, AZ.metalDeep); r(c, 7, 5, 2, 6, AZ.metal);
+  r(c, 3, 2, 10, 4, AZ.ink); r(c, 4, 3, 8, 2, col); r(c, 7, 1, 2, 6, AZ.ink); r(c, 7, 2, 2, 4, dark); // le volant
+  r(c, 4, 3, 2, 1, '#ffffff');
+};
+const pipeSchema: Painter = (c) => {
+  azWallFront(c, 0);
+  r(c, 1, 3, 14, 10, AZ.ink); r(c, 2, 4, 12, 8, '#f3ead2');
+  r(c, 3, 7, 10, 1, '#4a5a6a'); r(c, 3, 6, 2, 3, AZ.teal); r(c, 11, 6, 2, 3, AZ.water);
+  r(c, 5, 6, 1, 3, '#3f6fd0'); r(c, 7, 6, 1, 3, AZ.red); r(c, 9, 6, 1, 3, '#e8c040');
+};
+const serverRack: Painter = (c) => {
+  azWallFront(c, 0);
+  r(c, 3, 2, 10, 13, AZ.ink); r(c, 4, 3, 8, 11, '#2c3e4a');
+  for (let y = 4; y < 13; y += 3) { r(c, 5, y, 6, 2, '#3a4f5c'); r(c, 10, y, 1, 1, '#4a2a2a'); }
+  r(c, 4, 10, 8, 4, 'rgba(46,196,189,0.35)'); // la trace de l'eau
+};
+const serverTerm: Painter = (c) => {
+  metalFloor(c, 0);
+  r(c, 2, 2, 12, 11, AZ.ink); r(c, 3, 3, 10, 7, AZ.screen); r(c, 4, 4, 6, 1, AZ.screenLine); r(c, 4, 6, 8, 1, '#2a8a80'); r(c, 4, 8, 4, 1, AZ.amber);
+  r(c, 5, 10, 6, 4, AZ.metalDark); r(c, 3, 13, 10, 2, AZ.metalDeep);
+};
+const benchIn: Painter = (c, v) => {
+  metalFloor(c, v);
+  r(c, 1, 5, 14, 4, AZ.white); r(c, 1, 5, 14, 1, AZ.stoneLight); r(c, 1, 8, 14, 1, AZ.whiteShade);
+  r(c, 2, 9, 2, 4, AZ.metalDark); r(c, 12, 9, 2, 4, AZ.metalDark);
+};
+const dryWindow: Painter = (c) => {
+  aurFront(c, 2);
+  r(c, 1, 4, 14, 9, AZ.metalDark);
+  r(c, 2, 5, 12, 7, '#1c3440');
+  for (const x of [3, 7, 11]) { r(c, x, 5, 3, 7, '#2c3e4a'); r(c, x, 6, 3, 1, '#3a4f5c'); r(c, x + 1, 8, 1, 1, AZ.glow); }
+  r(c, 2, 6, 12, 1, 'rgba(200,190,150,0.45)');
+  r(c, 3, 5, 1, 3, 'rgba(255,255,255,0.5)');
+};
+
 const PAINTERS: Record<string, Painter> = {
     slab, azGrass, azFlowers, azTall, azPath, azStone, azDeck, azFloor, regolith, crater, metalFloor,
     bigCrater0: bigCrater(0), bigCrater1: bigCrater(1), bigCrater2: bigCrater(2), bigCrater3: bigCrater(3),
@@ -652,6 +698,8 @@ const PAINTERS: Record<string, Painter> = {
     fountain0: fountain(0), fountain1: fountain(1),
     workbench, robotParts, shelfAz, drawingPixel, bedAz, azFence,
     floodWindow, azPad, classBoard, desk, clockAz, benchDeck,
+    notebook, pipeSchema, serverRack, serverTerm, benchIn, dryWindow,
+    valveBlue: valve('#3f6fd0', '#2a4a90'), valveRed: valve(AZ.red, '#a83030'), valveYellow: valve('#e8c040', '#a8882a'),
 };
 registerDecal('navette', navette());
 registerDecal('clockTower', clockTower());

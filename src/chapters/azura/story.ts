@@ -26,6 +26,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azIlda', thread: 'ville', title: 'Mme Ilda', text: 'La marchande de fruits m’a souhaité la bienvenue. Deux fois.' },
   { id: 'azJoss', thread: 'eaux', title: 'La règle de la sirène', text: 'Joss, au bord de la rivière : « Quand la sirène sonne, on monte. Toujours. »' },
   { id: 'azRepere', thread: 'eaux', title: 'Les repères', text: 'Des poteaux rayés de rouge plantés dans l’eau. La marque la plus haute est au-dessus de ma tête.' },
+  { id: 'azPoisson', thread: 'eaux', title: 'Le gardien du lac', text: 'Un énorme poisson vit dans le lac. Il ne montre jamais qu’un bout de lui : un dos tacheté de lumière, une queue violette, ou deux grands yeux curieux.' },
   { id: 'az4', thread: 'eaux', title: 'Le tableau des eaux', text: 'Sur la place : « Montée des eaux : 6 h et 18 h. Quand la sirène sonne, montez sur les passerelles. »' },
   { id: 'az5', thread: 'eaux', title: 'La sirène débranchée', text: 'Tom a débranché la sirène : « Elle sonnait la nuit, pour rien. »' },
   { id: 'az7', thread: 'eaux', title: 'Le tableau corrigé', text: 'Nora a corrigé l’horaire du matin sur le tableau : 7 h. Il affichait 6 h.' },

@@ -2,7 +2,7 @@
 import { playTheme, sfx } from '../../engine/audio.js';
 import type { Chapter } from '../../engine/chapter.js';
 import { view, type Game } from '../../engine/game.js';
-import { T } from '../../engine/sprites.js';
+import { T, hash } from '../../engine/sprites.js';
 import { registerTiles, tile } from '../../engine/sprites.js';
 import type { PersonLook } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
@@ -458,6 +458,180 @@ function drawSteam(g: Game, c: CanvasRenderingContext2D) {
   }
 }
 
+// ---------- le grand poisson du lac : il ne montre jamais qu'un bout de lui ----------
+type FishKind = 'dos' | 'tete' | 'queue';
+interface Fish { x: number; y: number; kind: FishKind; t: number; dur: number; flip: boolean }
+const fishes = new WeakMap<Game, { fish: Fish | null; timer: number }>();
+const FISH = { body: '#7a6ae0', dark: '#4a3ea8', deep: '#14101c', belly: '#d8d0ff', fin: '#ff9ad8', finDark: '#c0569a', spot: '#f4ffb0', cheek: '#ff9ac8' };
+
+function fishState(g: Game) {
+  let st = fishes.get(g);
+  if (!st) fishes.set(g, (st = { fish: null, timer: 5 }));
+  return st;
+}
+
+function updateFish(g: Game, dt: number) {
+  const st = fishState(g);
+  if (g.map.id !== 'ville') {
+    st.fish = null;
+    return;
+  }
+  if (st.fish) {
+    st.fish.t += dt;
+    if (st.fish.t >= st.fish.dur) st.fish = null;
+    return;
+  }
+  st.timer -= dt;
+  if (st.timer > 0) return;
+  // une case d'eau libre, pas trop loin du héros, loin du bord
+  const spots: [number, number][] = [];
+  for (let y = 25; y < g.map.height - 1; y++) {
+    for (let x = 2; x < g.map.width - 2; x++) {
+      if (g.map.rows[y][x] !== '~' || g.map.rows[y][x - 1] !== '~' || g.map.rows[y][x + 1] !== '~') continue;
+      if (Math.abs(x - g.x) > 6 || Math.abs(y - g.y) > 8) continue;
+      spots.push([x, y]);
+    }
+  }
+  if (!spots.length) {
+    st.timer = 2;
+    return;
+  }
+  const [x, y] = spots[Math.floor(Math.random() * spots.length)];
+  const kinds: FishKind[] = ['dos', 'dos', 'tete', 'queue'];
+  const kind = kinds[Math.floor(Math.random() * kinds.length)];
+  st.fish = { x: x * T + T / 2, y: y * T + 10, kind, t: 0, dur: kind === 'tete' ? 4.2 : kind === 'dos' ? 3.6 : 2.4, flip: Math.random() < 0.5 };
+  st.timer = 14 + Math.random() * 16;
+  // la première fois : on le remarque, et le journal le note
+  if (!g.flags.has('fishSeen')) {
+    g.flags.add('fishSeen');
+    window.setTimeout(() => {
+      g.api.clue('azPoisson');
+      if (!ui.dialogOpen()) ui.say(['Là, dans le lac ! Quelque chose d’énorme…', '…avec des taches qui brillent. On dirait qu’il me regarde.']);
+    }, 900);
+  }
+}
+
+// pour les essais : faire apparaître le poisson à la demande
+(globalThis as { __azFish?: unknown }).__azFish = (g: Game, kind: FishKind, x: number, y: number) => {
+  fishState(g).fish = { x: x * T + T / 2, y: y * T + 10, kind, t: 0, dur: kind === 'tete' ? 4.2 : kind === 'dos' ? 3.6 : 2.4, flip: false };
+};
+
+/** Un disque en pixels nets. */
+function pdisc(c: CanvasRenderingContext2D, cx: number, cy: number, rad: number, col: string, maxY = Infinity) {
+  c.fillStyle = col;
+  for (let y = -rad; y <= rad; y++) {
+    if (cy + y >= maxY) break;
+    const w = Math.floor(Math.sqrt(rad * rad - y * y));
+    c.fillRect(Math.round(cx - w), Math.round(cy + y), w * 2 + 1, 1);
+  }
+}
+
+function drawFish(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
+  const f = fishState(g).fish;
+  if (!f) return;
+  const k = f.t / f.dur;
+  const up = Math.sin(Math.min(1, Math.max(0, k)) * Math.PI); // monte puis redescend
+  const sx = Math.round(f.x - ox), sy = Math.round(f.y - oy);
+  const dir = f.flip ? -1 : 1;
+  // les ronds dans l'eau
+  for (let i = 0; i < 3; i++) {
+    const rk = (k * 1.6 + i * 0.3) % 1;
+    c.strokeStyle = `rgba(234,255,251,${0.55 * (1 - rk)})`;
+    c.lineWidth = 1;
+    c.beginPath();
+    c.ellipse(sx, sy + 1, 8 + rk * 22, 2 + rk * 5, 0, 0, Math.PI * 2);
+    c.stroke();
+  }
+  if (f.kind === 'dos') {
+    // un grand dos rond, tacheté de lumière, et une nageoire violette
+    const h = Math.round(up * 11);
+    if (h > 0) {
+      c.save();
+      c.beginPath();
+      c.rect(sx - 40, sy - 30, 80, 30);
+      c.clip();
+      const cx = sx - dir * Math.round((k - 0.5) * 10);
+      c.fillStyle = FISH.deep;
+      c.beginPath(); c.ellipse(cx, sy + 1, 23, h + 1, 0, Math.PI, 0); c.fill();
+      c.fillStyle = FISH.body;
+      c.beginPath(); c.ellipse(cx, sy, 22, h, 0, Math.PI, 0); c.fill();
+      c.fillStyle = FISH.belly;
+      c.fillRect(cx - 14, sy - h + 2, 10, 1);
+      // la nageoire
+      const fx = cx + dir * 2;
+      c.fillStyle = FISH.finDark;
+      c.beginPath(); c.moveTo(fx - 6 * dir, sy - h + 1); c.lineTo(fx + 1 * dir, sy - h - 8); c.lineTo(fx + 7 * dir, sy - h + 2); c.fill();
+      c.fillStyle = FISH.fin;
+      c.beginPath(); c.moveTo(fx - 4 * dir, sy - h + 1); c.lineTo(fx + 1 * dir, sy - h - 6); c.lineTo(fx + 5 * dir, sy - h + 2); c.fill();
+      // les taches lumineuses
+      c.fillStyle = FISH.spot;
+      for (const [dx, dy] of [[-14, 4], [-8, 7], [-3, 3], [6, 6], [12, 3], [16, 7]]) if (h > dy) c.fillRect(cx + dx, sy - h + dy, 2, 1);
+      c.restore();
+    }
+  } else if (f.kind === 'tete') {
+    // une tête ronde qui sort pour regarder, avec deux grands yeux et une antenne qui luit
+    const h = Math.round(up * 13);
+    if (h > 1) {
+      const cx = sx, top = sy - h;
+      pdisc(c, cx, top + 9, 10, FISH.deep, sy + 1);
+      pdisc(c, cx, top + 9, 9, FISH.body, sy);
+      pdisc(c, cx - 3, top + 6, 3, '#a89af0', sy);
+      // l'antenne
+      c.fillStyle = FISH.dark;
+      c.fillRect(cx + 2, top - 4, 1, 5);
+      pdisc(c, cx + 3, top - 5, 2, FISH.spot);
+      // les yeux, qui clignent
+      const blink = f.t % 1.7 < 0.12;
+      for (const ex of [cx - 4, cx + 4]) {
+        if (top + 7 >= sy) continue;
+        if (blink) { c.fillStyle = '#14101c'; c.fillRect(ex - 2, top + 7, 5, 1); continue; }
+        pdisc(c, ex, top + 7, 3, '#ffffff', sy);
+        const look = Math.sign(g.x * T - f.x);
+        pdisc(c, ex + look, top + 8, 2, '#14101c', sy);
+        c.fillStyle = '#ffffff';
+        c.fillRect(ex + look - 1, top + 6, 1, 1);
+      }
+      // les joues
+      if (top + 11 < sy) { c.fillStyle = FISH.cheek; c.fillRect(cx - 8, top + 11, 2, 1); c.fillRect(cx + 7, top + 11, 2, 1); }
+      // une petite bulle, de temps en temps
+      if (f.t > 1.5 && f.t < 3) pdisc(c, cx + 9, top - 2 - Math.round((f.t - 1.5) * 6), 1, 'rgba(234,255,251,0.8)');
+    }
+  } else {
+    // la queue qui sort, se dresse, et claque l'eau
+    const h = Math.round(up * 16);
+    if (h > 1) {
+      const cx = sx, base = sy;
+      const lean = Math.round(Math.sin(k * Math.PI * 2) * 3) * dir;
+      c.fillStyle = FISH.deep;
+      c.fillRect(cx - 2 + lean, base - h + 5, 5, h - 5);
+      c.fillStyle = FISH.body;
+      c.fillRect(cx - 1 + lean, base - h + 5, 3, h - 5);
+      // l'éventail de la queue, violet et translucide
+      const ty = base - h;
+      c.fillStyle = FISH.finDark;
+      c.beginPath(); c.moveTo(cx + lean, ty + 6); c.lineTo(cx - 11 + lean, ty - 2); c.lineTo(cx - 6 + lean, ty + 3); c.lineTo(cx + lean, ty + 1); c.lineTo(cx + 6 + lean, ty + 3); c.lineTo(cx + 11 + lean, ty - 2); c.fill();
+      c.fillStyle = FISH.fin;
+      c.beginPath(); c.moveTo(cx + lean, ty + 4); c.lineTo(cx - 9 + lean, ty - 1); c.lineTo(cx + lean, ty + 2); c.lineTo(cx + 9 + lean, ty - 1); c.fill();
+      c.fillStyle = FISH.spot;
+      c.fillRect(cx - 6 + lean, ty, 1, 1); c.fillRect(cx + 6 + lean, ty, 1, 1);
+      // les gouttes, quand elle retombe
+      if (k > 0.6) {
+        const dk = (k - 0.6) / 0.4;
+        c.fillStyle = 'rgba(234,255,251,0.9)';
+        for (const [dx, v] of [[-10, 14], [-5, 20], [4, 18], [10, 13]]) c.fillRect(cx + dx * dk * 1.5, base - v * Math.sin(dk * Math.PI), 1, 2);
+      }
+    }
+  }
+}
+
+/** Les taches du poisson brillent dans le noir. */
+function fishGlow(g: Game, glow: (x: number, y: number, r: number, rgb: string, a: number) => void, ox: number, oy: number) {
+  const f = fishState(g).fish;
+  if (!f) return;
+  const up = Math.sin(Math.min(1, f.t / f.dur) * Math.PI);
+  glow(f.x - ox, f.y - oy - 4, 30, '190,255,170', 0.35 * up);
+}
+
 // ---------- le soir du jour 1 : une lumière douce, les lampadaires qui s'allument ----------
 const isEvening = (g: Game) => g.flags.has('lesson1Heard') && g.flags.has('pixelTalk') && !g.flags.has('jour2');
 let eveningNow = false;
@@ -492,12 +666,33 @@ function renderEvening(g: Game, c: CanvasRenderingContext2D, w: number, h: numbe
     else if (o.sprite === 'aurDoor') glow(sx, sy + 10, 16, '255,210,150', 0.3);
     else if (o.sprite === 'pylonTop') glow(sx, sy + 2, 10, '255,90,90', 0.25);
   }
-  for (let y = 0; y < g.map.height; y++) {
-    for (let x = 0; x < g.map.width; x++) {
-      if (g.map.rows[y][x] !== 'F') continue;
-      glow(x * T + T / 2 - ox, y * T + T / 2 - oy, 26, '120,240,230', 0.3);
+  // l'eau devient fluorescente : une lueur turquoise, et des points de lumière qui palpitent
+  const x0 = Math.max(0, Math.floor(ox / T) - 1), x1 = Math.min(g.map.width - 1, Math.ceil((ox + w) / T) + 1);
+  const y0 = Math.max(0, Math.floor(oy / T) - 1), y1 = Math.min(g.map.height - 1, Math.ceil((oy + h) / T) + 1);
+  for (let y = y0; y <= y1; y++) {
+    for (let x = x0; x <= x1; x++) {
+      const cc = g.map.rows[y][x];
+      if (cc === 'F') glow(x * T + T / 2 - ox, y * T + T / 2 - oy, 26, '120,240,230', 0.3);
+      if (cc !== '~') continue;
+      const sx = x * T - ox, sy = y * T - oy;
+      const wave = 0.5 + 0.5 * Math.sin(g.time * 1.3 + x * 0.6 + y * 0.9);
+      c.fillStyle = `rgba(40,210,200,${0.16 + wave * 0.1})`;
+      c.fillRect(sx, sy, T, T);
+      c.fillStyle = `rgba(150,110,255,${0.08 * (1 - wave)})`;
+      c.fillRect(sx, sy, T, T);
+      for (let i = 0; i < 3; i++) {
+        const hv = hash(x * 3 + i, y * 7 + i);
+        const ph = (g.time * (0.6 + (hv % 5) * 0.15) + (hv % 100) / 17) % 2;
+        if (ph > 1) continue;
+        const a = Math.sin(ph * Math.PI);
+        const px = sx + (hv % 14) + 1, py = sy + ((hv >> 4) % 14) + 1;
+        c.fillStyle = (hv >> 8) % 3 === 0 ? `rgba(220,160,255,${a})` : `rgba(150,255,235,${a})`;
+        c.fillRect(px, py, 1, 1);
+        if (a > 0.7) { c.fillRect(px - 1, py, 3, 1); c.fillRect(px, py - 1, 1, 3); }
+      }
     }
   }
+  fishGlow(g, glow, ox, oy);
   c.restore();
   // des lucioles d'Azura, à la place des spores
   for (const p of g.particles) {
@@ -705,6 +900,7 @@ export const azura: Chapter = {
     },
     update(g, dt) {
       updateEmerge(g, dt);
+      updateFish(g, dt);
       eveningNow = isEvening(g);
     },
     beforeInteract(g, obj, fx, fy) {
@@ -735,6 +931,10 @@ export const azura: Chapter = {
         c.fillStyle = 'rgba(255,214,150,0.08)';
         c.fillRect(0, 0, w, h);
         return true;
+      }
+      {
+        const [hx, hy] = g.heroPixel();
+        drawFish(g, c, Math.round(hx + T / 2 - w / 2), Math.round(hy + T / 2 - (h - view.padBottom) / 2));
       }
       if (isEvening(g)) {
         renderEvening(g, c, w, h);

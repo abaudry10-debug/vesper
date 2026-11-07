@@ -258,8 +258,7 @@ function ville(): GameMap {
   b.points(';', [[1, 15], [32, 15], [1, 20], [32, 20]]);
   b.rect(13, 21, 9, 1, 'c');
   // la place de l'horloge, au nord : une grande tour, l'heure en chiffres de lumière, le cadran des lunes
-  blob(b, 21, 4.2, 3.2, 2.2, ':', 3);
-  b.rect(19, 3, 5, 3, ':');
+  b.rect(20, 3, 3, 3, ':');
   b.set(21, 4, 'N');
   const objects: MapObject[] = [
     exit('versChemin', 17, 0, { to: 'chemin', x: 15, y: 20, dir: 'up' }),

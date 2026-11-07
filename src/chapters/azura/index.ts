@@ -701,6 +701,48 @@ function renderEvening(g: Game, c: CanvasRenderingContext2D, w: number, h: numbe
   }
 }
 
+// ---------- le premier soir : Betti t'emmène voir le lac s'allumer ----------
+function lakeScene(g: Game) {
+  g.flags.delete('lakeNow');
+  g.flags.add('lakeScene');
+  g.flags.add('soirSeen');
+  const fromBed = g.flags.has('lakeFromBed');
+  g.flags.delete('lakeFromBed');
+  ui.say([fromBed ? '« Attends ! Avant de dormir… »' : '« Viens avec moi, vite ! »', '« C’est l’heure où le lac s’allume. Il faut que tu voies ça au moins une fois. »'], () => {
+    g.warp('ville', 16, 23, 'down');
+    window.setTimeout(() => {
+      const st = fishState(g);
+      st.timer = 40;
+      ui.showPlace('Le soir');
+      ui.say(['Le ciel a pris des couleurs de pêche et de lavande. Les lampadaires s’allument, un à un.', 'En bas, le lac s’illumine. Des milliers de petites lumières.'], () => {
+        st.fish = { x: 16 * T + T / 2, y: 26 * T + 10, kind: 'tete', t: 0, dur: 9, flip: false };
+        st.timer = 40;
+        window.setTimeout(() => {
+          g.flags.add('fishSeen');
+          g.api.clue('azPoisson');
+          ui.say(
+            [
+              'Deux grands yeux sortent de l’eau, juste devant nous.',
+              '« Lui, c’est le gardien du lac. »',
+              '« Personne ne l’a jamais vu en entier. Il ne montre qu’un bout de lui, de temps en temps. »',
+              '« Quand j’étais petite, je venais ici le soir. Je pensais à Pixel. »',
+              '« Je me disais qu’il aurait adoré ce lac. Il aurait aboyé après le poisson toute la nuit. »',
+              'Elle rit doucement. Le poisson cligne des yeux, et replonge.',
+              '« Allez, au lit, le dormeur. »',
+            ],
+            () => {
+              st.fish = null;
+              st.timer = 12;
+              g.warp('atelier', 7, 5, 'right');
+              window.setTimeout(() => ui.say(['Je m’allonge. Les draps sentent le savon et le métal chaud.', 'Mon premier vrai lit depuis onze ans.'], () => night(g)), 900);
+            },
+          );
+        }, 1700);
+      });
+    }, 900);
+  });
+}
+
 // ---------- la nuit chez Betti : un écran noir, puis le matin du jour 2 ----------
 function night(g: Game) {
   const screen = document.getElementById('screen')!;
@@ -901,6 +943,7 @@ export const azura: Chapter = {
     update(g, dt) {
       updateEmerge(g, dt);
       updateFish(g, dt);
+      if (g.flags.has('lakeNow') && !g.flags.has('lakeScene') && !ui.dialogOpen() && !g.locked) lakeScene(g);
       eveningNow = isEvening(g);
     },
     beforeInteract(g, obj, fx, fy) {
@@ -913,6 +956,11 @@ export const azura: Chapter = {
       if (obj?.id === 'lit' && g.flags.has('pixelTalk') && !g.flags.has('jour2')) {
         if (!g.flags.has('lesson1Heard')) {
           ui.say(['Pas encore. Betti veut que je passe à l’école d’abord.']);
+          return true;
+        }
+        if (!g.flags.has('lakeScene')) {
+          g.flags.add('lakeFromBed');
+          g.flags.add('lakeNow');
           return true;
         }
         ui.say(['Je m’allonge. Les draps sentent le savon et le métal chaud.', 'Mon premier vrai lit depuis onze ans.'], () => night(g));

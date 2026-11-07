@@ -265,6 +265,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   etagere: (api) => api.say(['Des outils, des pièces détachées, une petite batterie.', 'Betti bricole. Comme sa mère.']),
   etabli: (api) => api.say(['Un établi couvert de plans.', 'Des pattes mécaniques, une tête ronde… Elle construit quelque chose.']),
   lit: (api) => api.say(['Un lit fait au carré.']),
+  bettiLac: (api) => api.say(['« Regarde-le… Il n’a pas peur de nous. »']),
   betti: (api) => {
     if (!api.has('drawingSeen')) return api.say(['« Fais comme chez toi. Regarde, si tu veux. »']);
     if (api.has('jour2')) {
@@ -272,6 +273,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       return api.say(['« Bien dormi ? File à l’école, la leçon commence ! »']);
     }
     if (api.has('pixelTalk')) {
+      if (api.has('lesson1Heard') && !api.has('lakeScene')) return api.set('lakeNow');
       return api.say(
         api.has('lesson1Heard')
           ? ['« Il se fait tard. Le lit est à toi, cette nuit. Je dors à l’étage. »']
@@ -290,12 +292,13 @@ export const SCRIPTS_AZ: Record<string, Script> = {
           : 'Je l’ai laissé endormi sur Vesper. C’est grâce à lui que je suis ici.',
         'Je ne lui dis rien. Pas encore.',
         api.has('lesson1Heard')
-          ? '« Regarde, le soleil se couche déjà. Tu dormiras ici : le lit est à toi. »'
+          ? '« Oh… Regarde la lumière, par la fenêtre. Le soleil se couche. »'
           : '« Tu es passé à l’école ? Vas-y, puis reviens dormir ici : le lit est à toi. »',
       ],
       () => {
         api.set('pixelTalk');
         api.clue('azl4');
+        if (api.has('lesson1Heard')) api.set('lakeNow');
       },
     );
   },

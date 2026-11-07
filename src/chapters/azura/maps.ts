@@ -285,6 +285,7 @@ function ville(): GameMap {
     obj('repere3', 25, 24, 'waterPost', 'repere'),
     npc('bettiPlace', 17, 4, 'betti', 'up', 'bettiAccueil', { hideWhen: 'bettiMet' }),
     npc('ilda', 14, 13, 'ilda', 'left', 'ilda'),
+    npc('bettiLac', 17, 23, 'betti', 'down', 'bettiLac', { showWhen: 'lakeScene', hideWhen: 'jour2' }),
     npc('tom', 21, 10, 'tom', 'up', 'tom'),
     npc('nora', 14, 10, 'nora', 'up', 'nora', { showWhen: 'noraHere' }),
     npc('enfant', 17, 19, 'enfant', 'down', 'enfant'),

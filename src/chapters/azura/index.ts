@@ -9,6 +9,7 @@ import * as ui from '../../engine/ui.js';
 import { MAPS_AZ, SOLID_AZ, START_AZ } from './maps.js';
 import { CLUES_AZ, ITEMS_AZ, QUESTIONS_AZ, SCRIPTS_AZ, THREADS_AZ } from './story.js';
 import { MASK, withFringe } from './tiles.js';
+import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
 
 const look = (id: string, colors: Record<string, string>): PersonLook => ({ id, colors: { g: colors.s ?? '#f0c39a', w: '#14101c', ...colors } });
 
@@ -462,7 +463,6 @@ function drawSteam(g: Game, c: CanvasRenderingContext2D) {
 type FishKind = 'dos' | 'tete' | 'queue';
 interface Fish { x: number; y: number; kind: FishKind; t: number; dur: number; flip: boolean }
 const fishes = new WeakMap<Game, { fish: Fish | null; timer: number }>();
-const FISH = { body: '#7a6ae0', dark: '#4a3ea8', deep: '#14101c', belly: '#d8d0ff', fin: '#ff9ad8', finDark: '#c0569a', spot: '#f4ffb0', cheek: '#ff9ac8' };
 
 function fishState(g: Game) {
   let st = fishes.get(g);
@@ -499,137 +499,93 @@ function updateFish(g: Game, dt: number) {
   const [x, y] = spots[Math.floor(Math.random() * spots.length)];
   const kinds: FishKind[] = ['dos', 'dos', 'tete', 'queue'];
   const kind = kinds[Math.floor(Math.random() * kinds.length)];
-  st.fish = { x: x * T + T / 2, y: y * T + 10, kind, t: 0, dur: kind === 'tete' ? 4.2 : kind === 'dos' ? 3.6 : 2.4, flip: Math.random() < 0.5 };
+  st.fish = { x: x * T + T / 2, y: y * T + 10, kind, t: 0, dur: kind === 'tete' ? 5 : kind === 'dos' ? 4.4 : 3.2, flip: Math.random() < 0.5 };
   st.timer = 14 + Math.random() * 16;
   // la première fois : on le remarque, et le journal le note
   if (!g.flags.has('fishSeen')) {
     g.flags.add('fishSeen');
     window.setTimeout(() => {
       g.api.clue('azPoisson');
-      if (!ui.dialogOpen()) ui.say(['Là, dans le lac ! Quelque chose d’énorme…', '…avec des taches qui brillent. On dirait qu’il me regarde.']);
+      if (!ui.dialogOpen()) ui.say(['Là, dans le lac ! Quelque chose d’énorme…', 'Une crête d’épines, des lumières sur les flancs… et c’est reparti sous l’eau.']);
     }, 900);
   }
 }
 
 // pour les essais : faire apparaître le poisson à la demande
 (globalThis as { __azFish?: unknown }).__azFish = (g: Game, kind: FishKind, x: number, y: number) => {
-  fishState(g).fish = { x: x * T + T / 2, y: y * T + 10, kind, t: 0, dur: kind === 'tete' ? 4.2 : kind === 'dos' ? 3.6 : 2.4, flip: false };
+  fishState(g).fish = { x: x * T + T / 2, y: y * T + 10, kind, t: 0, dur: kind === 'tete' ? 5 : kind === 'dos' ? 4.4 : 3.2, flip: false };
 };
-
-/** Un disque en pixels nets. */
-function pdisc(c: CanvasRenderingContext2D, cx: number, cy: number, rad: number, col: string, maxY = Infinity) {
-  c.fillStyle = col;
-  for (let y = -rad; y <= rad; y++) {
-    if (cy + y >= maxY) break;
-    const w = Math.floor(Math.sqrt(rad * rad - y * y));
-    c.fillRect(Math.round(cx - w), Math.round(cy + y), w * 2 + 1, 1);
-  }
-}
 
 function drawFish(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
   const f = fishState(g).fish;
   if (!f) return;
-  const k = f.t / f.dur;
-  const up = Math.sin(Math.min(1, Math.max(0, k)) * Math.PI); // monte puis redescend
+  const spr = guardianSprites();
+  const k = Math.min(1, Math.max(0, f.t / f.dur));
+  // il monte vite, reste un moment, puis replonge
+  const up = k < 0.25 ? Math.sin((k / 0.25) * Math.PI / 2) : k > 0.75 ? Math.cos(((k - 0.75) / 0.25) * Math.PI / 2) : 1;
   const sx = Math.round(f.x - ox), sy = Math.round(f.y - oy);
-  const dir = f.flip ? -1 : 1;
+  const img = f.kind === 'tete' ? (f.t % 2.6 < 0.14 ? spr.headBlink : spr.head) : f.kind === 'dos' ? spr.back : spr.tail;
+  const bodyW = img.width;
+  // son ombre sous l'eau, juste avant et juste après
+  c.fillStyle = `rgba(8,8,40,${0.38 * (1 - up * 0.6)})`;
+  c.beginPath();
+  c.ellipse(sx, sy + 6, bodyW * 0.55, 9, 0, 0, Math.PI * 2);
+  c.fill();
   // les ronds dans l'eau
   for (let i = 0; i < 3; i++) {
-    const rk = (k * 1.6 + i * 0.3) % 1;
-    c.strokeStyle = `rgba(234,255,251,${0.55 * (1 - rk)})`;
+    const rk = (k * 1.4 + i * 0.33) % 1;
+    c.strokeStyle = `rgba(234,255,251,${0.5 * (1 - rk)})`;
     c.lineWidth = 1;
     c.beginPath();
-    c.ellipse(sx, sy + 1, 8 + rk * 22, 2 + rk * 5, 0, 0, Math.PI * 2);
+    c.ellipse(sx, sy + 1, bodyW * 0.4 + rk * 26, 3 + rk * 6, 0, 0, Math.PI * 2);
     c.stroke();
   }
-  if (f.kind === 'dos') {
-    // un grand dos rond, tacheté de lumière, et une nageoire violette
-    const h = Math.round(up * 11);
-    if (h > 0) {
-      c.save();
-      c.beginPath();
-      c.rect(sx - 40, sy - 30, 80, 30);
-      c.clip();
-      const cx = sx - dir * Math.round((k - 0.5) * 10);
-      c.fillStyle = FISH.deep;
-      c.beginPath(); c.ellipse(cx, sy + 1, 23, h + 1, 0, Math.PI, 0); c.fill();
-      c.fillStyle = FISH.body;
-      c.beginPath(); c.ellipse(cx, sy, 22, h, 0, Math.PI, 0); c.fill();
-      c.fillStyle = FISH.belly;
-      c.fillRect(cx - 14, sy - h + 2, 10, 1);
-      // la nageoire
-      const fx = cx + dir * 2;
-      c.fillStyle = FISH.finDark;
-      c.beginPath(); c.moveTo(fx - 6 * dir, sy - h + 1); c.lineTo(fx + 1 * dir, sy - h - 8); c.lineTo(fx + 7 * dir, sy - h + 2); c.fill();
-      c.fillStyle = FISH.fin;
-      c.beginPath(); c.moveTo(fx - 4 * dir, sy - h + 1); c.lineTo(fx + 1 * dir, sy - h - 6); c.lineTo(fx + 5 * dir, sy - h + 2); c.fill();
-      // les taches lumineuses
-      c.fillStyle = FISH.spot;
-      for (const [dx, dy] of [[-14, 4], [-8, 7], [-3, 3], [6, 6], [12, 3], [16, 7]]) if (h > dy) c.fillRect(cx + dx, sy - h + dy, 2, 1);
-      c.restore();
-    }
-  } else if (f.kind === 'tete') {
-    // une tête ronde qui sort pour regarder, avec deux grands yeux et une antenne qui luit
-    const h = Math.round(up * 13);
-    if (h > 1) {
-      const cx = sx, top = sy - h;
-      pdisc(c, cx, top + 9, 10, FISH.deep, sy + 1);
-      pdisc(c, cx, top + 9, 9, FISH.body, sy);
-      pdisc(c, cx - 3, top + 6, 3, '#a89af0', sy);
-      // l'antenne
-      c.fillStyle = FISH.dark;
-      c.fillRect(cx + 2, top - 4, 1, 5);
-      pdisc(c, cx + 3, top - 5, 2, FISH.spot);
-      // les yeux, qui clignent
-      const blink = f.t % 1.7 < 0.12;
-      for (const ex of [cx - 4, cx + 4]) {
-        if (top + 7 >= sy) continue;
-        if (blink) { c.fillStyle = '#14101c'; c.fillRect(ex - 2, top + 7, 5, 1); continue; }
-        pdisc(c, ex, top + 7, 3, '#ffffff', sy);
-        const look = Math.sign(g.x * T - f.x);
-        pdisc(c, ex + look, top + 8, 2, '#14101c', sy);
-        c.fillStyle = '#ffffff';
-        c.fillRect(ex + look - 1, top + 6, 1, 1);
+  const h = Math.round(up * (f.kind === 'tete' ? 34 : img.height));
+  if (h > 0) {
+    c.save();
+    c.beginPath();
+    c.rect(sx - 60, sy - 70, 120, 70);
+    c.clip();
+    const bob = f.kind === 'tete' ? Math.round(Math.sin(f.t * 2) * 1) : 0;
+    const drift = f.kind === 'dos' ? Math.round((k - 0.5) * 12) * (f.flip ? -1 : 1) : f.kind === 'queue' ? Math.round(Math.sin(k * Math.PI * 2) * 2) : 0;
+    if (f.flip && f.kind !== 'tete') {
+      c.translate(sx + drift, 0);
+      c.scale(-1, 1);
+      c.drawImage(img, -Math.round(bodyW / 2), sy - h + bob);
+    } else c.drawImage(img, sx + drift - Math.round(bodyW / 2), sy - h + bob);
+    c.restore();
+    // l'écume, là où il fend l'eau
+    c.fillStyle = 'rgba(234,255,251,0.85)';
+    for (let x = -bodyW * 0.42; x < bodyW * 0.42; x += 3) if ((Math.floor(x) + Math.floor(f.t * 9)) % 4 === 0) c.fillRect(Math.round(sx + x), sy, 2, 1);
+    // les yeux qui luisent
+    if (f.kind === 'tete' && f.t % 2.6 >= 0.14) {
+      for (const [ex, ey] of HEAD_EYES) {
+        const x = sx - HEAD_SIZE.w / 2 + ex, y = sy - h + bob + ey;
+        if (y >= sy) continue;
+        const gr = c.createRadialGradient(x, y, 0, x, y, 7);
+        gr.addColorStop(0, 'rgba(255,190,80,0.45)');
+        gr.addColorStop(1, 'rgba(255,190,80,0)');
+        c.fillStyle = gr;
+        c.fillRect(x - 7, y - 7, 14, 14);
       }
-      // les joues
-      if (top + 11 < sy) { c.fillStyle = FISH.cheek; c.fillRect(cx - 8, top + 11, 2, 1); c.fillRect(cx + 7, top + 11, 2, 1); }
-      // une petite bulle, de temps en temps
-      if (f.t > 1.5 && f.t < 3) pdisc(c, cx + 9, top - 2 - Math.round((f.t - 1.5) * 6), 1, 'rgba(234,255,251,0.8)');
     }
-  } else {
-    // la queue qui sort, se dresse, et claque l'eau
-    const h = Math.round(up * 16);
-    if (h > 1) {
-      const cx = sx, base = sy;
-      const lean = Math.round(Math.sin(k * Math.PI * 2) * 3) * dir;
-      c.fillStyle = FISH.deep;
-      c.fillRect(cx - 2 + lean, base - h + 5, 5, h - 5);
-      c.fillStyle = FISH.body;
-      c.fillRect(cx - 1 + lean, base - h + 5, 3, h - 5);
-      // l'éventail de la queue, violet et translucide
-      const ty = base - h;
-      c.fillStyle = FISH.finDark;
-      c.beginPath(); c.moveTo(cx + lean, ty + 6); c.lineTo(cx - 11 + lean, ty - 2); c.lineTo(cx - 6 + lean, ty + 3); c.lineTo(cx + lean, ty + 1); c.lineTo(cx + 6 + lean, ty + 3); c.lineTo(cx + 11 + lean, ty - 2); c.fill();
-      c.fillStyle = FISH.fin;
-      c.beginPath(); c.moveTo(cx + lean, ty + 4); c.lineTo(cx - 9 + lean, ty - 1); c.lineTo(cx + lean, ty + 2); c.lineTo(cx + 9 + lean, ty - 1); c.fill();
-      c.fillStyle = FISH.spot;
-      c.fillRect(cx - 6 + lean, ty, 1, 1); c.fillRect(cx + 6 + lean, ty, 1, 1);
-      // les gouttes, quand elle retombe
-      if (k > 0.6) {
-        const dk = (k - 0.6) / 0.4;
-        c.fillStyle = 'rgba(234,255,251,0.9)';
-        for (const [dx, v] of [[-10, 14], [-5, 20], [4, 18], [10, 13]]) c.fillRect(cx + dx * dk * 1.5, base - v * Math.sin(dk * Math.PI), 1, 2);
-      }
+    // les gouttes, quand la queue retombe
+    if (f.kind === 'queue' && k > 0.7) {
+      const dk = (k - 0.7) / 0.3;
+      c.fillStyle = 'rgba(234,255,251,0.9)';
+      for (const [dx, v] of [[-22, 16], [-12, 24], [-4, 28], [6, 26], [15, 22], [24, 14]]) c.fillRect(Math.round(sx + dx * (0.6 + dk)), Math.round(sy - v * Math.sin(dk * Math.PI)), 1, 2);
     }
   }
 }
 
-/** Les taches du poisson brillent dans le noir. */
+/** Ses lumières brillent dans le noir. */
 function fishGlow(g: Game, glow: (x: number, y: number, r: number, rgb: string, a: number) => void, ox: number, oy: number) {
   const f = fishState(g).fish;
   if (!f) return;
-  const up = Math.sin(Math.min(1, f.t / f.dur) * Math.PI);
-  glow(f.x - ox, f.y - oy - 4, 30, '190,255,170', 0.35 * up);
+  const k = Math.min(1, f.t / f.dur);
+  const up = k < 0.25 ? Math.sin((k / 0.25) * Math.PI / 2) : k > 0.75 ? Math.cos(((k - 0.75) / 0.25) * Math.PI / 2) : 1;
+  glow(f.x - ox, f.y - oy - 10, 44, '95,240,224', 0.3 * up);
+  if (f.kind === 'tete') glow(f.x - ox, f.y - oy - 16, 18, '255,180,80', 0.3 * up);
 }
 
 // ---------- le soir du jour 1 : une lumière douce, les lampadaires qui s'allument ----------
@@ -702,44 +658,138 @@ function renderEvening(g: Game, c: CanvasRenderingContext2D, w: number, h: numbe
 }
 
 // ---------- le premier soir : Betti t'emmène voir le lac s'allumer ----------
+interface Walk { hero: [number, number][]; betti: [number, number][]; i: number; t: number; done: () => void; heroToo: boolean }
+const walks = new WeakMap<Game, Walk>();
+const STEP = 0.4;
+const bettiObj = (g: Game) => g.map.objects.find((o) => o.id === 'bettiLac');
+const dirTo = (fx: number, fy: number, tx: number, ty: number) => (tx > fx ? 'right' : tx < fx ? 'left' : ty > fy ? 'down' : 'up');
+
+/** Betti (et le héros, s'il la suit main dans la main) marchent case par case. */
+function updateWalk(g: Game, dt: number) {
+  const w = walks.get(g);
+  if (!w) return;
+  if (g.drag) {
+    g.drag.t += dt / g.drag.dur;
+    if (g.drag.t >= 1) g.drag = null;
+  }
+  w.t -= dt;
+  if (w.t > 0) return;
+  const b = bettiObj(g);
+  if (w.i >= w.betti.length || !b) {
+    walks.delete(g);
+    g.drag = null;
+    w.done();
+    return;
+  }
+  const [bx, by] = w.betti[w.i];
+  g.npcFace.delete('bettiLac');
+  g.npcStep.set('bettiLac', { fx: b.x, fy: b.y, t: 0 });
+  b.npc!.dir = dirTo(b.x, b.y, bx, by);
+  b.x = bx;
+  b.y = by;
+  if (w.heroToo) {
+    const [hx, hy] = w.hero[w.i];
+    g.dir = dirTo(g.x, g.y, hx, hy);
+    g.drag = { fx: g.x, fy: g.y, t: 0, dur: STEP };
+    g.x = hx;
+    g.y = hy;
+    sfx.step();
+  }
+  w.i++;
+  w.t = STEP;
+}
+
+/** Leurs deux mains jointes, pendant qu'elle l'entraîne. */
+function drawHands(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
+  const w = walks.get(g);
+  const b = bettiObj(g);
+  if (!w || !w.heroToo || !b) return;
+  const [hx, hy] = g.heroPixel();
+  const st = g.npcStep.get('bettiLac');
+  const k = st ? Math.min(1, st.t) : 1;
+  const bx = (st ? st.fx + (b.x - st.fx) * k : b.x) * T, by = (st ? st.fy + (b.y - st.fy) * k : b.y) * T;
+  const y = Math.round(hy - oy + 7), x0 = Math.round(hx - ox + 12), x1 = Math.round(bx - ox + 4);
+  if (x1 <= x0 || x1 - x0 > 14 || Math.abs(by - hy) > 2) return;
+  c.fillStyle = '#14101c';
+  c.fillRect(x0, y - 1, x1 - x0, 3);
+  c.fillStyle = '#f0c39a';
+  c.fillRect(x0, y, x1 - x0, 1);
+}
+
 function lakeScene(g: Game) {
   g.flags.delete('lakeNow');
   g.flags.add('lakeScene');
   g.flags.add('soirSeen');
   const fromBed = g.flags.has('lakeFromBed');
   g.flags.delete('lakeFromBed');
-  ui.say([fromBed ? '« Attends ! Avant de dormir… »' : '« Viens avec moi, vite ! »', '« C’est l’heure où le lac s’allume. Il faut que tu voies ça au moins une fois. »'], () => {
-    g.warp('ville', 16, 23, 'down');
+  ui.say(
+    [fromBed ? '« Attends ! Avant de dormir… »' : '« Viens avec moi, vite ! »', '« C’est l’heure où le lac s’allume. Il faut que tu voies ça au moins une fois. »', 'Betti me prend la main et m’entraîne dehors.'],
+    () => {
+      const b = MAPS_AZ.ville.objects.find((o) => o.id === 'bettiLac')!;
+      b.x = 7;
+      b.y = 22;
+      b.npc!.dir = 'right';
+      g.warp('ville', 6, 22, 'right');
+      window.setTimeout(() => {
+        g.locked = true;
+        // elle devant, lui derrière, main dans la main, le long de la passerelle
+        const betti: [number, number][] = [], hero: [number, number][] = [];
+        for (let x = 8; x <= 17; x++) betti.push([x, 22]);
+        for (let x = 7; x <= 16; x++) hero.push([x, 22]);
+        betti.push([17, 23]);
+        hero.push([16, 23]);
+        walks.set(g, { hero, betti, i: 0, t: 0.2, heroToo: true, done: () => atTheLake(g) });
+      }, 700);
+    },
+  );
+}
+
+function atTheLake(g: Game) {
+  const b = bettiObj(g);
+  g.dir = 'down';
+  if (b) b.npc!.dir = 'down';
+  const st = fishState(g);
+  st.timer = 60;
+  ui.showPlace('Le soir');
+  ui.say(['Le ciel a pris des couleurs de pêche et de lavande. Les lampadaires s’allument, un à un.', 'En bas, le lac s’illumine. Des milliers de petites lumières.', 'Puis l’eau se met à bouillonner, juste devant nous.'], () => {
+    st.fish = { x: 13 * T + T / 2, y: 24 * T + 12, kind: 'tete', t: 0, dur: 14, flip: false };
+    g.dir = 'left';
+    if (b) b.npc!.dir = 'left';
     window.setTimeout(() => {
-      const st = fishState(g);
-      st.timer = 40;
-      ui.showPlace('Le soir');
-      ui.say(['Le ciel a pris des couleurs de pêche et de lavande. Les lampadaires s’allument, un à un.', 'En bas, le lac s’illumine. Des milliers de petites lumières.'], () => {
-        st.fish = { x: 16 * T + T / 2, y: 26 * T + 10, kind: 'tete', t: 0, dur: 9, flip: false };
-        st.timer = 40;
-        window.setTimeout(() => {
-          g.flags.add('fishSeen');
-          g.api.clue('azPoisson');
-          ui.say(
-            [
-              'Deux grands yeux sortent de l’eau, juste devant nous.',
-              '« Lui, c’est le gardien du lac. »',
-              '« Personne ne l’a jamais vu en entier. Il ne montre qu’un bout de lui, de temps en temps. »',
-              '« Quand j’étais petite, je venais ici le soir. Je pensais à Pixel. »',
-              '« Je me disais qu’il aurait adoré ce lac. Il aurait aboyé après le poisson toute la nuit. »',
-              'Elle rit doucement. Le poisson cligne des yeux, et replonge.',
-              '« Allez, au lit, le dormeur. »',
-            ],
-            () => {
-              st.fish = null;
-              st.timer = 12;
-              g.warp('atelier', 7, 5, 'right');
-              window.setTimeout(() => ui.say(['Je m’allonge. Les draps sentent le savon et le métal chaud.', 'Mon premier vrai lit depuis onze ans.'], () => night(g)), 900);
-            },
-          );
-        }, 1700);
-      });
-    }, 900);
+      g.flags.add('fishSeen');
+      g.api.clue('azPoisson');
+      ui.say(
+        [
+          'Une tête immense sort de l’eau. Une couronne d’épines. Quatre yeux d’ambre, fendus.',
+          'Je recule d’un pas. Betti me serre la main.',
+          '« N’aie pas peur. Lui, c’est le gardien du lac. »',
+          '« Personne ne l’a jamais vu en entier. Il ne montre qu’un bout de lui, de temps en temps. »',
+          '« Quand j’étais petite, je venais ici le soir. Je pensais à Pixel. »',
+          '« Il aurait aboyé après lui toute la nuit, j’en suis sûre. »',
+          'Le gardien nous fixe encore un instant… puis s’enfonce sans un bruit.',
+        ],
+        () => {
+          if (st.fish) st.fish.t = Math.max(st.fish.t, st.fish.dur * 0.78);
+          st.timer = 18;
+          window.setTimeout(() => {
+            ui.say(['« Bon. Moi, je rentre. »', '« Le lit t’attend, quand tu veux. Ou profite un peu de la ville : la nuit, elle est belle. »'], () => {
+              g.locked = false;
+              g.api.clue('azl4');
+              // elle rentre chez elle, seule, par la passerelle
+              const home: [number, number][] = [[17, 22]];
+              for (let x = 16; x >= 6; x--) home.push([x, 22]);
+              walks.set(g, {
+                hero: [], betti: home, i: 0, t: 0.3, heroToo: false,
+                done: () => {
+                  sfx.door();
+                  g.flags.add('bettiHome');
+                },
+              });
+            });
+          }, 1200);
+        },
+      );
+    }, 2000);
   });
 }
 
@@ -943,6 +993,7 @@ export const azura: Chapter = {
     update(g, dt) {
       updateEmerge(g, dt);
       updateFish(g, dt);
+      updateWalk(g, dt);
       if (g.flags.has('lakeNow') && !g.flags.has('lakeScene') && !ui.dialogOpen() && !g.locked) lakeScene(g);
       eveningNow = isEvening(g);
     },
@@ -971,6 +1022,7 @@ export const azura: Chapter = {
     renderVoid,
     renderOverlay,
     heroWalking(g) {
+      if (walks.get(g)?.heroToo && g.drag) return true;
       return emerging.get(g)?.stage === 'out';
     },
     renderAtmosphere(g, c, w, h) {
@@ -980,14 +1032,16 @@ export const azura: Chapter = {
         c.fillRect(0, 0, w, h);
         return true;
       }
-      {
-        const [hx, hy] = g.heroPixel();
-        drawFish(g, c, Math.round(hx + T / 2 - w / 2), Math.round(hy + T / 2 - (h - view.padBottom) / 2));
-      }
+      const [hx0, hy0] = g.heroPixel();
+      const cox = Math.round(hx0 + T / 2 - w / 2), coy = Math.round(hy0 + T / 2 - (h - view.padBottom) / 2);
+      drawHands(g, c, cox, coy);
       if (isEvening(g)) {
         renderEvening(g, c, w, h);
+        // le gardien après la teinte du soir : ses lumières ressortent dans la pénombre
+        drawFish(g, c, cox, coy);
         return true;
       }
+      drawFish(g, c, cox, coy);
       // une lumière claire, et l'ombre des nuages qui glisse sur le paysage
       const grad = c.createLinearGradient(0, 0, 0, h);
       grad.addColorStop(0, 'rgba(170,230,255,0.10)');

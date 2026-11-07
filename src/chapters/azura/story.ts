@@ -26,7 +26,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azIlda', thread: 'ville', title: 'Mme Ilda', text: 'La marchande de fruits m’a souhaité la bienvenue. Deux fois.' },
   { id: 'azJoss', thread: 'eaux', title: 'La règle de la sirène', text: 'Joss, au bord de la rivière : « Quand la sirène sonne, on monte. Toujours. »' },
   { id: 'azRepere', thread: 'eaux', title: 'Les repères', text: 'Des poteaux rayés de rouge plantés dans l’eau. La marque la plus haute est au-dessus de ma tête.' },
-  { id: 'azPoisson', thread: 'eaux', title: 'Le gardien du lac', text: 'Un énorme poisson vit dans le lac. Il ne montre jamais qu’un bout de lui : un dos tacheté de lumière, une queue violette, ou deux grands yeux curieux.' },
+  { id: 'azPoisson', thread: 'eaux', title: 'Le gardien du lac', text: 'Une créature immense vit dans le lac. Elle ne montre jamais qu’un bout d’elle : un dos hérissé d’épines, une queue en croissant bordée de lumière, ou une tête cuirassée aux quatre yeux d’ambre. Betti dit qu’il ne faut pas en avoir peur.' },
   { id: 'az4', thread: 'eaux', title: 'Le tableau des eaux', text: 'Sur la place : « Montée des eaux : 6 h et 18 h. Quand la sirène sonne, montez sur les passerelles. »' },
   { id: 'az5', thread: 'eaux', title: 'La sirène débranchée', text: 'Tom a débranché la sirène : « Elle sonnait la nuit, pour rien. »' },
   { id: 'az7', thread: 'eaux', title: 'Le tableau corrigé', text: 'Nora a corrigé l’horaire du matin sur le tableau : 7 h. Il affichait 6 h.' },
@@ -38,7 +38,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl1', thread: 'leads', title: 'Où sont les autres ?', text: 'Le sentier part vers le sud, au-delà des cuves.', doneWhen: 'bettiMet' },
   { id: 'azl2', thread: 'leads', title: 'L’atelier de Betti', text: 'En bas, près du lac. Lire d’abord le tableau des eaux, sur la place.', doneWhen: 'drawingSeen' },
   { id: 'azl3', thread: 'leads', title: 'L’école', text: 'En haut à droite de la ville. La leçon est pour tout le monde, même les grands.', doneWhen: 'lesson1Heard' },
-  { id: 'azl4', thread: 'leads', title: 'Une nuit chez Betti', text: 'Betti me prête son lit, dans l’atelier, en bas près du lac. Quand le soir tombe, aller dormir.', doneWhen: 'jour2' },
+  { id: 'azl4', thread: 'leads', title: 'Une nuit chez Betti', text: 'Betti me prête son lit, dans l’atelier, en bas près du lac. Le soir, la ville est belle : je peux m’y promener avant de dormir.', doneWhen: 'jour2' },
   { id: 'azl5', thread: 'leads', title: 'La leçon du matin', text: 'Retourner à l’école, comme chaque matin.', doneWhen: 'lesson2Heard' },
 ];
 
@@ -172,6 +172,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
         : ['Une sirène rouge, en haut d’un mât.', 'Un câble pend à son pied. Débranché.'],
     ),
   tom: (api) => {
+    if (api.has('lakeScene') && !api.has('jour2')) return api.say(['« Une belle nuit bien calme. Pas de sirène pour la gâcher. »']);
     if (api.has('tomTalk')) return api.say(['« Elle est bien plus calme, la place, sans cette sirène. »']);
     api.say(
       [
@@ -188,6 +189,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     );
   },
   ilda: (api) => {
+    if (api.has('lakeScene') && !api.has('jour2')) return api.say(['« Je range mes fruits. Les violets n’aiment pas la nuit. »', '« Bonne nuit, mon grand ! »']);
     if (!api.has('ildaTalk')) {
       return api.say(
         [
@@ -238,9 +240,9 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       api.clue('azEnfant');
     });
   },
-  passant1: (api) => api.say(['« Belle journée, hein ? Comme toujours, ici. »']),
+  passant1: (api) => api.say(api.has('lakeScene') && !api.has('jour2') ? ['« Bonsoir ! Les lampadaires, c’est mon moment préféré. »'] : ['« Belle journée, hein ? Comme toujours, ici. »']),
   passant2: (api) => api.say(['« Tu cherches quelqu’un ? Demande aux pilotes : ils connaissent tout le monde. »']),
-  passant3: (api) => api.say(['« L’eau est haute, ce matin. Enfin… je crois. »', 'Il regarde le lac, les mains dans les poches.']),
+  passant3: (api) => api.say(api.has('lakeScene') && !api.has('jour2') ? ['« Le gardien est sorti, ce soir ? On dit que ça porte bonheur. »', '« Ou malheur. Je ne sais plus. »'] : ['« L’eau est haute, ce matin. Enfin… je crois. »', 'Il regarde le lac, les mains dans les poches.']),
   passant4: (api) => api.say(['« Je vais aux vergers de la vallée. À ce soir ! »']),
   pylone: (api) =>
     api.say(['Un pylône bourdonne doucement. Une lumière rouge clignote à son sommet.', 'Au-delà, Azura est restée sauvage : un sol violet, des cratères, des cristaux.', 'De ce côté, l’herbe a été semée par la colonie.'], () => api.clue('azPylone')),

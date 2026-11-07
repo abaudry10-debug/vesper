@@ -27,7 +27,8 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azJoss', thread: 'eaux', title: 'La règle de la sirène', text: 'Joss, au bord de la rivière : « Quand la sirène sonne, on monte. Toujours. »' },
   { id: 'azRepere', thread: 'eaux', title: 'Les repères', text: 'Des poteaux rayés de rouge plantés dans l’eau. La marque la plus haute est au-dessus de ma tête.' },
   { id: 'azPoisson', thread: 'eaux', title: 'Le gardien du lac', text: 'Une créature immense vit dans le lac. Elle ne montre jamais qu’un bout d’elle : un dos hérissé d’épines, une queue en croissant bordée de lumière, ou une tête cuirassée aux quatre yeux d’ambre. Betti dit qu’il ne faut pas en avoir peur.' },
-  { id: 'azMaree', thread: 'eaux', title: 'Le tableau a tort', text: 'Jour 2 : l’eau est montée vers 16 h, et elle était pleine à 17 h. Le tableau annonçait 18 h. Ce matin, à 7 h, l’eau était basse, alors que le tableau disait 7 h. La sirène n’a pas sonné.' },
+  { id: 'azMaree', thread: 'eaux', title: 'La marée du soir', text: 'Jour 2 : l’eau a commencé à monter vers 17 h, pleine à 18 h, comme l’annonce le tableau. La sirène n’a pas sonné : les gens montent par habitude, sans y penser.' },
+  { id: 'azJossOubli', thread: 'eaux', title: 'Joss a oublié', text: 'Joss a été surpris par la montée des eaux : « J’avais oublié qu’elle montait à cette heure-ci. » Avant, il notait tout dans un carnet : les heures, les poissons, tous les jours.' },
   { id: 'azLunes', thread: 'eaux', title: 'Les deux lunes', text: 'L’horloge de la place a un cadran des lunes. Quand l’eau était pleine, la grande lune passait juste au-dessus de la petite.' },
   { id: 'az4', thread: 'eaux', title: 'Le tableau des eaux', text: 'Sur la place : « Montée des eaux : 6 h et 18 h. Quand la sirène sonne, montez sur les passerelles. »' },
   { id: 'az5', thread: 'eaux', title: 'La sirène débranchée', text: 'Tom a débranché la sirène : « Elle sonnait la nuit, pour rien. »' },
@@ -40,6 +41,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl1', thread: 'leads', title: 'Où sont les autres ?', text: 'Le sentier part vers le sud, au-delà des cuves.', doneWhen: 'bettiMet' },
   { id: 'azl2', thread: 'leads', title: 'L’atelier de Betti', text: 'En bas, près du lac. Lire d’abord le tableau des eaux, sur la place.', doneWhen: 'drawingSeen' },
   { id: 'azl3', thread: 'leads', title: 'L’école', text: 'En haut à droite de la ville. La leçon est pour tout le monde, même les grands.', doneWhen: 'lesson1Heard' },
+  { id: 'azlAide', thread: 'leads', title: 'Un coup de main', text: 'Betti a besoin de bras, cet après-midi, à l’atelier.', doneWhen: 'helpDone' },
   { id: 'azl4', thread: 'leads', title: 'Une nuit chez Betti', text: 'Betti me prête son lit, dans l’atelier, en bas près du lac. Le soir, la ville est belle : je peux m’y promener avant de dormir.', doneWhen: 'jour2' },
   { id: 'azl6', thread: 'leads', title: 'Voir l’eau monter', text: 'Le tableau des eaux, sur la place, annonce l’heure. Un banc permet d’attendre. Ensuite, dormir chez Betti, le soir venu.', doneWhen: 'tideWitnessed' },
   { id: 'azl5', thread: 'leads', title: 'La leçon du matin', text: 'Retourner à l’école, comme chaque matin.', doneWhen: 'lesson2Heard' },
@@ -279,12 +281,10 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       return api.say(['« Bien dormi ? File à l’école, la leçon commence ! »']);
     }
     if (api.has('pixelTalk')) {
-      if (api.has('lesson1Heard') && !api.has('lakeScene')) return api.set('lakeNow');
-      return api.say(
-        api.has('lesson1Heard')
-          ? ['« Il se fait tard. Le lit est à toi, cette nuit. Je dors à l’étage. »']
-          : ['« Passe à l’école avant ce soir. Et ensuite, le lit est à toi. »'],
-      );
+      if (!api.has('lesson1Heard')) return api.say(['« Va d’abord à l’école, la leçon finit à midi. Reviens cet après-midi : j’aurai besoin de bras. »']);
+      if (!api.has('helpDone')) return api.set('helpNow');
+      if (!api.has('lakeScene')) return api.set('lakeNow');
+      return api.say(['« Il se fait tard. Le lit est à toi, cette nuit. Je dors à l’étage. »']);
     }
     api.say(
       [
@@ -298,13 +298,13 @@ export const SCRIPTS_AZ: Record<string, Script> = {
           : 'Je l’ai laissé endormi sur Vesper. C’est grâce à lui que je suis ici.',
         'Je ne lui dis rien. Pas encore.',
         api.has('lesson1Heard')
-          ? '« Oh… Regarde la lumière, par la fenêtre. Le soleil se couche. »'
-          : '« Tu es passé à l’école ? Vas-y, puis reviens dormir ici : le lit est à toi. »',
+          ? '« Bon ! Tu tombes bien : j’ai besoin de bras, cet après-midi. »'
+          : '« Va d’abord à l’école, la leçon finit à midi. Reviens cet après-midi : j’aurai besoin de bras. »',
       ],
       () => {
         api.set('pixelTalk');
         api.clue('azl4');
-        if (api.has('lesson1Heard')) api.set('lakeNow');
+        if (api.has('lesson1Heard')) api.set('helpNow');
       },
     );
   },

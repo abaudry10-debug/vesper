@@ -601,6 +601,45 @@ const benchDeck: Painter = (c, v) => {
   r(c, 3, 7, 10, 1, AZ.glow);
 };
 
+/** La tour de l'horloge : un pilier blanc, un grand écran pour l'heure, le cadran des lunes. */
+export const TOWER = { w: 48, h: 84, screen: { x: 6, y: 8, w: 36, h: 18 }, dial: { x: 24, y: 44, r: 10 } };
+function clockTower(): HTMLCanvasElement {
+  const cv = document.createElement('canvas');
+  cv.width = TOWER.w;
+  cv.height = TOWER.h;
+  const c = cv.getContext('2d')!;
+  const { w, h } = TOWER;
+  // le socle, en gradins
+  r(c, 4, h - 10, w - 8, 10, AZ.ink); r(c, 5, h - 9, w - 10, 8, AZ.whiteShade); r(c, 5, h - 9, w - 10, 2, AZ.white);
+  r(c, 5, h - 3, w - 10, 1, AZ.glow);
+  // le pilier
+  r(c, 12, 30, 24, h - 40, AZ.ink); r(c, 13, 30, 22, h - 40, AZ.white); r(c, 13, 30, 4, h - 40, '#ffffff'); r(c, 31, 30, 4, h - 40, AZ.whiteShade);
+  r(c, 23, 58, 2, h - 68, AZ.teal);
+  for (let y = 60; y < h - 12; y += 5) r(c, 22, y, 4, 1, AZ.glow);
+  // le grand écran, avec son cadre et ses deux antennes
+  r(c, 2, 4, w - 4, 26, AZ.ink); r(c, 3, 5, w - 6, 24, AZ.metalDark); r(c, 3, 5, w - 6, 2, AZ.metalLight);
+  const s0 = TOWER.screen;
+  r(c, s0.x, s0.y, s0.w, s0.h, '#06141a');
+  r(c, s0.x, s0.y, s0.w, 1, '#0e2a33');
+  r(c, 8, 0, 2, 5, AZ.metalDark); r(c, 38, 0, 2, 5, AZ.metalDark); r(c, 8, 0, 2, 1, AZ.glow); r(c, 38, 0, 2, 1, AZ.red);
+  r(c, 3, 27, w - 6, 1, AZ.glow);
+  // le cadran des lunes : un disque sombre cerclé de lumière
+  const d = TOWER.dial;
+  for (let y = -d.r - 1; y <= d.r + 1; y++) {
+    const half = Math.floor(Math.sqrt(Math.max(0, (d.r + 1) ** 2 - y * y)));
+    r(c, d.x - half, d.y + y, half * 2 + 1, 1, AZ.ink);
+  }
+  for (let y = -d.r; y <= d.r; y++) {
+    const half = Math.floor(Math.sqrt(Math.max(0, d.r * d.r - y * y)));
+    r(c, d.x - half, d.y + y, half * 2 + 1, 1, '#0d1a2e');
+  }
+  for (let a = 0; a < 12; a++) {
+    const x = d.x + Math.round(Math.sin((a / 12) * Math.PI * 2) * (d.r - 1)), y = d.y - Math.round(Math.cos((a / 12) * Math.PI * 2) * (d.r - 1));
+    r(c, x, y, 1, 1, a === 0 ? AZ.glow : '#3a5a7a');
+  }
+  return cv;
+}
+
 const PAINTERS: Record<string, Painter> = {
     slab, azGrass, azFlowers, azTall, azPath, azStone, azDeck, azFloor, regolith, crater, metalFloor,
     bigCrater0: bigCrater(0), bigCrater1: bigCrater(1), bigCrater2: bigCrater(2), bigCrater3: bigCrater(3),
@@ -618,6 +657,7 @@ const PAINTERS: Record<string, Painter> = {
     floodWindow, azPad, classBoard, desk, clockAz, benchDeck,
 };
 registerDecal('navette', navette());
+registerDecal('clockTower', clockTower());
 registerTiles(PAINTERS, ['azGrass', 'azPath', 'azStone', 'azFloor', 'regolith', 'metalFloor']);
 
 // ---------- lisières : l'herbe déborde, irrégulière, sur le sol voisin ----------

@@ -1,8 +1,8 @@
 // L'heure et la marée d'Azura.
 // L'heure n'avance jamais toute seule : on s'assoit sur un banc pour attendre (jamais au-delà du soir),
-// et l'on ne change de jour qu'en dormant. Les eaux montent deux fois par jour, quand la grande lune
-// passe au-dessus de la petite — et cet horaire recule d'une heure chaque jour.
-// Le tableau de la place, lui, n'est plus mis à jour depuis longtemps : il a de plus en plus tort.
+// et l'on ne change de jour qu'en dormant. Les eaux montent deux fois par jour, toujours à la même heure,
+// 6 h et 18 h, quand la grande lune passe sur la petite. C'est la mémoire des colons qui se trompe :
+// le tableau de la place affiche 7 h pour le matin depuis que Nora l'a « corrigé ».
 import type { Game } from '../../engine/game.js';
 import { T } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
@@ -14,8 +14,8 @@ export const setHour = (g: Game, h: number) => {
 };
 export const EVENING = 19;
 
-/** Les deux pleines eaux du jour : 6 h et 18 h le premier jour, puis une heure plus tôt chaque jour. */
-export const highTides = (d: number) => [7 - d, 19 - d];
+/** Les deux pleines eaux : 6 h et 18 h, tous les jours. */
+export const highTides = (_d: number) => [6, 18];
 
 /** Le niveau de l'eau, de 0 (basse) à 1 (pleine eau). */
 export function tideLevel(d: number, h: number) {
@@ -31,11 +31,11 @@ export function clockLines(g: Game): string[] {
   const near = Math.min(...highTides(day(g)).map((H) => Math.abs(h - H)));
   const moons =
     near < 0.6
-      ? 'Sur le cadran des lunes, la grande passe juste au-dessus de la petite.'
+      ? 'Sur le cadran des lunes, la grande lune passe juste sur la petite.'
       : near <= 2
         ? 'Sur le cadran des lunes, la grande s’approche de la petite.'
         : 'Sur le cadran des lunes, les deux lunes sont loin l’une de l’autre.';
-  return [`L’horloge de la place. Il est ${h} h.`, moons];
+  return [`La tour de l’horloge. En chiffres de lumière : ${String(h).padStart(2, '0')}:00.`, moons];
 }
 
 /** Ce que disent les poteaux de repère, selon la hauteur de l'eau. */

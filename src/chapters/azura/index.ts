@@ -8,9 +8,9 @@ import type { PersonLook } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
 import { MAPS_AZ, SOLID_AZ, START_AZ } from './maps.js';
 import { CLUES_AZ, ITEMS_AZ, QUESTIONS_AZ, SCRIPTS_AZ, THREADS_AZ } from './story.js';
-import { MASK, withFringe } from './tiles.js';
+import { MASK, TOWER, withFringe } from './tiles.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
-import { EVENING, benchWait, clockLines, day, hour, levelNow, postLines, renderDaylight, renderTide, setHour } from './time.js';
+import { EVENING, benchWait, clockLines, day, highTides, hour, levelNow, postLines, renderDaylight, renderTide, setHour } from './time.js';
 
 const look = (id: string, colors: Record<string, string>): PersonLook => ({ id, colors: { g: colors.s ?? '#f0c39a', w: '#14101c', ...colors } });
 
@@ -484,6 +484,11 @@ function updateFish(g: Game, dt: number) {
   }
   st.timer -= dt;
   if (st.timer > 0) return;
+  // jamais pendant une scène : il apparaîtra quand on le regarde vraiment
+  if (g.locked || ui.dialogOpen() || walks.has(g) || (g.flags.has('helpDone') && !g.flags.has('bettiHome'))) {
+    st.timer = 3;
+    return;
+  }
   // une case d'eau libre, pas trop loin du héros, loin du bord
   const spots: [number, number][] = [];
   for (let y = 25; y < g.map.height - 1; y++) {
@@ -591,7 +596,7 @@ function fishGlow(g: Game, glow: (x: number, y: number, r: number, rgb: string, 
 
 // ---------- le soir du jour 1 : une lumière douce, les lampadaires qui s'allument ----------
 const isEvening = (g: Game) =>
-  day(g) === 1 ? g.flags.has('lesson1Heard') && g.flags.has('pixelTalk') : hour(g) >= EVENING;
+  day(g) === 1 ? g.flags.has('helpDone') : hour(g) >= EVENING;
 let eveningNow = false;
 
 function renderEvening(g: Game, c: CanvasRenderingContext2D, w: number, h: number) {
@@ -667,14 +672,120 @@ function tideRises(g: Game, h: number) {
     [
       'Un grondement sourd, venu du lac.',
       'L’eau gonfle d’un coup. Des gens se pressent vers les passerelles du haut.',
-      `Il n’est que ${h} h. Le tableau des eaux annonce 18 h.`,
-      'Et la sirène reste muette.',
+      `Il est ${h} h. La pleine eau, c’est pour 18 h : le tableau a raison, cette fois.`,
+      'Mais la sirène reste muette. Les gens montent par habitude, sans même y penser.',
     ],
     () => {
       g.api.clue('azMaree');
       g.save();
     },
   );
+}
+
+// ---------- l'après-midi du jour 1 : aider Betti à l'atelier ----------
+const HELP: { id: string[]; flag: string; lines: string[] }[] = [
+  { id: ['etagere'], flag: 'help1', lines: ['Je prends la pince coupante sur l’étagère et je la tends à Betti.', '« Merci. Maintenant, tiens-moi cette tête, là, sur les pièces. »'] },
+  { id: ['pieces'], flag: 'help2', lines: ['Je tiens la tête ronde du robot pendant qu’elle visse.', 'Un œil éteint me regarde.', '« Parfait. Dernière chose : branche le câble, sur l’établi. »'] },
+  { id: ['etabli', 'etabli2'], flag: 'help3', lines: ['Je branche le câble.', 'L’œil du robot s’allume une seconde. Bleu.', 'Puis il s’éteint.', '« Pas encore… Il lui manque quelque chose. Je ne sais même pas quoi. »'] },
+];
+const HELP_HINT = ['« La pince coupante, sur l’étagère ! »', '« Tiens-moi la tête du robot, sur les pièces. »', '« Le câble, sur l’établi. »'];
+const helpStep = (g: Game) => HELP.findIndex((h) => !g.flags.has(h.flag));
+
+function startHelp(g: Game) {
+  g.flags.delete('helpNow');
+  if (g.flags.has('helping')) {
+    ui.say([HELP_HINT[Math.max(0, helpStep(g))]]);
+    return;
+  }
+  g.flags.add('helping');
+  setHour(g, 14);
+  ui.showPlace('14 h');
+  ui.say(['« Tiens, rends-toi utile. »', 'Elle désigne un robot à moitié monté : une tête ronde, des pattes, un œil éteint.', '« Il me faut la pince coupante. Sur l’étagère. »'], () => g.api.clue('azlAide'));
+}
+
+function helpAction(g: Game, id: string): boolean {
+  if (!g.flags.has('helping') || g.flags.has('helpDone')) return false;
+  const k = helpStep(g);
+  if (k < 0 || !HELP[k].id.includes(id)) return false;
+  g.flags.add(HELP[k].flag);
+  sfx.select();
+  ui.say(HELP[k].lines, () => {
+    if (helpStep(g) >= 0) return;
+    // l'après-midi passe
+    const screen = document.getElementById('screen')!;
+    const el = document.createElement('div');
+    el.style.cssText =
+      'position:absolute;inset:0;z-index:4;background:#1a1020;opacity:0;transition:opacity .8s;display:flex;align-items:center;justify-content:center;' +
+      'color:#ffd8b0;font:15px/1.5 inherit;letter-spacing:.06em;text-align:center;padding:28px;';
+    el.textContent = 'L’après-midi passe. Elle me parle d’Azura, je lui parle de Vesper.';
+    screen.appendChild(el);
+    g.locked = true;
+    requestAnimationFrame(() => (el.style.opacity = '1'));
+    window.setTimeout(() => {
+      g.flags.delete('helping');
+      g.flags.add('helpDone');
+      setHour(g, 18);
+      el.style.opacity = '0';
+    }, 2800);
+    window.setTimeout(() => {
+      el.remove();
+      g.locked = false;
+      ui.showPlace('18 h 30');
+      ui.say(['« Oh… Regarde la lumière, par la fenêtre. Le soleil se couche. »'], () => g.flags.add('lakeNow'));
+    }, 3700);
+  });
+  return true;
+}
+
+// ---------- la tour de l'horloge : l'heure en chiffres de lumière, et le cadran des lunes ----------
+const DIGITS: Record<string, string[]> = {
+  '0': ['111', '101', '101', '101', '111'], '1': ['010', '110', '010', '010', '111'], '2': ['111', '001', '111', '100', '111'],
+  '3': ['111', '001', '111', '001', '111'], '4': ['101', '101', '111', '001', '001'], '5': ['111', '100', '111', '001', '111'],
+  '6': ['111', '100', '111', '101', '111'], '7': ['111', '001', '010', '010', '010'], '8': ['111', '101', '111', '101', '111'],
+  '9': ['111', '101', '111', '001', '111'], ':': ['0', '1', '0', '1', '0'],
+};
+function drawClock(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
+  if (g.map.id !== 'ville') return;
+  const left = 20 * T - ox, top = 4 * T - TOWER.h - oy;
+  if (left > 400 || left < -60 || top > 400 || top < -100) return;
+  // l'heure
+  const evening = g.flags.has('helpDone') && !g.flags.has('lakeScene') && day(g) === 1;
+  const text = `${String(hour(g)).padStart(2, '0')}${g.time % 1 < 0.5 ? ':' : ' '}${evening ? '30' : '00'}`;
+  const S = 2, sc = TOWER.screen;
+  let width = 0;
+  for (const ch of text) width += ((DIGITS[ch] ?? DIGITS[':'])[0].length + 1) * S;
+  let x = left + sc.x + Math.round((sc.w - width + S) / 2);
+  const y = top + sc.y + Math.round((sc.h - 5 * S) / 2);
+  c.fillStyle = 'rgba(95,240,224,0.18)';
+  c.fillRect(left + sc.x + 1, top + sc.y + 2, sc.w - 2, sc.h - 4);
+  for (const ch of text) {
+    const glyph = DIGITS[ch] ?? ['0', '0', '0', '0', '0'];
+    for (let gy = 0; gy < 5; gy++) {
+      for (let gx = 0; gx < glyph[gy].length; gx++) {
+        if (glyph[gy][gx] !== '1') continue;
+        c.fillStyle = '#5ff0e0';
+        c.fillRect(x + gx * S, y + gy * S, S, S);
+        c.fillStyle = '#d8fffa';
+        c.fillRect(x + gx * S, y + gy * S, 1, 1);
+      }
+    }
+    x += (glyph[0].length + 1) * S;
+  }
+  // les lunes : la petite reste en haut, la grande tourne ; elles se croisent à pleine eau
+  const d = TOWER.dial, cx = left + d.x, cy = top + d.y;
+  const H = highTides(day(g)).reduce((a, b) => (Math.abs(hour(g) - b) < Math.abs(hour(g) - a) ? b : a));
+  const ang = ((hour(g) - H) / 12) * Math.PI * 2;
+  const moon = (mx: number, my: number, rad: number, col: string) => {
+    c.fillStyle = col;
+    for (let yy = -rad; yy <= rad; yy++) {
+      const half = Math.floor(Math.sqrt(rad * rad - yy * yy));
+      c.fillRect(Math.round(mx - half), Math.round(my + yy), half * 2 + 1, 1);
+    }
+  };
+  moon(cx, cy - 6, 2, '#b8a8e8');
+  moon(cx + Math.sin(ang) * 6, cy - Math.cos(ang) * 6, 3, '#f4f4ff');
+  c.fillStyle = '#d8d8ff';
+  c.fillRect(Math.round(cx + Math.sin(ang) * 6) - 1, Math.round(cy - Math.cos(ang) * 6) - 1, 1, 1);
 }
 
 // ---------- le premier soir : Betti t'emmène voir le lac s'allumer ----------
@@ -926,9 +1037,9 @@ export const azura: Chapter = {
       { label: 'Centre de clonage', flags: [], items: [], at: { map: 'cuves', x: 27, y: 10, dir: 'up' } },
       { label: 'Arrivée en ville', flags: ['villeSeen', 'bettiMet'], items: [], at: { map: 'ville', x: 17, y: 5, dir: 'down' } },
       { label: 'École (jour 1)', flags: ['villeSeen', 'bettiMet'], items: [], at: { map: 'ville', x: 27, y: 6, dir: 'up' } },
-      { label: 'Le soir (lit)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard'], items: [], at: { map: 'atelier', x: 7, y: 5, dir: 'right' } },
-      { label: 'Jour 2 (après l’école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard'], items: [], at: { map: 'ville', x: 15, y: 15, dir: 'up' } },
-      { label: 'Jour 2 (école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'jour2'], items: [], at: { map: 'ville', x: 27, y: 6, dir: 'up' } },
+      { label: 'Le soir (lit)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone'], items: [], at: { map: 'atelier', x: 7, y: 5, dir: 'right' } },
+      { label: 'Jour 2 (après l’école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard'], items: [], at: { map: 'ville', x: 15, y: 15, dir: 'up' } },
+      { label: 'Jour 2 (école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'bettiHome', 'jour2'], items: [], at: { map: 'ville', x: 27, y: 6, dir: 'up' } },
     ],
     actions: [],
   },
@@ -946,6 +1057,7 @@ export const azura: Chapter = {
             'Ma cuve est ouverte. Toutes les autres aussi. Elles sont vides.',
             '(Touche A pour examiner ce qui t’entoure. Ton journal garde la trace de tout ce que tu découvres.)',
           ], () => g.api.clue('azl1'));
+          setHour(g, 8);
         });
       });
     });
@@ -983,7 +1095,7 @@ export const azura: Chapter = {
         case '4': return withFringe('bigCrater3', grassMask(g, x, y));
         case 'k': return withFringe('crystals' + (Math.floor(g.time * 1.5 + x * 0.7 + y) % 2), grassMask(g, x, y));
         case 'm': return 'metalFloor';
-        case 'N': return 'azPad';
+        case 'N': return g.map.id === 'ville' ? 'azStone' : 'azPad';
         case 'd': return 'slab';
         case 'c': {
           // horizontale, sauf si la conduite file vers le haut ou le bas
@@ -1015,6 +1127,7 @@ export const azura: Chapter = {
         if (high) g.flags.add('mareeHaute');
         else g.flags.delete('mareeHaute');
       }
+      if (g.flags.has('helpNow') && !ui.dialogOpen() && !g.locked) startHelp(g);
       if (g.flags.has('lakeNow') && !g.flags.has('lakeScene') && !ui.dialogOpen() && !g.locked) lakeScene(g);
       eveningNow = isEvening(g);
     },
@@ -1022,6 +1135,22 @@ export const azura: Chapter = {
       // la navette, sous son grand décor
       if (!obj && g.map.id === 'cuves' && g.map.rows[fy]?.[fx] === 'N') {
         SCRIPTS_AZ.navette(g.api);
+        return true;
+      }
+      // l'après-midi à l'atelier
+      if (obj && g.map.id === 'atelier' && helpAction(g, obj.id)) return true;
+      // Joss se fie à sa mémoire… qui flanche
+      if (obj?.id === 'joss' && day(g) >= 2) {
+        if (levelNow(g) > 0.6) {
+          ui.say(['« Ah ! L’eau monte déjà ? »', 'Joss remonte sa ligne en vitesse.', '« J’avais complètement oublié qu’elle montait à cette heure-ci… Pourtant, je le savais par cœur. »', '« Avant, je notais tout dans mon carnet. Les heures, les poissons. Tous les jours. »'], () => g.api.clue('azJossOubli'));
+        } else ui.say(['« La pêche est bonne, aujourd’hui. »', '« L’eau ? Elle monte… euh… le tableau le dit, sur la place. Moi, je me fie au tableau. »']);
+        return true;
+      }
+      // la tour de l'horloge
+      if (!obj && g.map.id === 'ville' && g.map.rows[fy]?.[fx] === 'N') {
+        ui.say(clockLines(g), () => {
+          if (g.flags.has('tideWitnessed') && levelNow(g) > 0.95) g.api.clue('azLunes');
+        });
         return true;
       }
       // l'heure : bancs, horloge, poteaux de repère
@@ -1064,6 +1193,10 @@ export const azura: Chapter = {
           ui.say(['Pas encore. Betti veut que je passe à l’école d’abord.']);
           return true;
         }
+        if (!g.flags.has('helpDone')) {
+          ui.say(['Il fait grand jour. Et Betti a besoin d’aide.']);
+          return true;
+        }
         if (!g.flags.has('lakeScene')) {
           g.flags.add('lakeFromBed');
           g.flags.add('lakeNow');
@@ -1094,9 +1227,11 @@ export const azura: Chapter = {
         renderEvening(g, c, w, h);
         // le gardien après la teinte du soir : ses lumières ressortent dans la pénombre
         drawFish(g, c, cox, coy);
+        drawClock(g, c, cox, coy);
         return true;
       }
       drawFish(g, c, cox, coy);
+      drawClock(g, c, cox, coy);
       renderDaylight(g, c, w, h);
       // une lumière claire, et l'ombre des nuages qui glisse sur le paysage
       const grad = c.createLinearGradient(0, 0, 0, h);
@@ -1156,8 +1291,14 @@ export const azura: Chapter = {
         const due = g.flags.has('jour2') ? !g.flags.has('lesson2Heard') : !g.flags.has('lesson1Heard');
         if (due) window.setTimeout(() => SCRIPTS_AZ.lecon(g.api), 400);
       }
+      if (day(g) === 1 && mapId === 'ville' && g.flags.has('lesson1Heard') && hour(g) < 12) {
+        setHour(g, 12);
+        window.setTimeout(() => ui.showPlace('Nouvelle-Vesper — 12 h'), 300);
+      }
       if (mapId === 'ville' && !g.flags.has('villeSeen')) {
         g.flags.add('villeSeen');
+        setHour(g, 10);
+        window.setTimeout(() => ui.showPlace('Nouvelle-Vesper — 10 h'), 300);
         sfx.success();
         ui.say(['Une ville !', 'Des maisons blanches, des passerelles au-dessus d’un lac… et des gens.', 'Ils sont là. Ils sont tous là.'], () => {
           // Betti accourt dès l'arrivée

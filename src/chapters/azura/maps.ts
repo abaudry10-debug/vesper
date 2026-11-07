@@ -257,6 +257,10 @@ function ville(): GameMap {
   b.points(',', [[15, 2], [16, 2], [18, 2], [19, 2], [12, 5], [21, 5], [3, 15], [30, 15], [11, 2], [22, 4]]);
   b.points(';', [[1, 15], [32, 15], [1, 20], [32, 20]]);
   b.rect(13, 21, 9, 1, 'c');
+  // la place de l'horloge, au nord : une grande tour, l'heure en chiffres de lumière, le cadran des lunes
+  blob(b, 21, 4.2, 3.2, 2.2, ':', 3);
+  b.rect(19, 3, 5, 3, ':');
+  b.rect(20, 2, 3, 2, 'N');
   const objects: MapObject[] = [
     exit('versChemin', 17, 0, { to: 'chemin', x: 15, y: 20, dir: 'up' }),
     ...pylon('pylV1', 1, 9), ...pylon('pylV2', 32, 9),
@@ -269,7 +273,6 @@ function ville(): GameMap {
     obj('banc1', 15, 14, 'bench', 'banc'),
     obj('banc2', 19, 14, 'bench', 'banc'),
     obj('banc3', 12, 22, 'benchDeck', 'banc'),
-    obj('horloge', 19, 8, 'clockAz', 'horloge'),
     obj('fleurs1', 16, 10, 'flowerBox', 'fleurs'),
     obj('fleurs2', 18, 12, 'flowerBox', 'fleurs'),
     obj('lampe1', 12, 8, 'lampAz', 'lampe'),
@@ -303,6 +306,7 @@ function ville(): GameMap {
   enclose(b, [[17, 1]], [[17, 0]], (_x, y) => (y <= 2 ? 'M' : 'Y'));
   return {
     id: 'ville', name: 'Nouvelle-Vesper', outdoor: true, width: W, height: H, rows: b.rows, objects, voidTile: 'azForest',
+    decals: [{ x: 20, y: 2, w: 3, h: 2, kind: 'clockTower' }],
     skins: [
       { x: 3, y: 2, w: 6, h: 4, style: 'aur' }, { x: 25, y: 2, w: 6, h: 4, style: 'aur' },
       { x: 4, y: 9, w: 6, h: 4, style: 'aur' }, { x: 24, y: 9, w: 6, h: 4, style: 'aur' },

@@ -585,6 +585,22 @@ const desk: Painter = (c) => {
   r(c, 2, 11, 2, 4, AZ.metalDeep); r(c, 12, 11, 2, 4, AZ.metalDeep);
 };
 
+// ---------- l'horloge de la place : l'heure, et un cadran où tournent les deux lunes ----------
+const clockAz: Painter = (c, v) => {
+  azStone(c, v);
+  r(c, 7, 9, 2, 6, AZ.metalDark); r(c, 7, 9, 1, 6, AZ.metalLight); r(c, 5, 14, 6, 2, AZ.metalDeep);
+  r(c, 2, 0, 12, 10, AZ.metalDark);
+  r(c, 3, 1, 10, 8, AZ.white);
+  r(c, 4, 2, 4, 6, AZ.stoneLight); r(c, 5, 4, 2, 1, AZ.ink); r(c, 6, 3, 1, 2, AZ.ink); // les aiguilles
+  r(c, 9, 2, 3, 6, AZ.screen); r(c, 10, 3, 2, 2, '#e8ecff'); r(c, 9, 6, 1, 1, '#c8b0ff'); // le cadran des lunes
+};
+const benchDeck: Painter = (c, v) => {
+  azDeck(c, v);
+  r(c, 1, 5, 14, 4, AZ.white); r(c, 1, 5, 14, 1, AZ.stoneLight); r(c, 1, 8, 14, 1, AZ.whiteShade);
+  r(c, 2, 9, 2, 4, AZ.metalDark); r(c, 12, 9, 2, 4, AZ.metalDark);
+  r(c, 3, 7, 10, 1, AZ.glow);
+};
+
 const PAINTERS: Record<string, Painter> = {
     slab, azGrass, azFlowers, azTall, azPath, azStone, azDeck, azFloor, regolith, crater, metalFloor,
     bigCrater0: bigCrater(0), bigCrater1: bigCrater(1), bigCrater2: bigCrater(2), bigCrater3: bigCrater(3),
@@ -599,7 +615,7 @@ const PAINTERS: Record<string, Painter> = {
     sirenOn: siren(true), sirenOff: siren(false), stall, townSign, pathSign, lampAz: lamp, bench, flowerBox, waterPost,
     fountain0: fountain(0), fountain1: fountain(1),
     workbench, robotParts, shelfAz, drawingPixel, bedAz, azFence,
-    floodWindow, azPad, classBoard, desk,
+    floodWindow, azPad, classBoard, desk, clockAz, benchDeck,
 };
 registerDecal('navette', navette());
 registerTiles(PAINTERS, ['azGrass', 'azPath', 'azStone', 'azFloor', 'regolith', 'metalFloor']);

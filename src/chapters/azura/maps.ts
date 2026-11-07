@@ -268,6 +268,8 @@ function ville(): GameMap {
     obj('etal', 13, 13, 'stall', 'etal'),
     obj('banc1', 15, 14, 'bench', 'banc'),
     obj('banc2', 19, 14, 'bench', 'banc'),
+    obj('banc3', 12, 22, 'benchDeck', 'banc'),
+    obj('horloge', 19, 8, 'clockAz', 'horloge'),
     obj('fleurs1', 16, 10, 'flowerBox', 'fleurs'),
     obj('fleurs2', 18, 12, 'flowerBox', 'fleurs'),
     obj('lampe1', 12, 8, 'lampAz', 'lampe'),
@@ -291,7 +293,8 @@ function ville(): GameMap {
     npc('enfant', 17, 19, 'enfant', 'down', 'enfant'),
     npc('passant1', 19, 9, 'pass1', 'down', 'passant1', { npc: { look: 'pass1', dir: 'down', wander: 2 } }),
     npc('passant2', 8, 16, 'pass2', 'right', 'passant2', { npc: { look: 'pass2', dir: 'right', wander: 3 } }),
-    npc('passant3', 20, 23, 'pass3', 'down', 'passant3'),
+    npc('passant3', 20, 23, 'pass3', 'down', 'passant3', { hideWhen: 'mareeHaute' }),
+    npc('passant3b', 20, 21, 'pass3', 'down', 'passant3', { showWhen: 'mareeHaute' }),
     npc('passant4', 26, 7, 'pass4', 'left', 'passant4', { npc: { look: 'pass4', dir: 'left', wander: 3 } }),
   ];
   // la ville est ceinte : des montagnes au nord, la barrière de la colonie sur les côtés

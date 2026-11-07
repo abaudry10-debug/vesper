@@ -397,6 +397,32 @@ export function confirm(question: string, onYes: () => void, onNo?: () => void, 
   };
 }
 
+/** Une question à plusieurs réponses (on garde la fenêtre de confirmation). */
+export function choose(question: string, options: string[], cb: (i: number) => void) {
+  $('confirm-text').textContent = question;
+  const yes = $('confirm-yes'), no = $('confirm-no');
+  yes.hidden = true;
+  no.hidden = true;
+  const box = yes.parentElement!;
+  const made: HTMLButtonElement[] = [];
+  const close = (i: number) => {
+    $('confirm').hidden = true;
+    for (const b of made) b.remove();
+    yes.hidden = false;
+    no.hidden = false;
+    cb(i);
+  };
+  options.forEach((label, i) => {
+    const b = document.createElement('button');
+    b.className = i === 0 ? 'menu primary choice' : 'menu choice';
+    b.textContent = label;
+    b.addEventListener('click', () => close(i));
+    box.appendChild(b);
+    made.push(b);
+  });
+  $('confirm').hidden = false;
+}
+
 // ---------- récepteur radio (molette de fréquence) ----------
 let freq = 40.0;
 let target = 47.2;

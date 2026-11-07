@@ -10,6 +10,7 @@ import { MAPS_AZ, SOLID_AZ, START_AZ } from './maps.js';
 import { CLUES_AZ, ITEMS_AZ, QUESTIONS_AZ, SCRIPTS_AZ, THREADS_AZ } from './story.js';
 import { MASK, withFringe } from './tiles.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
+import { EVENING, benchWait, clockLines, day, hour, levelNow, postLines, renderDaylight, renderTide, setHour } from './time.js';
 
 const look = (id: string, colors: Record<string, string>): PersonLook => ({ id, colors: { g: colors.s ?? '#f0c39a', w: '#14101c', ...colors } });
 
@@ -589,7 +590,8 @@ function fishGlow(g: Game, glow: (x: number, y: number, r: number, rgb: string, 
 }
 
 // ---------- le soir du jour 1 : une lumière douce, les lampadaires qui s'allument ----------
-const isEvening = (g: Game) => g.flags.has('lesson1Heard') && g.flags.has('pixelTalk') && !g.flags.has('jour2');
+const isEvening = (g: Game) =>
+  day(g) === 1 ? g.flags.has('lesson1Heard') && g.flags.has('pixelTalk') : hour(g) >= EVENING;
 let eveningNow = false;
 
 function renderEvening(g: Game, c: CanvasRenderingContext2D, w: number, h: number) {
@@ -657,6 +659,24 @@ function renderEvening(g: Game, c: CanvasRenderingContext2D, w: number, h: numbe
   }
 }
 
+// ---------- la première montée des eaux qu'on voit (jour 2) ----------
+function tideRises(g: Game, h: number) {
+  g.flags.add('tideWitnessed');
+  sfx.hiss();
+  ui.say(
+    [
+      'Un grondement sourd, venu du lac.',
+      'L’eau gonfle d’un coup. Des gens se pressent vers les passerelles du haut.',
+      `Il n’est que ${h} h. Le tableau des eaux annonce 18 h.`,
+      'Et la sirène reste muette.',
+    ],
+    () => {
+      g.api.clue('azMaree');
+      g.save();
+    },
+  );
+}
+
 // ---------- le premier soir : Betti t'emmène voir le lac s'allumer ----------
 interface Walk { hero: [number, number][]; betti: [number, number][]; i: number; t: number; done: () => void; heroToo: boolean }
 const walks = new WeakMap<Game, Walk>();
@@ -701,6 +721,7 @@ function updateWalk(g: Game, dt: number) {
 
 
 function lakeScene(g: Game) {
+  setHour(g, EVENING);
   g.flags.delete('lakeNow');
   g.flags.add('lakeScene');
   g.flags.add('soirSeen');
@@ -779,6 +800,7 @@ function atTheLake(g: Game) {
 
 // ---------- la nuit chez Betti : un écran noir, puis le matin du jour 2 ----------
 function night(g: Game) {
+  const next = day(g) + 1;
   const screen = document.getElementById('screen')!;
   const el = document.createElement('div');
   el.style.cssText =
@@ -789,20 +811,29 @@ function night(g: Game) {
   g.locked = true;
   requestAnimationFrame(() => (el.style.opacity = '1'));
   window.setTimeout(() => {
-    el.textContent = 'JOUR 2';
-    g.flags.add('jour2');
+    el.textContent = `JOUR ${next}`;
+    g.flags.add(`jour${next}`);
+    setHour(g, 7);
     g.save();
   }, 2400);
   window.setTimeout(() => (el.style.opacity = '0'), 4200);
   window.setTimeout(() => {
     el.remove();
     g.locked = false;
-    ui.showPlace('Jour 2 — le matin');
+    ui.showPlace(`Jour ${next} — 7 h`);
     sfx.success();
-    ui.say(['« Debout, le dormeur ! »', 'Betti, déjà en salopette, une tasse fumante à la main.', '« Bien dormi ? File à l’école, la leçon du matin va commencer. »'], () => {
-      g.api.clue('azl5');
-      g.save();
-    });
+    if (next === 2) {
+      ui.say(['« Debout, le dormeur ! »', 'Betti, déjà en salopette, une tasse fumante à la main.', '« Bien dormi ? File à l’école, la leçon du matin va commencer. »'], () => {
+        g.api.clue('azl5');
+        g.save();
+      });
+    } else {
+      ui.say(['« Debout ! »', 'Betti est déjà partie à l’atelier du bas. Une odeur de pain chaud flotte dans la pièce.'], () => {
+        g.flags.add('sliceDone');
+        g.save();
+        ui.say(['— Fin de la démo d’Azura —', 'La suite, le jour 3, arrive bientôt. Merci d’avoir joué.']);
+      });
+    }
   }, 5200);
 }
 
@@ -896,6 +927,7 @@ export const azura: Chapter = {
       { label: 'Arrivée en ville', flags: ['villeSeen', 'bettiMet'], items: [], at: { map: 'ville', x: 17, y: 5, dir: 'down' } },
       { label: 'École (jour 1)', flags: ['villeSeen', 'bettiMet'], items: [], at: { map: 'ville', x: 27, y: 6, dir: 'up' } },
       { label: 'Le soir (lit)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard'], items: [], at: { map: 'atelier', x: 7, y: 5, dir: 'right' } },
+      { label: 'Jour 2 (après l’école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard'], items: [], at: { map: 'ville', x: 15, y: 15, dir: 'up' } },
       { label: 'Jour 2 (école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'jour2'], items: [], at: { map: 'ville', x: 27, y: 6, dir: 'up' } },
     ],
     actions: [],
@@ -978,6 +1010,11 @@ export const azura: Chapter = {
       updateEmerge(g, dt);
       updateFish(g, dt);
       updateWalk(g, dt);
+      const high = day(g) >= 2 && levelNow(g) > 0.6;
+      if (high !== g.flags.has('mareeHaute')) {
+        if (high) g.flags.add('mareeHaute');
+        else g.flags.delete('mareeHaute');
+      }
       if (g.flags.has('lakeNow') && !g.flags.has('lakeScene') && !ui.dialogOpen() && !g.locked) lakeScene(g);
       eveningNow = isEvening(g);
     },
@@ -985,6 +1022,40 @@ export const azura: Chapter = {
       // la navette, sous son grand décor
       if (!obj && g.map.id === 'cuves' && g.map.rows[fy]?.[fx] === 'N') {
         SCRIPTS_AZ.navette(g.api);
+        return true;
+      }
+      // l'heure : bancs, horloge, poteaux de repère
+      if (obj && day(g) >= 2 && g.map.id === 'ville') {
+        if (obj.id.startsWith('banc')) {
+          benchWait(g, (h) => tideRises(g, h));
+          return true;
+        }
+        if (obj.id === 'horloge') {
+          ui.say(clockLines(g), () => {
+            if (g.flags.has('tideWitnessed') && levelNow(g) > 0.95) g.api.clue('azLunes');
+          });
+          return true;
+        }
+        if (obj.id.startsWith('repere')) {
+          ui.say(postLines(g), () => g.api.clue('azRepere'));
+          return true;
+        }
+      }
+      if (obj?.id === 'horloge') {
+        ui.say(clockLines(g));
+        return true;
+      }
+      // le lit, au jour 2 : seulement le soir, et une fois la marée vue
+      if (obj?.id === 'lit' && day(g) === 2) {
+        if (!g.flags.has('tideWitnessed')) {
+          ui.say(['Pas encore sommeil. Je voudrais d’abord voir l’eau monter, une fois.', '(Le tableau des eaux, sur la place, annonce l’heure. Un banc permet d’attendre.)']);
+          return true;
+        }
+        if (hour(g) < EVENING) {
+          ui.say([`Il n’est que ${hour(g)} h. Il fait encore jour.`, '(Un banc permet d’attendre le soir.)']);
+          return true;
+        }
+        ui.say(['Je m’allonge. Dehors, le lac brille encore.'], () => night(g));
         return true;
       }
       // le lit de Betti : la nuit, puis le jour 2
@@ -1018,6 +1089,7 @@ export const azura: Chapter = {
       }
       const [hx0, hy0] = g.heroPixel();
       const cox = Math.round(hx0 + T / 2 - w / 2), coy = Math.round(hy0 + T / 2 - (h - view.padBottom) / 2);
+      renderTide(g, c, cox, coy, w, h);
       if (isEvening(g)) {
         renderEvening(g, c, w, h);
         // le gardien après la teinte du soir : ses lumières ressortent dans la pénombre
@@ -1025,6 +1097,7 @@ export const azura: Chapter = {
         return true;
       }
       drawFish(g, c, cox, coy);
+      renderDaylight(g, c, w, h);
       // une lumière claire, et l'ombre des nuages qui glisse sur le paysage
       const grad = c.createLinearGradient(0, 0, 0, h);
       grad.addColorStop(0, 'rgba(170,230,255,0.10)');
@@ -1065,8 +1138,9 @@ export const azura: Chapter = {
     onEnterMap(g, mapId) {
       // en sortant, le soir est tombé : on comprend qu'il est temps d'aller dormir
       eveningNow = isEvening(g);
-      if (eveningNow && g.map.outdoor && !g.flags.has('soirSeen')) {
+      if (eveningNow && g.map.outdoor && !g.flags.has('soirSeen') && day(g) === 1) {
         g.flags.add('soirSeen');
+        setHour(g, EVENING);
         playTheme('home');
         window.setTimeout(() => {
           ui.showPlace('Le soir');

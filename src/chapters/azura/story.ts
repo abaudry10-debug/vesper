@@ -27,6 +27,8 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azJoss', thread: 'eaux', title: 'La règle de la sirène', text: 'Joss, au bord de la rivière : « Quand la sirène sonne, on monte. Toujours. »' },
   { id: 'azRepere', thread: 'eaux', title: 'Les repères', text: 'Des poteaux rayés de rouge plantés dans l’eau. La marque la plus haute est au-dessus de ma tête.' },
   { id: 'azPoisson', thread: 'eaux', title: 'Le gardien du lac', text: 'Une créature immense vit dans le lac. Elle ne montre jamais qu’un bout d’elle : un dos hérissé d’épines, une queue en croissant bordée de lumière, ou une tête cuirassée aux quatre yeux d’ambre. Betti dit qu’il ne faut pas en avoir peur.' },
+  { id: 'azMaree', thread: 'eaux', title: 'Le tableau a tort', text: 'Jour 2 : l’eau est montée vers 16 h, et elle était pleine à 17 h. Le tableau annonçait 18 h. Ce matin, à 7 h, l’eau était basse, alors que le tableau disait 7 h. La sirène n’a pas sonné.' },
+  { id: 'azLunes', thread: 'eaux', title: 'Les deux lunes', text: 'L’horloge de la place a un cadran des lunes. Quand l’eau était pleine, la grande lune passait juste au-dessus de la petite.' },
   { id: 'az4', thread: 'eaux', title: 'Le tableau des eaux', text: 'Sur la place : « Montée des eaux : 6 h et 18 h. Quand la sirène sonne, montez sur les passerelles. »' },
   { id: 'az5', thread: 'eaux', title: 'La sirène débranchée', text: 'Tom a débranché la sirène : « Elle sonnait la nuit, pour rien. »' },
   { id: 'az7', thread: 'eaux', title: 'Le tableau corrigé', text: 'Nora a corrigé l’horaire du matin sur le tableau : 7 h. Il affichait 6 h.' },
@@ -39,6 +41,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl2', thread: 'leads', title: 'L’atelier de Betti', text: 'En bas, près du lac. Lire d’abord le tableau des eaux, sur la place.', doneWhen: 'drawingSeen' },
   { id: 'azl3', thread: 'leads', title: 'L’école', text: 'En haut à droite de la ville. La leçon est pour tout le monde, même les grands.', doneWhen: 'lesson1Heard' },
   { id: 'azl4', thread: 'leads', title: 'Une nuit chez Betti', text: 'Betti me prête son lit, dans l’atelier, en bas près du lac. Le soir, la ville est belle : je peux m’y promener avant de dormir.', doneWhen: 'jour2' },
+  { id: 'azl6', thread: 'leads', title: 'Voir l’eau monter', text: 'Le tableau des eaux, sur la place, annonce l’heure. Un banc permet d’attendre. Ensuite, dormir chez Betti, le soir venu.', doneWhen: 'tideWitnessed' },
   { id: 'azl5', thread: 'leads', title: 'La leçon du matin', text: 'Retourner à l’école, comme chaque matin.', doneWhen: 'lesson2Heard' },
 ];
 
@@ -254,7 +257,8 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     api.say(['Une étiquette est collée sur la porte, écrite à la main : « PORTE ».', 'Quelqu’un a de l’humour.'], () => api.clue('azEtiquette')),
   pilotes: (api) => api.say(['« CENTRE DES PILOTES D’AURORE ».', 'Une affichette sur la porte : « Réunion. Merci de ne pas déranger. »']),
   atelierFerme: (api) => api.say(['« ATELIER — B. MOREAU ».', 'C’est fermé.']),
-  banc: (api) => api.say(['Un banc face au lac. L’eau est d’un turquoise incroyable.']),
+  banc: (api) => api.say(['Un banc. Pas le temps de s’asseoir : on m’attend.']),
+  horloge: (api) => api.say(['Une grande horloge, avec un second cadran où tournent deux lunes.']),
   fleurs: (api) => api.say(['Des fleurs que je ne connais pas. Elles sentent le miel.']),
   lampe: (api) => api.say(['Un lampadaire blanc. Il doit s’allumer à la nuit tombée.']),
 
@@ -329,8 +333,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
           api.set('lesson2Heard');
           api.clue('azLecon2');
           api.clue('azMina');
-          api.set('sliceDone');
-          api.say(['— Fin de la démo d’Azura —', 'Merci d’avoir joué. La suite arrive.']);
+          api.say(['Joss disait : quand la sirène sonne, on monte. Mais la sirène est débranchée.', 'Il faudrait que je voie l’eau monter, au moins une fois. Pour savoir.'], () => api.clue('azl6'));
         },
       );
     }

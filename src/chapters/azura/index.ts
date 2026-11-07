@@ -1276,7 +1276,7 @@ export const azura: Chapter = {
       }
       // en sortant de l'école, le jour 2 : l'envie de voir l'eau monter
       if (day(g) === 2 && mapId === 'ville' && g.flags.has('lesson2Heard') && !g.clues.has('azl6')) {
-        window.setTimeout(() => ui.say(['En sortant de l’école, je repense au tableau des eaux, sur la place.', 'J’aimerais voir l’eau monter une fois, de mes yeux.'], () => g.api.clue('azl6')), 500);
+        window.setTimeout(() => ui.say(['Il faudrait quand même que je voie cette montée des eaux, une fois.'], () => g.api.clue('azl6')), 500);
       }
       if (day(g) === 1 && mapId === 'ville' && g.flags.has('lesson1Heard') && hour(g) < 12) {
         setHour(g, 12);

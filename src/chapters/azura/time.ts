@@ -6,7 +6,7 @@
 import type { Game } from '../../engine/game.js';
 import { T } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
-import { timePass } from './timepass.js';
+import { drawDigits, timePass } from './timepass.js';
 
 export const day = (g: Game) => (g.flags.has('jour3') ? 3 : g.flags.has('jour2') ? 2 : 1);
 export const hour = (g: Game) => g.counters.heure ?? 9;
@@ -74,55 +74,89 @@ export function benchWait(g: Game, onTide: (h: number) => void) {
   });
 }
 
-/** Le panneau d'attente : un curseur pour choisir l'heure, l'heure visée en chiffres de lumière. */
+/** Le panneau d'attente, en pixel art : l'heure visée en chiffres de lumière, une barre d'heures en blocs. */
 function waitPicker(from: number, max: number, done: (to: number | null) => void) {
   if (!document.getElementById('az-wait-style')) {
     const st = document.createElement('style');
     st.id = 'az-wait-style';
     st.textContent = `
-#az-wait{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(4,8,18,.55);backdrop-filter:blur(2px)}
-#az-wait .box{width:82%;max-width:320px;padding:18px 18px 16px;border-radius:14px;background:linear-gradient(180deg,#10243a,#0a1422);
-  border:1px solid rgba(95,240,224,.55);box-shadow:0 0 0 1px #05101a,0 0 22px rgba(95,240,224,.25),inset 0 1px 0 rgba(255,255,255,.08);color:#d8fffa;text-align:center}
-#az-wait .label{font-size:13px;letter-spacing:.12em;text-transform:uppercase;opacity:.75;margin:0 0 6px}
-#az-wait .time{font:700 44px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;color:#5ff0e0;text-shadow:0 0 12px rgba(95,240,224,.7);margin:2px 0 4px}
-#az-wait .sub{font-size:13px;opacity:.8;min-height:18px;margin:0 0 14px}
-#az-wait input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0 0 6px}
-#az-wait input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:8px;background:linear-gradient(90deg,#5ff0e0 var(--p),#24384a var(--p));box-shadow:inset 0 0 0 1px rgba(95,240,224,.35)}
-#az-wait input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-9px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffffff,#9ffff0 45%,#2ec4bd);box-shadow:0 0 10px rgba(95,240,224,.9),0 0 0 3px #0a1422}
-#az-wait input[type=range]::-moz-range-track{height:8px;border-radius:8px;background:#24384a}
-#az-wait input[type=range]::-moz-range-progress{height:8px;border-radius:8px;background:#5ff0e0}
-#az-wait input[type=range]::-moz-range-thumb{width:24px;height:24px;border:0;border-radius:50%;background:#9ffff0;box-shadow:0 0 10px rgba(95,240,224,.9)}
-#az-wait .ticks{display:flex;justify-content:space-between;font-size:11px;opacity:.6;margin:0 2px 14px}
-#az-wait .row{display:flex;gap:10px}
-#az-wait button{flex:1;padding:11px 0;border-radius:10px;font-size:15px;border:1px solid rgba(95,240,224,.5);background:#132a3e;color:#d8fffa}
-#az-wait button.go{background:linear-gradient(180deg,#2ec4bd,#1d8f8c);color:#04161a;font-weight:700;border-color:#7ff5e8}`;
+#az-wait{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(5,4,12,.6)}
+#az-wait .panel{width:84%;max-width:340px;text-align:center;padding:16px 14px 14px}
+#az-wait .title{font-family:var(--font);font-size:24px;color:#f2e9dc;margin:0 0 8px;letter-spacing:.06em}
+#az-wait canvas{width:100%;image-rendering:pixelated;display:block;margin:0 0 10px;touch-action:none}
+#az-wait .sub{font-family:var(--font);font-size:22px;color:var(--teal);margin:0 0 12px;min-height:24px}
+#az-wait .row{display:flex;gap:10px;justify-content:center}
+#az-wait .row .menu{flex:1}`;
     document.head.appendChild(st);
   }
-  // hors de #screen : là-bas, les touchers sont interceptés pour les commandes
-  const host = document.getElementById('app') ?? document.body;
+  const host = document.getElementById('app') ?? document.body; // hors de #screen : là-bas, les touchers servent aux commandes
   const el = document.createElement('div');
   el.id = 'az-wait';
-  el.innerHTML = `<div class="box"><p class="label">Attendre sur le banc</p><div class="time"></div><p class="sub"></p>
-    <input type="range" min="${from + 1}" max="${max}" step="1" value="${Math.min(max, from + 2)}">
-    <div class="ticks"><span>${from + 1} h</span><span>${max} h</span></div>
-    <div class="row"><button class="no">Annuler</button><button class="go">Attendre</button></div></div>`;
+  el.innerHTML = `<div class="panel"><p class="title">Attendre…</p><canvas width="96" height="44"></canvas><p class="sub"></p>
+    <div class="row"><button class="menu small minus">◀</button><button class="menu small plus">▶</button></div>
+    <div class="row" style="margin-top:10px"><button class="menu no">Annuler</button><button class="menu primary go">Attendre</button></div></div>`;
   host.appendChild(el);
-  const range = el.querySelector('input')!, time = el.querySelector('.time')!, sub = el.querySelector('.sub')!;
-  const show = () => {
-    const v = Number(range.value);
-    time.textContent = `${String(v).padStart(2, '0')}:00`;
-    const n = v - from;
-    sub.textContent = v >= max ? 'Jusqu’au soir' : `Dans ${n} heure${n > 1 ? 's' : ''}`;
-    range.style.setProperty('--p', `${((v - from - 1) / Math.max(1, max - from - 1)) * 100}%`);
+  const cv = el.querySelector('canvas')!, c = cv.getContext('2d')!, sub = el.querySelector('.sub')!;
+  let v = Math.min(max, from + 2);
+  const n = max - from;
+  const draw = () => {
+    c.fillStyle = '#0b0912';
+    c.fillRect(0, 0, 96, 44);
+    // l'écran de l'heure, comme sur la tour
+    c.fillStyle = '#14101c'; c.fillRect(24, 2, 48, 19);
+    c.fillStyle = '#06141a'; c.fillRect(25, 3, 46, 17);
+    c.fillStyle = 'rgba(95,240,224,0.15)'; c.fillRect(25, 3, 46, 17);
+    drawDigits(c, `${String(v).padStart(2, '0')}:00`, 48, 6, 2);
+    // la barre des heures, en blocs : du bleu du jour au violet du soir
+    const bw = Math.floor(84 / n), x0 = Math.round((96 - bw * n) / 2);
+    for (let i = 0; i < n; i++) {
+      const hh = from + 1 + i, x = x0 + i * bw, on = hh <= v;
+      const col = hh >= 19 ? '#8a6ad8' : hh >= 17 ? '#ff9a6a' : '#5ff0e0';
+      c.fillStyle = '#14101c'; c.fillRect(x, 28, bw - 1, 8);
+      c.fillStyle = on ? col : '#2a2436'; c.fillRect(x + 1, 29, bw - 3, 6);
+      if (on) { c.fillStyle = 'rgba(255,255,255,0.45)'; c.fillRect(x + 1, 29, bw - 3, 1); }
+    }
+    // un petit soleil (ou une lune, le soir) au-dessus du bloc choisi
+    const sx = x0 + (v - from - 1) * bw + Math.floor(bw / 2) - 2;
+    c.fillStyle = v >= 19 ? '#f4f4ff' : '#ffd45e';
+    c.fillRect(sx, 22, 4, 4); c.fillRect(sx + 1, 21, 2, 6); c.fillRect(sx - 1, 23, 6, 2);
+    c.fillStyle = '#8a8296';
+    c.fillRect(x0, 38, 1, 3); c.fillRect(x0 + bw * n - 2, 38, 1, 3);
+    sub.textContent = v >= max ? 'Jusqu’au soir' : `Dans ${v - from} heure${v - from > 1 ? 's' : ''}`;
   };
-  range.addEventListener('input', show);
-  show();
+  const set = (k: number) => {
+    v = Math.max(from + 1, Math.min(max, k));
+    draw();
+  };
+  // toucher la barre : on choisit directement le bloc
+  const pick = (ev: PointerEvent) => {
+    const rect = cv.getBoundingClientRect();
+    const x = ((ev.clientX - rect.left) / rect.width) * 96;
+    const bw = Math.floor(84 / n), x0 = Math.round((96 - bw * n) / 2);
+    set(from + 1 + Math.floor((x - x0) / bw));
+  };
+  cv.addEventListener('pointerdown', (ev) => { pick(ev); cv.setPointerCapture(ev.pointerId); });
+  cv.addEventListener('pointermove', (ev) => { if (ev.buttons) pick(ev); });
+  const key = (ev: KeyboardEvent) => {
+    if (ev.key === 'ArrowLeft') set(v - 1);
+    else if (ev.key === 'ArrowRight') set(v + 1);
+    else if (ev.key === 'Escape') close(null);
+    else if (ev.key === 'Enter') close(v);
+    else return;
+    ev.preventDefault();
+    ev.stopPropagation();
+  };
+  window.addEventListener('keydown', key, true);
   const close = (to: number | null) => {
+    window.removeEventListener('keydown', key, true);
     el.remove();
     done(to);
   };
+  (el.querySelector('.minus') as HTMLButtonElement).onclick = () => set(v - 1);
+  (el.querySelector('.plus') as HTMLButtonElement).onclick = () => set(v + 1);
   (el.querySelector('.no') as HTMLButtonElement).onclick = () => close(null);
-  (el.querySelector('.go') as HTMLButtonElement).onclick = () => close(Number(range.value));
+  (el.querySelector('.go') as HTMLButtonElement).onclick = () => close(v);
+  draw();
 }
 
 /** L'eau qui monte sur la passerelle du bas, au bord du lac de la ville. */

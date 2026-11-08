@@ -287,7 +287,7 @@ function ville(): GameMap {
     obj('nomVille', 16, 3, 'townSign', 'nomVille'),
     obj('tableau', 14, 9, 'tideBoard', 'tableau'),
     obj('sirene', 21, 9, 'sirenOff', 'sirene', { spriteWhen: ['sireneOn', 'sirenOn'] }),
-    obj('etal', 13, 13, 'stall', 'etal'),
+    obj('etal', 13, 13, 'stall'),
     obj('banc1', 15, 14, 'bench', 'banc'),
     obj('banc2', 19, 14, 'bench', 'banc'),
     obj('banc3', 12, 22, 'benchDeck', 'banc'),

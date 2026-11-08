@@ -426,44 +426,63 @@ body {
   flex-direction: column;
   gap: 10px;
 }
-.chapters {
+.title-bottom {
+  gap: 0;
+}
+.chap1-block {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin: 2px 0;
-  padding: 6px 10px;
-  border: 2px solid #3a2c4a;
-  border-radius: 6px;
-  background: rgba(18, 8, 26, 0.72);
-  font-size: 19px;
-  text-align: left;
+  gap: 8px;
 }
-.chap {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
+.chap-label {
+  margin: 0;
+  font-size: 18px;
   color: #f2e9dc;
+  text-shadow: 0 2px 0 #12081a;
 }
-.chap b {
+.chap-label b {
   font-weight: normal;
-  white-space: nowrap;
   color: var(--teal);
 }
-.chap.dev {
-  cursor: pointer;
-  color: #ff9cec;
+#btn-continue:not([hidden]) + #btn-new {
+  /* avec une sauvegarde : « Nouvelle partie » passe au second plan */
+  background: rgba(18, 8, 26, 0.72);
+  color: #f2e9dc;
+  font-size: 18px;
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
-.chap.dev b {
-  color: #ff9cec;
+/* le chapitre 2 : bien séparé du chapitre 1, et plus discret, pour ne pas cliquer dessus par erreur */
+.chap2 {
+  margin-top: 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: rgba(18, 8, 26, 0.72);
+  border: 2px solid #2a9d9a;
+  color: #bff3f6;
+  font-size: 18px;
+  padding: 8px 12px;
+  white-space: nowrap;
 }
-.chap.locked {
-  color: var(--muted);
+.chap2 b {
+  font-weight: normal;
+  color: #5ff0e0;
+  white-space: nowrap;
 }
-.chap.locked b {
-  color: var(--muted);
+.title-layout .title-top {
+  margin-top: 30px;
 }
-.chap.locked b::before {
-  content: '🔒 ';
+.sound-corner {
+  position: absolute;
+  top: calc(var(--safe-top) + 10px);
+  right: 12px;
+  z-index: 2;
+  width: auto;
+  font-size: 15px;
+  padding: 4px 10px;
+  opacity: 0.85;
 }
 .title-top .tagline {
   text-shadow: 0 2px 0 #12081a, 0 0 12px rgba(18, 8, 26, 0.9);
@@ -1362,4 +1381,15 @@ details.thread > summary.has-new .count { color: var(--accent-dark); }
   border-radius: 4px;
   background: #2b2236;
   color: #f2e9dc;
+}
+
+/* petits écrans (iPhone SE…) : le titre rétrécit et l'accroche disparaît, pour que le héros reste visible */
+@media (orientation: portrait) and (max-height: 600px) {
+  #title h1 {
+    font-size: 64px;
+    letter-spacing: 4px;
+  }
+  #title .title-top .tagline {
+    display: none;
+  }
 }

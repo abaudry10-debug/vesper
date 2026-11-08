@@ -129,7 +129,7 @@ function draw(t: number) {
   }
 
   // butte au premier plan, où se tient le héros
-  const ground = Math.round(h * 0.7);
+  const ground = Math.round(h * 0.6);
   px(0, ground, W, h - ground, '#1a0c16');
   for (let xx = 0; xx < W; xx++) {
     const bump = Math.round(Math.sin(xx * 0.09) * 2 + Math.sin(xx * 0.23) * 1);

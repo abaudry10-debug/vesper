@@ -74,12 +74,12 @@ function showTitle() {
   title.hidden = false;
   startTitleScene($('title-bg') as HTMLCanvasElement);
   btnContinue.hidden = !Game.hasSave();
-  $('chap-1-state').textContent = chapterDone(ch().id) ? '✓ terminé' : Game.hasSave() ? 'en cours' : '';
-  // en mode développeur, le chapitre 2 se lance depuis l'écran titre
-  const dev = devEnabled();
-  $('chap-2').classList.toggle('locked', !dev);
-  $('chap-2').classList.toggle('dev', dev);
-  $('chap-2-state').textContent = dev ? 'dev ▶' : 'bientôt';
+  $('chap-1-state').textContent = chapterDone(ch().id) ? '✓ terminé' : Game.hasSave() ? '· en cours' : '';
+  $('btn-new').textContent = Game.hasSave() ? 'Nouvelle partie' : 'Commencer';
+  // le chapitre 2 : ouvert à tous ; sa propre sauvegarde décide « Continuer » ou « Commencer »
+  setChapter(azura);
+  $('chap-2-state').textContent = Game.hasSave() ? 'continuer ▶' : chapterDone(vesper.id) ? 'nouveau ▶' : '▶';
+  setChapter(vesper);
   playTheme('title');
 }
 
@@ -120,12 +120,25 @@ function continueGame() {
 }
 
 $('btn-new').addEventListener('click', askNewGame);
-$('chap-2').addEventListener('click', () => {
-  if (!devEnabled()) return;
-  sfx.select();
+function launchAzura() {
   setChapter(azura);
   if (Game.hasSave()) continueGame();
   else startNew();
+}
+$('chap-2').addEventListener('click', () => {
+  sfx.select();
+  // pas de blocage, mais on prévient ceux qui n'ont pas fini le chapitre 1
+  if (chapterDone(vesper.id)) return launchAzura();
+  setChapter(azura);
+  const started = Game.hasSave();
+  setChapter(vesper);
+  if (started) return launchAzura();
+  ui.confirm(
+    'Azura est la suite directe du chapitre 1. Tu ne l’as pas encore terminé : on te conseille de commencer par Le Réveil.',
+    () => (Game.hasSave() ? continueGame() : askNewGame()),
+    launchAzura,
+    ['Jouer au chapitre 1', 'Lancer Azura quand même'],
+  );
 });
 btnContinue.addEventListener('click', continueGame);
 

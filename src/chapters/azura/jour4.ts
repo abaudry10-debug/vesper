@@ -319,7 +319,8 @@ export function plans(g: Game, sawMemo6: boolean) {
           [
             'La porte s’ouvre. Oskar, et la commandante, essoufflés.',
             'Iris : « Le centre des pilotes a une antenne. La liaison 47,2 marche dans les deux sens. »',
-            'Oskar : « Au spatioport de Vesper, il reste un robot de maintenance. R-7. On peut le piloter d’ici, à distance. »',
+            'Oskar : « Sur Vesper, la ville avait des robots de patrouille, reliés au réseau du spatioport. Ils sont costauds. Il doit bien en rester un en état de marche. »',
+            'Oskar : « Avec la liaison, on pourrait le piloter d’ici, à distance. »',
             'Iris : « Et il faut le faire maintenant. Les deux lunes alignées, c’est aussi ce qui ouvre la liaison en grand. Ça n’arrive que tous les trente jours. »',
             '« Ce soir, la fenêtre se referme. Après, il faudra attendre un mois. Et chaque jour, on oublie un peu plus. »',
             'Betti regarde les pièces éparpillées sur son établi. La tête ronde, les pattes, l’œil éteint.',

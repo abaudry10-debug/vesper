@@ -6,7 +6,7 @@
 // robot, jusqu'à reconnaître la voix du héros dans le haut-parleur.
 import type { Game } from '../../engine/game.js';
 import { sfx } from '../../engine/audio.js';
-import { P, T, dogSprite } from '../../engine/sprites.js';
+import { P, T, dogSprite, tile } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
 import { SOLID, type GameMap, type MapObject } from '../../engine/world.js';
 import { MAPS as V_MAPS } from '../vesper/maps.js';
@@ -156,6 +156,8 @@ export function drawR7Under(g: Game, c: CanvasRenderingContext2D, ox: number, oy
 export function drawR7Robot(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
   if (!isR7(g)) return;
   const [hx, hy] = g.heroPixel();
+  // au début, il est encore couché là où on l'avait laissé au chapitre 1
+  if (!g.flags.has('r7Up')) return void c.drawImage(tile('robot', 0), Math.round(hx - ox), Math.round(hy - oy));
   drawRobot(c, Math.round(hx - ox), Math.round(hy - oy) - 1, g.dir, g.time, !!g.moving);
 }
 
@@ -343,15 +345,25 @@ export function startR7(g: Game) {
     say(
       [
         'Une image granuleuse, de travers. Du sable, collé contre l’objectif.',
-        'Je bouge les commandes. L’image bascule… et se redresse. Le robot se relève.',
-        'Le robot de patrouille. Celui que j’avais trouvé renversé dans la rue, il y a onze ans.',
-        'Oskar (radio) : « R-7, un robot de patrouille de la ville. Tu le tiens ! Il répond ? »',
-        'Iris (radio) : « Attention à la chaleur. Il n’a pas été entretenu depuis onze ans. En plein soleil, il surchauffe vite. Reste à l’ombre des murs. »',
-        'Betti (radio) : « Pixel… Il doit être au laboratoire Lazare. Près de ta capsule. »',
+        'Une rue de Vesper. Je la connais. Le robot est couché sur le flanc, au milieu de la chaussée.',
+        'Le robot de patrouille. Celui que j’avais trouvé renversé ici, il y a onze ans. « Dernier appel… »',
+        'Je bouge les commandes.',
       ],
       () => {
-        g.api.clue('r7l1');
-        g.save();
+        g.flags.add('r7Up');
+        sfx.clank();
+        window.setTimeout(() => say(
+          [
+            'L’image bascule… et se redresse. Le robot se relève.',
+            'Oskar (radio) : « Il en restait un qui marche ! Son matricule : R-7. Il répond ? »',
+            'Iris (radio) : « Attention à la chaleur. Il n’a pas été entretenu depuis onze ans. En plein soleil, il surchauffe vite. Reste à l’ombre des murs. »',
+            'Betti (radio) : « Pixel… Il doit être au laboratoire Lazare, en haut à gauche de la ville. Près de ta capsule. »',
+          ],
+          () => {
+            g.api.clue('r7l1');
+            g.save();
+          },
+        ), 600);
       },
     );
   }, 1200);

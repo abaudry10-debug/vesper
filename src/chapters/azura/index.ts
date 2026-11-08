@@ -1227,7 +1227,7 @@ export const azura: Chapter = {
       if (r7Interact(g, obj)) return true;
       // au centre des pilotes : la console de la liaison 47,2
       if (obj?.id === 'console47' && g.flags.has('j4Plan') && !g.flags.has('r7On')) {
-        ui.say(['Iris allume la console. « LIAISON 47,2 — VESPER ». Le cadran s’emballe, puis se stabilise.', 'Sur l’écran, une image tremblée apparaît : un hangar ensablé, une lumière orange.', 'Oskar me tend les commandes. « À toi. »'], () => startR7(g));
+        ui.say(['Iris allume la console. « LIAISON 47,2 — VESPER ». Le cadran s’emballe, puis se stabilise.', 'Sur l’écran, une image tremblée apparaît : une rue ensablée, une lumière orange. Vesper.', 'Oskar me tend les commandes. « À toi. »'], () => startR7(g));
         return true;
       }
       // en barque : accoster

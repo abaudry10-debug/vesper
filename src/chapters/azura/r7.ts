@@ -494,7 +494,7 @@ export function r7UseItem(g: Game, id: string): boolean {
         sfx.pixelWhine();
         g.save();
       });
-    } else say(['La BS-1, pleine. Pixel est au laboratoire Lazare, au pied de ma capsule.']);
+    } else say(['La BS-1, pleine. Il faudrait la brancher sur Pixel.']);
     return true;
   }
   return false;
@@ -526,7 +526,7 @@ export function startR7(g: Game) {
             'L’image bascule… et se redresse. Le robot se relève.',
             'Oskar (radio) : « Il en restait un qui marche ! Son matricule : R-7. Il répond ? »',
             'Iris (radio) : « Attention à la chaleur : il n’a pas été entretenu depuis onze ans. Longe les bâtiments : leur ombre le protège. Au milieu des rues, en plein soleil, il va griller. »',
-            'Betti (radio) : « Pixel… Il doit être au laboratoire Lazare, en haut à gauche de la ville. Près de ta capsule. »',
+            'Betti (radio) : « Retrouve-le. Je t’en prie. »',
           ],
           () => {
             g.api.clue('r7l1');

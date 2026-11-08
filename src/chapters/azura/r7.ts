@@ -6,7 +6,7 @@
 // robot, jusqu'à reconnaître la voix du héros dans le haut-parleur.
 import type { Game } from '../../engine/game.js';
 import { sfx } from '../../engine/audio.js';
-import { P, T, dogSprite, tile } from '../../engine/sprites.js';
+import { P, T, dogSprite } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
 import { SOLID, type GameMap, type MapObject } from '../../engine/world.js';
 import { MAPS as V_MAPS } from '../vesper/maps.js';
@@ -102,33 +102,82 @@ function overheat(g: Game) {
 }
 
 // ---------- le dessin : R-7, la plaque, Pixel qui grogne, l'image de la caméra ----------
-function drawRobot(c: CanvasRenderingContext2D, x: number, y: number, dir: string, t: number, moving: boolean) {
-  // le robot de patrouille de la ville, relevé : la même carcasse grise, le même œil rouge
-  const r = (xx: number, yy: number, w: number, h: number, col: string) => {
+// Le robot de patrouille du chapitre 1 (carcasse grise, panneau sombre, rouille, œil rouge), dessiné sans
+// fond pour qu'il se pose sur n'importe quel sol, avec de vraies animations : il se relève, roule,
+// balance les bras, son œil balaie la rue, il fume quand il chauffe.
+const SPR = document.createElement('canvas');
+SPR.width = 16;
+SPR.height = 16;
+interface Pose { dir: string; t: number; moving: boolean; hot: number }
+function paintRobot(p: Pose) {
+  const c = SPR.getContext('2d')!;
+  c.clearRect(0, 0, 16, 16);
+  const r = (x: number, y: number, w: number, h: number, col: string) => {
     c.fillStyle = col;
-    c.fillRect(x + xx, y + yy, w, h);
+    c.fillRect(x, y, w, h);
   };
-  c.fillStyle = 'rgba(0,0,0,0.3)';
-  c.fillRect(x + 2, y + 14, 12, 2);
-  const step = moving ? Math.floor(t * 10) % 2 : 0;
-  // les deux roues
-  r(3, 12 + step, 3, 3, P.metalDark);
-  r(10, 13 - step, 3, 2, P.metalDark);
-  // le corps
-  r(3, 6, 10, 7, P.metal);
-  r(3, 6, 10, 1, P.metalLight);
-  r(5, 8, 3, 2, P.metalDark);
-  r(10, 10, 2, 2, P.rust);
-  r(3, 12, 10, 1, P.metalDark);
-  // la tête, et son œil rouge
-  r(4, 1, 8, 5, P.metal);
-  r(4, 1, 8, 1, P.metalLight);
-  if (dir !== 'up') {
-    const ex = dir === 'left' ? 5 : dir === 'right' ? 8 : 6;
-    r(ex, 3, 3, 1, Math.floor(t * 3) % 7 === 0 ? '#6a2a2a' : P.red);
-  } else r(6, 3, 4, 1, P.metalDark);
-  r(12, 2, 1, 2, P.rust);
+  const { dir, t, moving } = p;
+  const step = moving ? Math.floor(t * 9) % 2 : 0;
+  const bob = moving ? step : Math.floor(t * 1.4) % 2 === 0 ? 0 : 0; // pas de respiration : c'est une machine
+  const scan = Math.round(Math.sin(t * 1.3)); // l'œil balaie la rue, de gauche à droite
+  const side = dir === 'left' || dir === 'right';
+  if (side) {
+    // de profil : une grande roue, le buste penché vers l'avant quand il roule
+    const lean = moving ? 1 : 0;
+    r(5, 11, 6, 5, P.metalDark);
+    r(6, 12, 4, 3, '#2a2e36');
+    const spoke = Math.floor(t * (moving ? 14 : 0)) % 2;
+    r(7 + spoke, 12, 1, 3, P.metalLight);
+    r(6, 13 + spoke, 4, 1, P.metalLight);
+    r(4 + lean, 6 + bob, 8, 6, P.metal);
+    r(4 + lean, 6 + bob, 8, 1, P.metalLight);
+    r(5 + lean, 8 + bob, 3, 2, P.metalDark);
+    r(10 + lean, 9 + bob, 2, 2, P.rust);
+    // le bras, qui balance
+    r(7 + lean + (moving ? step * 2 - 1 : 0), 8 + bob, 2, 3, P.metalDark);
+    // la tête, l'œil à l'avant
+    r(5 + lean, 1 + bob, 7, 5, P.metal);
+    r(5 + lean, 1 + bob, 7, 1, P.metalLight);
+    r(10 + lean, 3 + bob, 2, 1, P.red);
+    r(11 + lean, 3 + bob, 1, 1, '#ff9a8a');
+    r(5 + lean, 4 + bob, 1, 1, P.rust);
+  } else {
+    // de face ou de dos : deux roues, deux bras
+    r(3, 12 + step, 3, 3, P.metalDark);
+    r(10, 12 + (1 - step), 3, 3, P.metalDark);
+    r(4, 13 + step, 1, 1, P.metalLight);
+    r(11, 13 + (1 - step), 1, 1, P.metalLight);
+    r(3, 6 + bob, 10, 7, P.metal);
+    r(3, 6 + bob, 10, 1, P.metalLight);
+    r(3, 12 + bob, 10, 1, P.metalDark);
+    const arm = moving ? step * 2 - 1 : 0;
+    r(1, 7 + bob + arm, 2, 4, P.metalDark);
+    r(13, 7 + bob - arm, 2, 4, P.metalDark);
+    if (dir === 'up') {
+      // de dos : les grilles d'aération
+      for (let i = 0; i < 3; i++) r(5, 8 + bob + i * 2, 6, 1, P.metalDark);
+      r(4, 1 + bob, 8, 5, P.metal);
+      r(4, 1 + bob, 8, 1, P.metalLight);
+      r(6, 3 + bob, 4, 1, P.metalDark);
+    } else {
+      r(5, 8 + bob, 3, 2, P.metalDark);
+      r(10, 10 + bob, 2, 2, P.rust);
+      r(4, 1 + bob, 8, 5, P.metal);
+      r(4, 1 + bob, 8, 1, P.metalLight);
+      r(5, 3 + bob, 6, 1, '#2a1a1e');
+      r(7 + scan, 3 + bob, 2, 1, P.red);
+      r(7 + scan, 3 + bob, 1, 1, '#ff9a8a');
+      r(11, 2 + bob, 1, 2, P.rust);
+    }
+  }
+  // l'antenne, qui clignote
+  r(11, -0 + bob, 1, 1, P.metalDark);
+  return SPR;
 }
+
+const puffs = new WeakMap<Game, { x: number; y: number; vx: number; vy: number; life: number; max: number; smoke?: boolean }[]>();
+const standAt = new WeakMap<Game, number>();
+let lastStep = '';
 
 /** Sous les personnages : la plaque solaire, la BS-1 posée dessus, et Pixel quand il grogne. */
 export function drawR7Under(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
@@ -156,9 +205,57 @@ export function drawR7Under(g: Game, c: CanvasRenderingContext2D, ox: number, oy
 export function drawR7Robot(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
   if (!isR7(g)) return;
   const [hx, hy] = g.heroPixel();
-  // au début, il est encore couché là où on l'avait laissé au chapitre 1
-  if (!g.flags.has('r7Up')) return void c.drawImage(tile('robot', 0), Math.round(hx - ox), Math.round(hy - oy));
-  drawRobot(c, Math.round(hx - ox), Math.round(hy - oy) - 1, g.dir, g.time, !!g.moving);
+  const x = Math.round(hx - ox), y = Math.round(hy - oy);
+  // la poussière soulevée, et la fumée quand il chauffe
+  let list = puffs.get(g);
+  if (!list) puffs.set(g, (list = []));
+  const key = `${g.x},${g.y}`;
+  if (g.moving && key !== lastStep && g.map.outdoor) {
+    lastStep = key;
+    for (let i = 0; i < 2; i++) list.push({ x: hx + 4 + Math.random() * 8, y: hy + 14, vx: (Math.random() - 0.5) * 10, vy: -4 - Math.random() * 4, life: 0, max: 0.5 });
+  }
+  const temp = g.counters.r7temp ?? 20;
+  if (temp > 75 && Math.random() < (temp - 70) / 200) list.push({ x: hx + 8, y: hy, vx: (Math.random() - 0.5) * 4, vy: -10, life: 0, max: 1.1, smoke: true });
+  for (const p of list) {
+    p.life += 1 / 60;
+    p.x += p.vx / 60;
+    p.y += p.vy / 60;
+  }
+  for (let i = list.length - 1; i >= 0; i--) if (list[i].life >= list[i].max) list.splice(i, 1);
+  // l'ombre
+  c.fillStyle = 'rgba(0,0,0,0.28)';
+  c.beginPath();
+  c.ellipse(x + 8, y + 15, 6, 1.8, 0, 0, Math.PI * 2);
+  c.fill();
+  // couché, il se relève : la même carcasse, qui pivote sur sa base
+  let angle = 0;
+  if (!g.flags.has('r7Up')) angle = Math.PI / 2;
+  else {
+    if (!standAt.has(g)) standAt.set(g, g.time);
+    const k = Math.min(1, (g.time - standAt.get(g)!) / 0.9);
+    if (k < 1) {
+      // il se redresse d'un coup de reins, dépasse un peu, puis se stabilise
+      const e = k < 0.7 ? 1 - (k / 0.7) ** 2 : -0.12 * Math.sin(((k - 0.7) / 0.3) * Math.PI);
+      angle = (Math.PI / 2) * e;
+      if (k < 0.1 && list.length < 30) for (let i = 0; i < 6; i++) list.push({ x: hx + 2 + Math.random() * 12, y: hy + 14, vx: (Math.random() - 0.5) * 24, vy: -6 - Math.random() * 6, life: 0, max: 0.8 });
+    }
+  }
+  const spr = paintRobot({ dir: angle ? 'down' : g.dir, t: g.time, moving: !!g.moving && !angle, hot: temp });
+  c.save();
+  c.translate(x + 8, y + 15);
+  c.rotate(angle);
+  c.drawImage(spr, -8, -16);
+  // l'antenne, avec sa diode
+  c.fillStyle = Math.floor(g.time * 2) % 2 ? '#ff5a5a' : '#6a2a2a';
+  c.fillRect(3, -18, 1, 1);
+  c.fillStyle = P.metalDark;
+  c.fillRect(3, -17, 1, 2);
+  c.restore();
+  for (const p of list) {
+    const a = 1 - p.life / p.max;
+    c.fillStyle = p.smoke ? `rgba(60,56,64,${0.5 * a})` : `rgba(214,170,120,${0.6 * a})`;
+    c.fillRect(Math.round(p.x - ox), Math.round(p.y - oy), p.smoke ? 2 : 1, p.smoke ? 2 : 1);
+  }
 }
 
 /** L'image de la caméra : la chaleur orange, les lignes, le grain, et le petit écran de bord. */

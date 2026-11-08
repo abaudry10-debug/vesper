@@ -1357,8 +1357,8 @@ export const azura: Chapter = {
           ui.say(['Pas encore sommeil. Le carnet de Joss est toujours enfermé dans sa cabane, au bord de la rivière.']);
           return true;
         }
-        if (day(g) === 4 && !g.flags.has('j4Plan')) {
-          ui.say(['Pas maintenant.']);
+        if (day(g) === 4) {
+          ui.say(g.flags.has('j4Plan') ? ['Pas le temps de dormir : la liaison se referme ce soir.', 'Au centre des pilotes, vite.'] : ['Pas maintenant.']);
           return true;
         }
         if (day(g) >= 5) {

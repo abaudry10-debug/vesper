@@ -357,8 +357,8 @@ function atelier(): GameMap {
     npc('betti', 6, 3, 'betti', 'down', 'betti', { hideWhen: 'vague' }),
     // le jour 4 : Betti et les plans de sa mère, puis Oskar et la commandante, le soir
     npc('bettiPlans', 3, 4, 'betti', 'up', 'bettiPlans', { showWhen: 'j4Confession' }),
-    npc('irisAtelier', 6, 5, 'iris', 'left', 'irisAtelier', { showWhen: 'j4Soir' }),
-    npc('oskarAtelier', 7, 4, 'oskar', 'left', 'oskarAtelier', { showWhen: 'j4Soir' }),
+    npc('irisAtelier', 6, 5, 'iris', 'left', 'irisAtelier', { showWhen: 'j4Soir', hideWhen: 'j4Plan' }),
+    npc('oskarAtelier', 7, 4, 'oskar', 'left', 'oskarAtelier', { showWhen: 'j4Soir', hideWhen: 'j4Plan' }),
   ];
   return { id: 'atelier', name: 'L’atelier de Betti', outdoor: false, width: 11, height: 9, rows: b.rows, objects };
 }
@@ -378,8 +378,8 @@ function pilotes(): GameMap {
     obj('tablePilotes2', 5, 4, 'labDesk', 'tablePilotes'),
     obj('tablePilotes3', 6, 4, 'labDesk', 'tablePilotes'),
     obj('casiers', 1, 1, 'shelfAz', 'casiers'),
-    npc('irisPilotes', 5, 2, 'iris', 'up', 'irisPilotes', { hideWhen: 'j4Soir' }),
-    npc('oskarPilotes', 3, 6, 'oskar', 'up', 'oskarPilotes', { hideWhen: 'j4Soir' }),
+    npc('irisPilotes', 5, 2, 'iris', 'up', 'irisPilotes'),
+    npc('oskarPilotes', 3, 6, 'oskar', 'up', 'oskarPilotes'),
     npc('bettiPilotes', 7, 6, 'betti', 'up', 'bettiPilotes', { hideWhen: 'j4Confession' }),
   ];
   return { id: 'pilotes', name: 'Le centre des pilotes', outdoor: false, width: 11, height: 9, rows: b.rows, objects };

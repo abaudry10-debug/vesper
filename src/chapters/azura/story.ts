@@ -55,7 +55,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azLecon4', thread: 'ecole', title: 'La leçon du jour 4', text: '« Le jour du grand départ, les capsules ont envoyé nos corps jusqu’ici. » Nos corps ? Ce sont nos esprits qui sont partis. Les corps dorment toujours sur Vesper.' },
   { id: 'azAveu', thread: 'arrivee', title: 'L’aveu de la commandante', text: 'AU-01, c’était Iris. Après l’an 3, elle a demandé la copie d’origine à Vesper par la liaison 47,2 : dossier vide, tout parti vers PX-07. Elle a gardé le secret et mis en place des habitudes (la leçon, le bulletin, la sirène) pour que les gestes tiennent quand les souvenirs partiraient.' },
   { id: 'azPlans', thread: 'arrivee', title: 'PX-07', text: 'Les plans de la mère de Betti : « Compagnon robotique — prototype PX-07. Batterie BS-1. Port de maintenance compatible archives. Mémoire non effaçable. » PX-07, c’est Pixel. Il porte la seule copie intacte des souvenirs.' },
-  { id: 'azR7', thread: 'arrivee', title: 'Le robot R-7', text: 'La liaison 47,2 marche dans les deux sens. Au spatioport de Vesper, un robot de maintenance, R-7, peut être piloté depuis le centre des pilotes. Betti finit le nouveau corps de Pixel : les pièces de son établi, c’était pour lui.' },
+  { id: 'azR7', thread: 'arrivee', title: 'Le robot R-7', text: 'La liaison 47,2 marche dans les deux sens. Au spatioport de Vesper, un robot de maintenance, R-7, peut être piloté depuis le centre des pilotes. Les lunes alignées ouvrent la liaison en grand : il faut y aller avant ce soir, sinon attendre un mois. Betti finit le nouveau corps de Pixel : les pièces de son établi, c’était pour lui.' },
   { id: 'azLecon3', thread: 'ecole', title: 'La leçon du jour 3', text: '« Nos ancêtres ont voyagé deux ans pour arriver ici. » Deux ans ? Le voyage d’Aurore a duré deux cent douze ans.' },
   { id: 'azl1', thread: 'leads', title: 'Où sont les autres ?', text: 'Le sentier part vers le sud, au-delà des cuves.', doneWhen: 'bettiMet' },
   { id: 'azl2', thread: 'leads', title: 'L’atelier de Betti', text: 'En bas, près du lac. Passer d’abord voir le bulletin des eaux, sur la place.', doneWhen: 'drawingSeen' },
@@ -70,7 +70,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl15', thread: 'leads', title: 'L’étale', text: 'La barque est au ponton, mais le courant tire vers le large. Attendre que l’eau s’arrête de bouger (l’étale, vers 10 h), puis ramer jusqu’à Joss, au sud de l’île, et le ramener au ponton.', doneWhen: 'jossSaved' },
   { id: 'azl16', thread: 'leads', title: 'La commandante', text: 'Oskar veut mettre la commandante face à « AU-01 ». Rendez-vous au centre des pilotes, en bas à droite de la ville.', doneWhen: 'j4Confession' },
   { id: 'azl17', thread: 'leads', title: 'Les plans de la mère de Betti', text: 'En entendant « PX-07 », Betti est partie en courant vers son atelier : sa mère numérotait ses prototypes.', doneWhen: 'j4Plans' },
-  { id: 'azl18', thread: 'leads', title: 'Demain, Vesper', text: 'Demain à l’aube, depuis le centre des pilotes, piloter le robot R-7 sur Vesper par la liaison 47,2, et ramener Pixel. Ce soir : dormir.', doneWhen: 'jour5' },
+  { id: 'azl18', thread: 'leads', title: 'Vesper, maintenant', text: 'La liaison 47,2 n’est grande ouverte que tant que les lunes sont alignées : jusqu’à ce soir. Au centre des pilotes, piloter le robot R-7 sur Vesper et ramener Pixel.', doneWhen: 'j4Liaison' },
   { id: 'azlCabane', thread: 'leads', title: 'La cabane verrouillée', text: 'La cabane de Joss est fermée à clé. Joss pêchait sur son ponton quand il l’a perdue… Elle est peut-être tombée à l’eau.', doneWhen: 'cabaneOpen' },
   { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Oskar m’attend devant la porte du centre, près des cuves.', doneWhen: 'centreIn' },
   { id: 'azl9', thread: 'leads', title: 'L’eau entre encore', text: 'L’eau entre toujours dans la salle des serveurs. La salle des pompes doit commander l’arrivée d’eau : suivre les tuyaux.', doneWhen: 'inflowCut' },
@@ -299,14 +299,21 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     api.say(['Une étiquette est collée sur la porte, écrite à la main : « PORTE ».', 'Quelqu’un a de l’humour.'], () => api.clue('azEtiquette')),
   pilotes: (api) => api.say(['« CENTRE DES PILOTES D’AURORE ».', 'Une affichette sur la porte : « Réunion. Merci de ne pas déranger. »']),
   ecranPilotes: (api) => api.say(['Un grand écran : Azura vue du ciel. Le lac, la ville, la vallée. Et, au sud, des terres que personne n’a encore explorées.']),
-  console47: (api) => api.say(api.has('j4Plan') ? ['La console de l’antenne. « LIAISON 47,2 — VESPER ». Demain, à l’aube.'] : ['Une console, avec un grand cadran : « LIAISON 47,2 ». Éteinte.']),
+  console47: (api) =>
+    api.has('j4Plan')
+      ? api.say(['Iris allume la console. « LIAISON 47,2 — VESPER ». Le cadran s’emballe, puis se stabilise.', 'Sur l’écran, une image tremblée apparaît : un hangar ensablé, une lumière orange. Le spatioport de Vesper, vu par les yeux de R-7.', 'Oskar me tend les commandes. « À toi. »'], () => {
+          api.set('j4Liaison');
+          api.set('sliceDone');
+          api.say(['— Fin de la démo d’Azura —', 'La suite (le retour sur Vesper avec le robot R-7) arrive bientôt. Merci d’avoir joué.']);
+        })
+      : api.say(['Une console, avec un grand cadran : « LIAISON 47,2 ». Éteinte.']),
   tablePilotes: (api) => api.say(['Une grande table, couverte de relevés. Des marées, des horaires… tous recopiés à la main.']),
   casiers: (api) => api.say(['Douze casiers. Douze noms. Douze pilotes.']),
-  irisPilotes: (api) => api.say(['« Je n’ai plus rien à cacher. Va retrouver Betti. »']),
-  oskarPilotes: (api) => api.say(['« Va voir Betti. Je reste avec elle. »', 'Il regarde la commandante.']),
+  irisPilotes: (api) => api.say(api.has('j4Plan') ? ['« La console est prête. La fenêtre se referme ce soir. »'] : ['« Je n’ai plus rien à cacher. Va retrouver Betti. »']),
+  oskarPilotes: (api) => api.say(api.has('j4Plan') ? ['« La console, là-bas. Vas-y. »'] : ['« Va voir Betti. Je reste avec elle. »', 'Il regarde la commandante.']),
   bettiPilotes: (api) => api.say(['« PX-07… »']),
-  bettiPlans: (api) => api.say(['« Demain, tu le ramènes. »', 'Elle ne quitte plus les plans des yeux.']),
-  irisAtelier: (api) => api.say(['« Demain, à l’aube. »']),
+  bettiPlans: (api) => api.say(api.has('j4Plan') ? ['« Vas-y ! Je finis son corps. »', 'Elle ne quitte plus les plans des yeux.'] : ['« C’est Pixel… »']),
+  irisAtelier: (api) => api.say(['« Au centre des pilotes. Maintenant. »']),
   oskarAtelier: (api) => api.say(['« Un robot de maintenance, piloté depuis une autre planète… On en a vu d’autres. »']),
   atelierFerme: (api) => api.say(['« ATELIER — B. MOREAU ».', 'C’est fermé.']),
   banc: (api) => api.say(['Un banc. Pas le temps de s’asseoir : on m’attend.']),

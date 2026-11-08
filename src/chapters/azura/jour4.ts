@@ -312,30 +312,29 @@ export function plans(g: Game, sawMemo6: boolean) {
       g.flags.add('j4Plans');
       g.api.clue('azPlans');
       g.save();
-      g.locked = true;
-      timePass(Math.max(hour(g), 14), 19, 'Le reste de l’après-midi, Betti ne lâche plus les plans. Le soir tombe sur l’atelier.', () => {
-        g.locked = false;
-        g.flags.add('j4Soir');
-        window.setTimeout(() => {
-          ui.say(
-            [
-              'On frappe. Oskar, et la commandante.',
-              'Iris : « Le centre des pilotes a une antenne. La liaison 47,2 marche dans les deux sens. »',
-              'Oskar : « Au spatioport de Vesper, il reste un robot de maintenance. R-7. On peut le piloter d’ici, à distance. »',
-              'Iris : « Demain, à l’aube. C’est là que la liaison sera la meilleure. »',
-              'Betti regarde les pièces éparpillées sur son établi. La tête ronde, les pattes, l’œil éteint.',
-              '« Toutes ces pièces… C’était pour lui. Je ne le savais pas encore. »',
-              '« Moi, je finis son nouveau corps. Toi, demain, tu vas le chercher. »',
-            ],
-            () => {
-              g.flags.add('j4Plan');
-              g.api.clue('azR7');
-              g.api.clue('azl18');
-              g.save();
-            },
-          );
-        }, 500);
-      }, () => setHour(g, 19));
+      // pas de nuit : on part tout de suite, la liaison ne reste pas ouverte
+      g.flags.add('j4Soir');
+      window.setTimeout(() => {
+        ui.say(
+          [
+            'La porte s’ouvre. Oskar, et la commandante, essoufflés.',
+            'Iris : « Le centre des pilotes a une antenne. La liaison 47,2 marche dans les deux sens. »',
+            'Oskar : « Au spatioport de Vesper, il reste un robot de maintenance. R-7. On peut le piloter d’ici, à distance. »',
+            'Iris : « Et il faut le faire maintenant. Les deux lunes alignées, c’est aussi ce qui ouvre la liaison en grand. Ça n’arrive que tous les trente jours. »',
+            '« Ce soir, la fenêtre se referme. Après, il faudra attendre un mois. Et chaque jour, on oublie un peu plus. »',
+            'Betti regarde les pièces éparpillées sur son établi. La tête ronde, les pattes, l’œil éteint.',
+            '« Toutes ces pièces… C’était pour lui. Je ne le savais pas encore. »',
+            '« Moi, je finis son nouveau corps. Toi, va le chercher. Vite. »',
+            'Oskar : « On t’attend au centre des pilotes. »',
+          ],
+          () => {
+            g.flags.add('j4Plan');
+            g.api.clue('azR7');
+            g.api.clue('azl18');
+            g.save();
+          },
+        );
+      }, 500);
     },
   );
 }

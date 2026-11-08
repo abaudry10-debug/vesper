@@ -28,7 +28,7 @@ export function openBulletin(g: Game, done: () => void) {
   el.innerHTML = `<div class="panel">
     <h3>BUREAU DES EAUX</h3><p class="day">Bulletin du jour ${d} — mis à jour ce matin</p>
     <canvas width="120" height="56"></canvas>
-    <p class="rows">Pleine eau : <b>${m} h</b> et <b>${e} h</b><br>Hauteur attendue : <b>2,1 m</b><br>Alerte : <b>normale</b></p>
+    <p class="rows">Pleine eau : <b>${m} h</b> et <b>${e} h</b><br><span style="font-size:17px;opacity:.75">Demain : ${m + 1} h et ${e + 1} h</span><br>Hauteur attendue : <b>2,1 m</b><br>Alerte : <b>normale</b></p>
     <p class="note">Quand la sirène sonne : évacuez les zones à risque. N’attendez pas.<br>Recalculé chaque matin par notre équipe, pour qu’aucun accident comme celui de l’an 3 ne se reproduise.<br>— N. Vey, hydrologue</p>
     <button class="menu primary">Fermer</button></div>`;
   host.appendChild(el);

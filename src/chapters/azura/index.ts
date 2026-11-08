@@ -1228,7 +1228,7 @@ export const azura: Chapter = {
       if (obj?.id === 'joss' && day(g) >= 2) {
         if (levelNow(g) > 0.6) {
           ui.say(['« Ah ! L’eau monte déjà ? »', 'Joss remonte sa ligne en vitesse.', '« J’avais complètement oublié qu’elle montait à cette heure-ci… Pourtant, je le savais par cœur. »', '« Avant, je notais tout dans mon carnet. Les heures, les poissons. Tous les jours. »'], () => g.api.clue('azJossOubli'));
-        } else ui.say(['« La pêche est bonne, aujourd’hui. »', '« L’eau ? Elle monte… euh… le tableau le dit, sur la place. Moi, je me fie au tableau. »']);
+        } else ui.say(['« La pêche est bonne, aujourd’hui. »', '« L’eau ? Le bulletin le dit, sur la place. Moi, je me fie au bulletin. »']);
         return true;
       }
       // la tour de l'horloge

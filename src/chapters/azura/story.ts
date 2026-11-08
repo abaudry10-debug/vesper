@@ -31,9 +31,9 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azJossOubli', thread: 'eaux', title: 'Joss a oublié', text: 'Joss a été surpris par la montée des eaux : « J’avais oublié qu’elle montait à cette heure-ci. » Avant, il notait tout dans un carnet : les heures, les poissons, tous les jours.' },
   { id: 'azLunes', thread: 'eaux', title: 'Les deux lunes', text: 'L’horloge de la place a un cadran des lunes. Quand l’eau était pleine, la grande lune passait juste au-dessus de la petite.' },
   { id: 'az4', thread: 'eaux', title: 'Le bulletin des eaux', text: 'Sur la place, le bulletin du Bureau des eaux : la courbe du jour, les heures de pleine eau, la hauteur, l’alerte. « Quand la sirène sonne, évacuez les zones à risque. » Recalculé chaque matin.' },
-  { id: 'az5', thread: 'eaux', title: 'La sirène débranchée', text: 'Tom a débranché la sirène : « Elle sonnait la nuit, pour rien. »' },
+  { id: 'az5', thread: 'eaux', title: 'La sirène débranchée', text: 'Tom a débranché la sirène : « Elle sonnait en pleine nuit, pour rien. Le bulletin, mis à jour chaque matin, est bien plus fiable. »' },
   { id: 'az7', thread: 'eaux', title: 'Le Bureau des eaux', text: 'Nora Vey, hydrologue, recalcule les marées chaque matin et met à jour le bulletin de la place. Depuis « l’accident de l’an 3 », on ne laisse plus rien au hasard.' },
-  { id: 'azNora2', thread: 'eaux', title: 'Comme hier', text: 'Le jour 2, Nora annonce la pleine eau à 6 h et 18 h. « Comme hier ? Eh bien oui, comme hier. La mer, c’est régulier. »' },
+  { id: 'azNora2', thread: 'eaux', title: 'Comme hier', text: 'Le jour 2, Nora annonce la pleine eau à 6 h et 18 h. « Comme hier ? Oui. Enfin… c’est bien ce que mon calcul donne. » Le bulletin d’hier annonçait pourtant 7 h et 19 h pour aujourd’hui.' },
   { id: 'azBetti', thread: 'betti', title: 'Betti', text: 'Elle avait neuf ans au départ ; elle en a vingt. Elle venait voir ma cuve fermée quand elle était petite.' },
   { id: 'azPixel', thread: 'betti', title: 'Le dessin', text: 'Dans l’atelier de Betti, un dessin d’enfant : un chien robot à l’œil bleu. « PIXEL ».' },
   { id: 'azLecon1', thread: 'ecole', title: 'La leçon du jour 1', text: '« Vesper se mourait. La mission Aurore est partie la première, avec douze pilotes, pour préparer Azura. Le jour du grand départ, les capsules ont envoyé nos esprits jusqu’ici, et le centre de clonage nous avait préparé des corps neufs. On n’oublie jamais d’où l’on vient. »' },
@@ -46,11 +46,11 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azPX07', thread: 'arrivee', title: 'PX-07', text: 'Le serveur du centre : copie locale perdue dans l’inondation de l’an 3. Copie de sauvegarde : aucune. Source : spatioport de Vesper. Dernière opération : transfert intégral vers l’appareil PX-07.' },
   { id: 'azLecon3', thread: 'ecole', title: 'La leçon du jour 3', text: '« Nos ancêtres ont voyagé deux ans pour arriver ici. » Deux ans ? Le voyage d’Aurore a duré deux cent douze ans.' },
   { id: 'azl1', thread: 'leads', title: 'Où sont les autres ?', text: 'Le sentier part vers le sud, au-delà des cuves.', doneWhen: 'bettiMet' },
-  { id: 'azl2', thread: 'leads', title: 'L’atelier de Betti', text: 'En bas, près du lac. Lire d’abord le tableau des eaux, sur la place.', doneWhen: 'drawingSeen' },
+  { id: 'azl2', thread: 'leads', title: 'L’atelier de Betti', text: 'En bas, près du lac. Passer d’abord voir le bulletin des eaux, sur la place.', doneWhen: 'drawingSeen' },
   { id: 'azl3', thread: 'leads', title: 'L’école', text: 'En haut à droite de la ville. La leçon est pour tout le monde, même les grands.', doneWhen: 'lesson1Heard' },
   { id: 'azlAide', thread: 'leads', title: 'Un coup de main', text: 'Betti a besoin de bras, cet après-midi, à l’atelier.', doneWhen: 'helpDone' },
   { id: 'azl4', thread: 'leads', title: 'Une nuit chez Betti', text: 'Betti me prête son lit, dans l’atelier, en bas près du lac. Le soir, la ville est belle : je peux m’y promener avant de dormir.', doneWhen: 'jour2' },
-  { id: 'azl6', thread: 'leads', title: 'Voir l’eau monter', text: 'Le tableau des eaux, sur la place, annonce l’heure. Un banc permet d’attendre. Ensuite, dormir chez Betti, le soir venu.', doneWhen: 'tideWitnessed' },
+  { id: 'azl6', thread: 'leads', title: 'Voir l’eau monter', text: 'Le bulletin des eaux, sur la place, donne l’heure du jour. Un banc permet d’attendre. Ensuite, dormir chez Betti, le soir venu.', doneWhen: 'tideWitnessed' },
   { id: 'azl7', thread: 'leads', title: 'Le carnet de Joss', text: 'Joss a perdu son carnet de pêche, quelque part près de la rivière, sur le chemin des crêtes.', doneWhen: 'carnetRead' },
   { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Près des cuves. « Réservé aux pilotes. » Un pilote pourrait m’ouvrir.', doneWhen: 'centreIn' },
   { id: 'azl9', thread: 'leads', title: 'La salle noyée', text: 'Vider la salle des serveurs avec les vannes. Le schéma, au mur, montre le chemin de l’eau.', doneWhen: 'drained' },
@@ -69,7 +69,7 @@ export const QUESTIONS_AZ: Question[] = [
   },
   {
     id: 'q-cloche', thread: 'eaux', opensWith: ['azJoss', 'azRepere'], answeredBy: 'az4',
-    ask: 'Que faire quand la sirène sonne ?', answer: 'Évacuer les zones à risque, au bord de l’eau, sans attendre. Les eaux montent deux fois par jour.',
+    ask: 'Que faire quand la sirène sonne ?', answer: 'Évacuer les zones à risque, au bord de l’eau, sans attendre. Les eaux montent deux fois par jour, à des heures qui changent chaque jour : le bulletin les donne.',
   },
 ];
 
@@ -77,8 +77,6 @@ export const ITEMS_AZ: Record<string, ItemDef> = {
   badgePilote: { name: 'Badge de pilote', text: 'Le badge d’Oskar, pilote d’Aurore. Il ouvre le centre de clonage.' },
   fruit: { name: 'Fruit d’Azura', text: 'Orange, sucré, avec un goût de miel. Mme Ilda me l’a offert.' },
 };
-
-/** Nora vient repeindre le tableau une fois qu'on a lu l'horaire et parlé à Tom. */
 
 
 export const SCRIPTS_AZ: Record<string, Script> = {
@@ -153,7 +151,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
         '« Je m’appelle Betti. Bienvenue à Nouvelle-Vesper. »',
         memos.length ? 'Betti… La petite fille des souvenirs de Pixel.' : 'Betti… La petite fille de la maison aux dessins, sur Vesper.',
         '« Viens me voir à mon atelier, en bas, près du lac. »',
-        '« Mais d’abord, lis le tableau des eaux sur la place. Tout le monde doit le connaître. »',
+        '« Mais d’abord, passe voir le bulletin des eaux, sur la place. Les heures changent tous les jours : on le regarde chaque matin. »',
         '« Et passe à l’école, en haut à droite. La leçon est pour tout le monde, même les grands. »',
       ],
       () => {
@@ -166,23 +164,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   },
   nomVille: (api) =>
     api.say(['« NOUVELLE-VESPER — fondée en l’an 0 par les colons de Vesper ».', 'Des fleurs fraîches ont été posées au pied du panneau.'], () => api.clue('az3')),
-  tableau: (api) => {
-    const morning = api.has('noraPainted') ? '7 h' : '6 h';
-    api.say(
-      [
-        'Un écran, sur la place. Une courbe qui monte et descend.',
-        '« TABLEAU DES EAUX »',
-        `« Montée des eaux : ${morning} et 18 h. »`,
-        '« Quand la sirène sonne : évacuez les zones à risque. N’attendez pas. »',
-        '« — Les pilotes d’Aurore »',
-        ...(api.has('noraPainted') ? ['Un petit voyant orange : « horaire modifié à la main ».'] : []),
-      ],
-      () => {
-        api.set('tideRead');
-        api.clue('az4');
-      },
-    );
-  },
+  tableau: (api) => api.say(['Le bulletin du Bureau des eaux.']),
   sirene: (api) =>
     api.say(
       api.has('tomTalk')
@@ -196,8 +178,8 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       [
         '« La sirène ? C’est moi qui l’ai débranchée. »',
         'Un homme en combinaison de travail, une pince à la main.',
-        '« Elle se mettait à sonner la nuit, pour rien. Tout le monde sursautait. »',
-        '« Les eaux, on les connaît par cœur, va. Pas besoin d’une sirène. »',
+        '« Elle se mettait à sonner en pleine nuit, pour rien. Tout le monde sursautait. »',
+        '« Le bulletin est mis à jour chaque matin. C’est bien plus fiable qu’une sirène qui hurle en pleine nuit. »',
       ],
       () => {
         api.set('tomTalk');
@@ -238,7 +220,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   },
   nora: (api) => {
     if (api.has('jour2')) {
-      return api.say(['« Bulletin à jour ! Pleine eau à 6 h et 18 h. »', '« …Comme hier ? Eh bien oui, comme hier. La mer, c’est régulier. »'], () => api.clue('azNora2'));
+      return api.say(['« Bulletin à jour ! Pleine eau à 6 h et 18 h. »', '« …Comme hier ? Oui. Enfin… c’est bien ce que mon calcul donne. »', 'Elle fronce les sourcils une seconde, puis se remet au travail.'], () => api.clue('azNora2'));
     }
     if (api.has('noraTalk')) return api.say(['« Consulte le bulletin, surtout. C’est important. »']);
     api.say(

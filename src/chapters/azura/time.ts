@@ -55,7 +55,7 @@ export function postLines(g: Game): string[] {
  * si les eaux se mettent à monter (la première fois qu'on les voit, le jour 2).
  */
 /** L'étape du jour est-elle faite ? Tant qu'elle ne l'est pas, on peut veiller jusqu'à 23 h. */
-const dayDone = (g: Game) => (day(g) === 2 ? g.flags.has('tideWitnessed') : day(g) === 3 ? g.flags.has('pxFound') : true);
+const dayDone = (g: Game) => (day(g) === 2 ? g.flags.has('tideWitnessed') : day(g) === 3 ? g.flags.has('pxFound') && g.flags.has('carnetRead') : true);
 export const NIGHT = 23;
 
 export function benchWait(g: Game, onTide: (h: number) => void) {

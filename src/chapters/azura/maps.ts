@@ -45,7 +45,7 @@ function blob(b: Builder, cx: number, cy: number, rx: number, ry: number, ch: st
 }
 
 /** Les cases où l'on peut marcher (le reste est décor ou obstacle). */
-const WALK = new Set(['"', ',', ';', '.', ':', '=', 'd', 'c', 'B', 'b', 'w', 'm', 'X']);
+const WALK = new Set(['"', ',', ';', '.', ':', '=', 'd', 'c', 'B', 'b', 'w', 'm', 'X', 'j']);
 
 /**
  * Ferme la zone jouable : on part des entrées, on suit les cases praticables, et tout autour
@@ -220,14 +220,20 @@ function chemin(): GameMap {
     obj('repere', post, river(post) - 1, 'waterPost', 'repere'),
     ...pylons,
     npc('joss', joss[0], joss[1], 'joss', 'down', 'joss'),
-    obj('carnetJoss', 18, 9, 'notebook', 'carnetJoss', { showWhen: 'jour3', hideWhen: 'carnetRead' }),
+    // la cabane de pêche de Joss, sur la rive sud, avec son ponton et sa canne (posée là au matin du jour 3)
+    { id: 'porteCabane', x: 3, y: 17, sprite: 'cabinDoor', spriteWhen: ['cabaneOpen', 'cabinDoorOpen'], script: 'cabaneFermee', door: { to: 'cabane', x: 3, y: 4, dir: 'up', needs: 'cabaneOpen' } },
+    obj('canne', 5, 17, 'canneWall', 'canne', { showWhen: 'jour3', hideWhen: 'canneTaken' }),
   ];
-  b.set(16, 17, '"').set(18, 9, '"');
-  // au sud, un massif que le sentier traverse par une gorge
-  for (let y = 18; y < H; y++) for (let x = 0; x < 22; x++) if (x < 14 || x > 16) b.set(x, y, 'M');
+  b.set(16, 17, '"');
+  // au sud, un massif que le sentier traverse par une gorge (une rangée d'herbe devant la cabane)
+  for (let y = 19; y < H; y++) for (let x = 0; x < 22; x++) if (x < 14 || x > 16) b.set(x, y, 'M');
+  for (let x = 0; x < 22; x++) if (x < 14 || x > 16) b.set(x, 18, x >= 1 && x <= 7 ? '"' : 'M');
+  for (let y = 16; y <= 18; y++) for (let x = 1; x <= 7; x++) b.set(x, y, '"');
+  b.rect(2, 16, 3, 2, 'N'); // la cabane
+  b.set(5, 15, 'j'); // le ponton
   // à l'est, la barrière du terraformage ; à l'ouest, des montagnes
   enclose(b, [[15, 1]], [[15, 0], [15, 21]], (x) => (x >= 18 ? 'Y' : 'M'));
-  return { id: 'chemin', name: 'Le chemin des crêtes', outdoor: true, width: W, height: H, rows: b.rows, objects, voidTile: 'azForest' };
+  return { id: 'chemin', name: 'Le chemin des crêtes', outdoor: true, width: W, height: H, rows: b.rows, objects, voidTile: 'azForest', decals: [{ x: 2, y: 16, w: 3, h: 2, kind: 'cabinJoss' }] };
 }
 
 // ---------- Nouvelle-Vesper ----------
@@ -338,6 +344,21 @@ function atelier(): GameMap {
     npc('betti', 6, 3, 'betti', 'down', 'betti'),
   ];
   return { id: 'atelier', name: 'L’atelier de Betti', outdoor: false, width: 11, height: 9, rows: b.rows, objects };
+}
+
+// ---------- la cabane de Joss ----------
+function cabane(): GameMap {
+  const b = new Builder(7, 6, 'w');
+  b.rect(0, 0, 7, 2, 'Z').rect(0, 0, 1, 6, 'Z').rect(6, 0, 1, 6, 'Z').rect(0, 5, 7, 1, 'Z');
+  b.set(3, 5, 'w');
+  const objects: MapObject[] = [
+    exit('sortie', 3, 5, { to: 'chemin', x: 3, y: 18, dir: 'down' }),
+    obj('filets', 1, 1, 'netWall', 'filets'),
+    obj('etagereJoss', 4, 1, 'tackleShelf', 'etagereJoss'),
+    obj('tableJoss', 3, 2, 'cabinTableBook', 'carnetJoss', { spriteWhen: ['carnetRead', 'cabinTable'] }),
+    obj('tonneau', 5, 3, 'barrel', 'tonneau'),
+  ];
+  return { id: 'cabane', name: 'La cabane de Joss', outdoor: false, width: 7, height: 6, rows: b.rows, objects };
 }
 
 // ---------- l'école ----------
@@ -461,5 +482,5 @@ function serveurs(): GameMap {
   };
 }
 
-export const MAPS_AZ: Record<string, GameMap> = { cuves: cuves(), chemin: chemin(), ville: ville(), atelier: atelier(), ecole: ecole(), centre: centre(), culture: culture(), pompes: pompes(), serveurs: serveurs() };
+export const MAPS_AZ: Record<string, GameMap> = { cuves: cuves(), chemin: chemin(), ville: ville(), atelier: atelier(), ecole: ecole(), centre: centre(), culture: culture(), pompes: pompes(), serveurs: serveurs(), cabane: cabane() };
 export const START_AZ = { map: 'cuves', x: 4, y: 7, dir: 'up' as Dir };

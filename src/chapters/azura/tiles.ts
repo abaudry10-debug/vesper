@@ -1086,3 +1086,153 @@ const WILD: Record<string, Painter> = {
 };
 registerTiles(WILD);
 Object.assign(PAINTERS, WILD); // pour pouvoir leur ajouter des lisières
+
+// ---------- la cabane de pêche de Joss ----------
+const WOOD = { base: '#a8754a', dark: '#7a5034', light: '#c9955f', deep: '#553826', roof: '#3f7a6a', roofDark: '#2c5a50', roofLight: '#5fa08a' };
+/** Des planches horizontales, avec leurs joints. */
+const planks = (c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, seed = 0) => {
+  r(c, x, y, w, h, WOOD.base);
+  for (let yy = y; yy < y + h; yy += 4) {
+    r(c, x, yy, w, 1, WOOD.light);
+    r(c, x, yy + 3, w, 1, WOOD.dark);
+    const off = ((yy * 7 + seed * 5) % 9) + 3;
+    for (let xx = x + off; xx < x + w; xx += 11) r(c, xx, yy + 1, 1, 2, WOOD.dark);
+  }
+};
+function cabinJoss(): HTMLCanvasElement {
+  const cv = document.createElement('canvas');
+  cv.width = 48;
+  cv.height = 42;
+  const c = cv.getContext('2d')!;
+  // les murs, posés sur une poutre de fondation
+  planks(c, 2, 14, 44, 26);
+  r(c, 2, 14, 1, 26, WOOD.deep); r(c, 45, 14, 1, 26, WOOD.deep);
+  r(c, 1, 39, 46, 3, WOOD.deep); r(c, 1, 39, 46, 1, WOOD.dark);
+  // la fenêtre, à gauche, avec un filet suspendu dessous
+  r(c, 6, 18, 9, 8, WOOD.deep); r(c, 7, 19, 7, 6, '#1d4a50'); r(c, 7, 19, 3, 2, '#5fb8b0'); r(c, 10, 19, 1, 6, WOOD.deep); r(c, 7, 22, 7, 1, WOOD.deep);
+  for (let i = 0; i < 4; i++) { r(c, 6 + i * 3, 28, 1, 7, '#d8d0b8'); }
+  r(c, 6, 29, 10, 1, '#d8d0b8'); r(c, 6, 32, 10, 1, '#d8d0b8'); r(c, 6, 35, 10, 1, '#d8d0b8');
+  // un bouchon rouge et blanc accroché à droite, et une rame
+  r(c, 38, 18, 3, 2, AZ.red); r(c, 38, 20, 3, 2, AZ.white); r(c, 39, 16, 1, 2, WOOD.deep);
+  r(c, 36, 22, 2, 16, WOOD.light); r(c, 35, 33, 4, 5, WOOD.base); r(c, 36, 22, 1, 16, WOOD.dark);
+  // la plaque, au-dessus de la porte
+  r(c, 18, 17, 12, 5, WOOD.deep); r(c, 19, 18, 10, 3, AZ.paper);
+  for (const [x, w] of [[20, 1], [22, 1], [24, 1], [26, 2]] as [number, number][]) r(c, x, 19, w, 1, WOOD.deep);
+  // le toit, en planches vertes
+  for (let yy = 0; yy < 15; yy++) {
+    const left = Math.round(10 - yy * 0.7), right = 48 - left;
+    r(c, left, yy, right - left, 1, yy % 3 === 0 ? WOOD.roofDark : WOOD.roof);
+    if (yy % 3 === 1) for (let xx = left + 2; xx < right - 2; xx += 6) r(c, xx, yy, 1, 1, WOOD.roofLight);
+  }
+  r(c, 10, 0, 28, 1, WOOD.roofLight);
+  r(c, 0, 14, 48, 1, WOOD.deep);
+  r(c, 0, 15, 48, 1, 'rgba(0,0,0,0.25)');
+  // une petite cheminée
+  r(c, 34, 0, 4, 5, AZ.rockDark); r(c, 34, 0, 4, 1, AZ.rock);
+  return cv;
+}
+const CABIN = cabinJoss();
+registerDecal('cabinJoss', CABIN);
+/** La porte fait partie du grand décor (dessiné par-dessus les objets) : on la repeint quand elle s'ouvre. */
+export function paintCabinDoor(open: boolean) {
+  const c = CABIN.getContext('2d')!;
+  c.save();
+  c.translate(16, 26);
+  c.clearRect(0, 0, T, T);
+  cabinDoor(open)(c, 0);
+  c.restore();
+}
+
+const cabinDoor = (open: boolean): Painter => (c) => {
+  planks(c, 0, 0, T, T, 3);
+  r(c, 0, 13, T, 3, WOOD.deep); r(c, 0, 13, T, 1, WOOD.dark); // la poutre du bas
+  r(c, 3, 1, 10, 13, WOOD.deep);
+  if (open) {
+    r(c, 4, 2, 8, 12, '#2a1c14');
+    r(c, 4, 2, 2, 12, WOOD.dark);
+  } else {
+    r(c, 4, 2, 8, 12, WOOD.dark);
+    for (let y = 4; y < 14; y += 3) r(c, 4, y, 8, 1, WOOD.deep);
+    r(c, 10, 8, 2, 3, AZ.metal); r(c, 10, 9, 1, 1, AZ.metalDeep); // la serrure
+  }
+};
+/** La canne de Joss, appuyée contre le mur de la cabane. */
+const canneWall: Painter = (c, v) => {
+  azGrass(c, v);
+  c.fillStyle = 'rgba(0,0,0,0.22)'; c.fillRect(6, 13, 8, 2);
+  for (let i = 0; i < 14; i++) r(c, 11 - Math.round(i * 0.6), 14 - i, 1, 1, i < 4 ? WOOD.deep : WOOD.light);
+  r(c, 10, 11, 3, 3, AZ.metalDark); r(c, 11, 12, 1, 1, AZ.metalLight); // le moulinet
+  for (let i = 0; i < 7; i++) r(c, 3, 1 + i * 2, 1, 1, '#e8f4f4'); // le fil qui pend
+  r(c, 2, 14, 3, 1, AZ.red); r(c, 2, 13, 3, 1, AZ.white);
+};
+/** Le ponton : des planches de bois sur l'eau. */
+const woodJetty: Painter = (c) => {
+  waterFrame(0, false)(c, 0);
+  r(c, 2, 0, 12, T, WOOD.base);
+  for (let y = 0; y < T; y += 4) { r(c, 2, y, 12, 1, WOOD.light); r(c, 2, y + 3, 12, 1, WOOD.dark); }
+  r(c, 2, 0, 1, T, WOOD.deep); r(c, 13, 0, 1, T, WOOD.deep);
+  r(c, 1, 2, 2, 3, WOOD.deep); r(c, 13, 10, 2, 3, WOOD.deep); // les poteaux
+};
+const woodFloor: Painter = (c, v) => {
+  r(c, 0, 0, T, T, WOOD.base);
+  for (let x = 0; x < T; x += 4) { r(c, x, 0, 1, T, WOOD.dark); r(c, x + 1, 0, 1, T, WOOD.light); }
+  r(c, (v * 4 + 2) % 16, 6 + v * 3, 1, 3, WOOD.deep);
+};
+const woodWallTop: Painter = (c) => {
+  r(c, 0, 0, T, T, WOOD.deep);
+  r(c, 0, 14, T, 2, WOOD.dark);
+};
+const woodWallFront: Painter = (c, v) => {
+  planks(c, 0, 0, T, T, v);
+  r(c, 0, 13, T, 3, WOOD.dark);
+};
+const netWall: Painter = (c) => {
+  woodWallFront(c, 1);
+  for (let i = 0; i < 5; i++) r(c, 2 + i * 3, 2, 1, 10, '#d8d0b8');
+  for (let j = 0; j < 4; j++) r(c, 2, 3 + j * 3, 13, 1, '#d8d0b8');
+  r(c, 5, 6, 2, 2, AZ.red); r(c, 11, 9, 2, 2, AZ.amber);
+};
+const tackleShelf: Painter = (c) => {
+  woodWallFront(c, 2);
+  r(c, 1, 6, 14, 1, WOOD.deep); r(c, 1, 11, 14, 1, WOOD.deep);
+  r(c, 2, 3, 3, 3, '#7fd4dc'); r(c, 6, 2, 2, 4, AZ.red); r(c, 6, 4, 2, 1, AZ.white); r(c, 10, 3, 4, 3, AZ.metalDark);
+  r(c, 3, 8, 4, 3, AZ.amber); r(c, 9, 8, 1, 3, AZ.glow); r(c, 11, 8, 3, 3, '#9aa6b6');
+};
+const table = (book: boolean): Painter => (c, v) => {
+  woodFloor(c, v);
+  c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(1, 13, 14, 2);
+  r(c, 1, 4, 14, 8, WOOD.dark); r(c, 1, 4, 14, 1, WOOD.light); r(c, 1, 11, 14, 1, WOOD.deep);
+  r(c, 2, 12, 2, 3, WOOD.deep); r(c, 12, 12, 2, 3, WOOD.deep);
+  if (book) {
+    r(c, 4, 5, 8, 5, AZ.ink); r(c, 5, 5, 6, 4, '#c98a4a'); r(c, 5, 5, 6, 1, '#e0a868'); r(c, 8, 5, 1, 4, '#8a5a2a');
+  } else {
+    r(c, 9, 6, 3, 3, AZ.paper); r(c, 9, 6, 3, 1, '#e8dcc0');
+  }
+};
+const barrel: Painter = (c, v) => {
+  woodFloor(c, v);
+  c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(3, 13, 11, 2);
+  r(c, 3, 2, 10, 12, WOOD.base); r(c, 2, 4, 12, 8, WOOD.base);
+  r(c, 2, 4, 12, 1, AZ.metalDark); r(c, 2, 10, 12, 1, AZ.metalDark);
+  r(c, 5, 2, 1, 12, WOOD.light); r(c, 10, 2, 1, 12, WOOD.dark);
+  r(c, 4, 2, 8, 2, WOOD.deep); r(c, 5, 2, 6, 1, '#5fb8b0');
+};
+paintCabinDoor(false);
+registerTiles({
+  cabinDoor: cabinDoor(false), cabinDoorOpen: cabinDoor(true), canneWall, woodJetty, woodFloor, woodWallTop, woodWallFront,
+  netWall, tackleShelf, cabinTableBook: table(true), cabinTable: table(false), barrel,
+});
+registerIcons({
+  canne: (c) => {
+    for (let i = 0; i < 13; i++) r(c, 2 + i, 14 - i, 1, 1, i < 3 ? WOOD.deep : WOOD.light);
+    r(c, 3, 10, 3, 3, AZ.metalDark); r(c, 4, 11, 1, 1, AZ.metalLight);
+    for (let i = 0; i < 5; i++) r(c, 14, 2 + i * 2, 1, 1, '#e8f4f4');
+    r(c, 13, 12, 3, 1, AZ.red); r(c, 13, 13, 3, 1, AZ.white);
+  },
+  cleCabane: (c) => {
+    r(c, 2, 3, 6, 6, '#d89a4a'); r(c, 4, 5, 2, 2, AZ.ink); r(c, 2, 3, 6, 1, '#f0c070'); // l'anneau
+    r(c, 7, 5, 7, 2, '#e8b04a'); r(c, 7, 5, 7, 1, '#f8d890');
+    r(c, 11, 7, 1, 3, '#e8b04a'); r(c, 13, 7, 1, 2, '#e8b04a'); // le panneton
+    r(c, 3, 10, 4, 4, WOOD.base); r(c, 4, 11, 1, 2, WOOD.deep); r(c, 4, 12, 2, 1, WOOD.deep); // le médaillon « J »
+  },
+});

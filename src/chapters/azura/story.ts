@@ -55,7 +55,8 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azlAide', thread: 'leads', title: 'Un coup de main', text: 'Betti a besoin de bras, cet après-midi, à l’atelier.', doneWhen: 'helpDone' },
   { id: 'azl4', thread: 'leads', title: 'Une nuit chez Betti', text: 'Betti me prête son lit, dans l’atelier, en bas près du lac. Le soir, la ville est belle : je peux m’y promener avant de dormir.', doneWhen: 'jour2' },
   { id: 'azl6', thread: 'leads', title: 'Voir l’eau monter', text: 'Le bulletin des eaux, sur la place, donne l’heure du jour. Un banc permet d’attendre. Ensuite, dormir chez Betti, le soir venu.', doneWhen: 'tideWitnessed' },
-  { id: 'azl7', thread: 'leads', title: 'Le carnet de Joss', text: 'Joss a perdu son carnet de pêche, quelque part près de la rivière, sur le chemin des crêtes.', doneWhen: 'carnetRead' },
+  { id: 'azl7', thread: 'leads', title: 'Le carnet de Joss', text: 'Le carnet de Joss est enfermé dans sa cabane de pêche, sur la rive sud de la rivière, au chemin des crêtes. Joss a perdu la clé : il pêchait devant la cabane.', doneWhen: 'carnetRead' },
+  { id: 'azlCabane', thread: 'leads', title: 'La cabane verrouillée', text: 'La cabane de Joss est fermée à clé. Joss pêchait sur son ponton quand il l’a perdue… Elle est peut-être tombée à l’eau.', doneWhen: 'cabaneOpen' },
   { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Oskar m’attend devant la porte du centre, près des cuves.', doneWhen: 'centreIn' },
   { id: 'azl9', thread: 'leads', title: 'L’eau entre encore', text: 'L’eau entre toujours dans la salle des serveurs. La salle des pompes doit commander l’arrivée d’eau : suivre les tuyaux.', doneWhen: 'inflowCut' },
   { id: 'azl10', thread: 'leads', title: 'Vider la salle', text: 'La pompe de vidange renvoie l’eau à la rivière… si la rivière n’est pas trop haute.', doneWhen: 'drained' },
@@ -80,6 +81,8 @@ export const QUESTIONS_AZ: Question[] = [
 
 export const ITEMS_AZ: Record<string, ItemDef> = {
   fruit: { name: 'Fruit d’Azura', text: 'Orange, sucré, avec un goût de miel. Mme Ilda me l’a offert.' },
+  canne: { name: 'Canne à pêche', text: 'La canne de Joss, avec son moulinet et un bouchon rouge et blanc. Joss pêche toujours depuis son ponton.', usable: true },
+  cleCabane: { name: 'Clé de la cabane', text: 'Une clé de cuivre, repêchée devant la cabane de Joss. Un petit médaillon gravé « J ».' },
 };
 
 
@@ -277,7 +280,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   bettiLac: (api) => api.say(['« Regarde-le… Il n’a pas peur de nous. »']),
   betti: (api) => {
     if (!api.has('drawingSeen')) return api.say(['« Fais comme chez toi. Regarde, si tu veux. »']);
-    if (api.has('jour3')) return api.say(['« Joss est passé à l’aube, tout retourné : il a perdu son carnet de pêche. »', '« Il pêche toujours près du pont, sur le chemin des crêtes. »']);
+    if (api.has('jour3')) return api.say(['« Joss est passé à l’aube, tout retourné. Son carnet est enfermé dans sa cabane, et il ne retrouve plus la clé. »', '« Il pêche toujours près du pont, sur le chemin des crêtes. »']);
     if (api.has('jour2')) {
       if (api.has('lesson2Heard')) return api.say(['« Reviens quand tu veux. »']);
       return api.say(['« Tu devrais passer à l’école, si tu veux continuer d’en apprendre plus sur la vie de la colonie. »']);
@@ -312,10 +315,25 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   },
 
   // ---------- jour 3 ----------
+  cabaneFermee: (api) =>
+    api.has('cabaneOpen')
+      ? api.say(['La porte de la cabane est ouverte.'])
+      : api.has('jour3')
+      ? api.say(['La porte de la cabane est fermée à clé. Une plaque gravée : « JOSS ».', 'Joss pêchait devant quand il a perdu sa clé…'], () => api.clue('azlCabane'))
+      : api.say(['La cabane de pêche de Joss. Fermée. Il y range son matériel.']),
+  canne: (api) =>
+    api.say(['Une canne à pêche, appuyée contre la cabane. Celle de Joss.', 'Il l’a oubliée là ce matin.'], () => {
+      api.set('canneTaken');
+      api.item('canne');
+    }),
+  filets: (api) => api.say(['Des filets accrochés au mur, raccommodés cent fois.']),
+  etagereJoss: (api) => api.say(['Des bouchons, des hameçons, des bocaux d’appâts.', 'Tout est rangé avec soin. Chaque bocal porte une étiquette… que Joss a réécrite, barrée, réécrite.']),
+  tonneau: (api) => api.say(['Un tonneau d’eau douce. Il sent le bois mouillé.']),
   carnetJoss: (api) =>
+    api.has('carnetRead') ? api.say(['La table de Joss. Le carnet n’y est plus : je l’ai pris pour le lui rapporter.']) :
     api.say(
       [
-        'Dans les roseaux, un petit carnet de cuir. Celui de Joss.',
+        'Sur la table, un petit carnet de cuir. Celui de Joss.',
         'Des années de marées, notées d’une écriture serrée. Chaque jour, des heures différentes.',
         '« An 9, jour 40 : 3 h 10 et 15 h 40. Jour 41 : 4 h 05 et 16 h 30. Jour 42 : 4 h 55 et 17 h 20. »',
         '« Tous les trente jours, les deux lunes s’alignent : grande marée. Ne jamais rester au bord ce jour-là. »',

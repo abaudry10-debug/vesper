@@ -8,11 +8,13 @@ import type { PersonLook } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
 import { MAPS_AZ, SOLID_AZ, START_AZ } from './maps.js';
 import { CLUES_AZ, ITEMS_AZ, QUESTIONS_AZ, SCRIPTS_AZ, THREADS_AZ } from './story.js';
-import { MASK, TOWER, withFringe } from './tiles.js';
+import { MASK, TOWER, paintCabinDoor, withFringe } from './tiles.js';
 import { clockText, drawDigits, timePass } from './timepass.js';
 import { openBulletin } from './bulletin.js';
 import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, usePump } from './centre.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
+import { atJetty, drawFishing, startFishing, updateFishing } from './peche.js';
+let cabinPainted = false;
 import { EVENING, benchWait, clockLines, day, highTides, hour, levelNow, postLines, renderDaylight, renderTide, setHour } from './time.js';
 
 const look = (id: string, colors: Record<string, string>): PersonLook => ({ id, colors: { g: colors.s ?? '#f0c39a', w: '#14101c', ...colors } });
@@ -929,7 +931,7 @@ function night(g: Game) {
         g.save();
       });
     } else if (next === 3) {
-      ui.say(['« Debout ! »', 'Betti, une tasse à la main, l’air soucieux.', '« Joss est passé à l’aube, tout retourné : il a perdu son carnet de pêche. »', '« Il pêche toujours près du pont, sur le chemin des crêtes. Tu pourrais l’aider ? »'], () => {
+      ui.say(['« Debout ! »', 'Betti, une tasse à la main, l’air soucieux.', '« Joss est passé à l’aube, tout retourné. Son carnet de pêche est enfermé dans sa cabane, et il ne retrouve plus la clé. »', '« Il pêche toujours près du pont, sur le chemin des crêtes. Tu pourrais l’aider ? »'], () => {
         g.api.clue('azl7');
         g.save();
       });
@@ -1021,7 +1023,7 @@ export const azura: Chapter = {
   switches: { labels: [], order: [] },
   intro: [],
   features: { heatWaves: false, movement: 'grid' },
-  music: (map) => (['atelier', 'ecole', 'centre', 'culture', 'pompes', 'serveurs'].includes(map.id) || eveningNow ? 'home' : 'azura'),
+  music: (map) => (['atelier', 'cabane', 'ecole', 'centre', 'culture', 'pompes', 'serveurs'].includes(map.id) || eveningNow ? 'home' : 'azura'),
   dialogStyle: 'azura',
   cutTargets: {},
   solid: SOLID_AZ,
@@ -1035,6 +1037,7 @@ export const azura: Chapter = {
       { label: 'Le soir (lit)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone'], items: [], at: { map: 'atelier', x: 7, y: 5, dir: 'right' } },
       { label: 'Jour 2 (après l’école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard'], items: [], at: { map: 'ville', x: 15, y: 15, dir: 'up' } },
       { label: 'Jour 3 (réveil)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3'], items: [], at: { map: 'atelier', x: 7, y: 5, dir: 'left' } },
+      { label: 'Jour 3 (cabane de Joss)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3'], items: [], at: { map: 'chemin', x: 6, y: 17, dir: 'left' } },
       { label: 'Jour 3 (centre, avec Oskar)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'oskarDeal', 'centreOpen'], items: [], at: { map: 'cuves', x: 27, y: 9, dir: 'up' } },
       { label: 'Jour 2 (école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'bettiHome', 'jour2'], items: [], at: { map: 'ville', x: 27, y: 6, dir: 'up' } },
     ],
@@ -1063,6 +1066,10 @@ export const azura: Chapter = {
     tileName(g, ch, x, y, below) {
       const ct = centreTile(g, x, y, ch);
       if (ct) return ct;
+      if (g.map.id === 'cabane') {
+        if (ch === 'w') return 'woodFloor';
+        if (ch === 'Z') return below === 'Z' ? 'woodWallTop' : 'woodWallFront';
+      }
       const wave = Math.floor(g.time * 1.4 + (x + y) * 0.35) % 2;
       switch (ch) {
         case '"': return 'azGrass';
@@ -1094,7 +1101,8 @@ export const azura: Chapter = {
         case '4': return withFringe('bigCrater3', grassMask(g, x, y));
         case 'k': return withFringe('crystals' + (Math.floor(g.time * 1.5 + x * 0.7 + y) % 2), grassMask(g, x, y));
         case 'm': return 'metalFloor';
-        case 'N': return g.map.id === 'ville' ? 'azStone' : 'azPad';
+        case 'N': return g.map.id === 'ville' ? 'azStone' : g.map.id === 'chemin' ? 'azGrass' : 'azPad';
+        case 'j': return 'woodJetty';
         case 'W': return (g.map.rows[y + 1]?.[x] === 'W' ? 'azFall' : 'azFallFoot') + (Math.floor(g.time * 6) % 2);
         case 'd': return 'slab';
         case 'c': {
@@ -1122,6 +1130,8 @@ export const azura: Chapter = {
       updateEmerge(g, dt);
       updateFish(g, dt);
       updateWalk(g, dt);
+      updateFishing(g, dt);
+      if (g.flags.has('cabaneOpen') !== cabinPainted) paintCabinDoor((cabinPainted = g.flags.has('cabaneOpen')));
       const high = day(g) >= 2 && levelNow(g) > 0.6;
       if (high !== g.flags.has('mareeHaute')) {
         if (high) g.flags.add('mareeHaute');
@@ -1131,7 +1141,37 @@ export const azura: Chapter = {
       if (g.flags.has('lakeNow') && !g.flags.has('lakeScene') && !ui.dialogOpen() && !g.locked) lakeScene(g);
       eveningNow = isEvening(g);
     },
+    useItem(g, id) {
+      if (id !== 'canne') return false;
+      if (atJetty(g)) startFishing(g);
+      else if (g.map.rows[g.facing()[1]]?.[g.facing()[0]] === '~') ui.say(['Rien ne mord, ici. Joss pêchait toujours depuis son ponton.']);
+      else ui.say(['Il faudrait être au bord de l’eau.']);
+      return true;
+    },
     beforeInteract(g, obj, fx, fy) {
+      // la cabane de Joss : les murs, sous le grand décor
+      if (!obj && g.map.id === 'chemin' && g.map.rows[fy]?.[fx] === 'N') {
+        ui.say(['La cabane de pêche de Joss, sur ses pilotis. Des planches, un toit vert, un filet qui sèche.']);
+        return true;
+      }
+      // la porte : la clé repêchée l'ouvre
+      if (obj?.id === 'porteCabane' && !g.flags.has('cabaneOpen') && g.items.has('cleCabane')) {
+        g.items.delete('cleCabane');
+        g.flags.add('cabaneOpen');
+        sfx.door();
+        ui.say(['La clé tourne. Clac. La porte de la cabane s’ouvre.'], () => {
+          g.save();
+          g.warp('cabane', 3, 4, 'up');
+        });
+        return true;
+      }
+      // le ponton : on pêche, ou on regarde l'eau
+      if (!obj && atJetty(g)) {
+        if (g.items.has('canne')) startFishing(g);
+        else if (g.flags.has('jour3') && !g.flags.has('cabaneOpen') && !g.items.has('cleCabane')) ui.say(['L’eau est claire, ici. Quelque chose brille, au fond.', 'Trop loin pour la main.']);
+        else ui.say(['Le ponton de Joss. L’eau est claire : on voit passer de petits poissons.']);
+        return true;
+      }
       // la navette, sous son grand décor
       if (!obj && g.map.id === 'cuves' && g.map.rows[fy]?.[fx] === 'N') {
         SCRIPTS_AZ.navette(g.api);
@@ -1174,7 +1214,12 @@ export const azura: Chapter = {
       // Joss se fie à sa mémoire… qui flanche
       if (obj?.id === 'joss' && day(g) === 3) {
         if (!g.flags.has('carnetRead')) {
-          ui.say(['« Mon carnet ! J’y notais toutes les marées, depuis des années. »', '« Je l’ai posé quelque part près de l’eau, ce matin… ou hier ? Je ne sais plus. »'], () => g.api.clue('azl7'));
+          ui.say(
+            g.flags.has('cabaneOpen')
+              ? ['« Tu as ouvert ma cabane ? Le carnet est sur la table. Rapporte-le-moi, tu veux ? »']
+              : ['« Mon carnet ! J’y notais toutes les marées, depuis des années. Il est dans ma cabane, de l’autre côté de la rivière. »', '« Mais la clé… Je l’avais ce matin, j’en suis sûr. Je pêchais devant la cabane. Ou c’était hier ? »', '« Et ma canne ! Je l’ai laissée là-bas, elle aussi. »'],
+            () => g.api.clue('azl7'),
+          );
         } else {
           ui.say(['« Tu l’as trouvé ! »', 'Il tourne les dernières pages, longtemps. Il s’arrête sur « Pourquoi je note ça, déjà ? ».', '« C’est mon écriture… Je ne me souviens pas d’avoir écrit ça. »']);
         }
@@ -1234,6 +1279,10 @@ export const azura: Chapter = {
           ui.say(['Pas encore sommeil. Le carnet de Joss, le centre de clonage… Je veux comprendre.']);
           return true;
         }
+        if (day(g) === 3 && !g.flags.has('carnetRead')) {
+          ui.say(['Pas encore sommeil. Le carnet de Joss est toujours enfermé dans sa cabane, au bord de la rivière.']);
+          return true;
+        }
         if (day(g) >= 4) {
           ui.say(['Pas maintenant.']);
           return true;
@@ -1286,10 +1335,12 @@ export const azura: Chapter = {
         renderEvening(g, c, w, h);
         // le gardien après la teinte du soir : ses lumières ressortent dans la pénombre
         drawFish(g, c, cox, coy);
+        drawFishing(g, c, cox, coy);
         drawClock(g, c, cox, coy);
         return true;
       }
       drawFish(g, c, cox, coy);
+      drawFishing(g, c, cox, coy);
       drawClock(g, c, cox, coy);
       renderDaylight(g, c, w, h);
       // une lumière claire, et l'ombre des nuages qui glisse sur le paysage
@@ -1339,7 +1390,7 @@ export const azura: Chapter = {
           timePass(hour(g), EVENING, 'Oskar me raccompagne jusqu’au chemin. Nous ne disons rien. Le jour décline.', () => {
             g.locked = false;
             g.save();
-            ui.say(['Le soir est tombé. Je devrais rentrer dormir chez Betti.']);
+            ui.say(g.flags.has('carnetRead') ? ['Le soir est tombé. Je devrais rentrer dormir chez Betti.'] : ['Le soir est tombé. Il reste le carnet de Joss, enfermé dans sa cabane, au bord de la rivière.']);
           }, () => setHour(g, EVENING));
         }, 400);
       }

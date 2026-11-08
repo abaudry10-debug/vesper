@@ -8,7 +8,7 @@ import { T } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
 import { drawDigits, timePass } from './timepass.js';
 
-export const day = (g: Game) => (g.flags.has('jour3') ? 3 : g.flags.has('jour2') ? 2 : 1);
+export const day = (g: Game) => (g.flags.has('jour4') ? 4 : g.flags.has('jour3') ? 3 : g.flags.has('jour2') ? 2 : 1);
 export const hour = (g: Game) => g.counters.heure ?? 9;
 export const setHour = (g: Game, h: number) => {
   g.counters.heure = h;
@@ -33,7 +33,13 @@ export function clockLines(g: Game): string[] {
   const h = hour(g);
   const near = Math.min(...highTides(day(g)).map((H) => Math.abs(h - H)));
   const moons =
-    near < 0.6
+    day(g) === 4 && h < 9
+      ? 'Sur le cadran des lunes, les deux lunes sont alignées. Exactement l’une sur l’autre.'
+      : day(g) === 4 && h < 10
+        ? 'Sur le cadran des lunes, la grande lune couvre encore la petite. Elle va bientôt la quitter : l’eau va s’arrêter.'
+        : day(g) === 4 && h === 10
+          ? 'Sur le cadran des lunes, la grande lune quitte la petite. Le lac ne bouge plus.'
+          : near < 0.6
       ? 'Sur le cadran des lunes, la grande lune passe juste sur la petite.'
       : near <= 2
         ? 'Sur le cadran des lunes, la grande s’approche de la petite.'
@@ -60,6 +66,8 @@ export const NIGHT = 23;
 
 export function benchWait(g: Game, onTide: (h: number) => void) {
   const h = hour(g);
+  if (day(g) === 4 && !g.flags.has('vague')) return ui.say(['Pas le temps de m’asseoir.']);
+  if (day(g) === 4 && !g.flags.has('jossSaved') && h >= 10) return ui.say(['Pas le temps de m’asseoir : Joss attend sur l’îlot.']);
   const max = dayDone(g) ? EVENING : NIGHT;
   if (h >= max) return ui.say(h >= NIGHT ? ['Il est tard. Il faut que j’aille dormir.'] : ['Le soir est tombé. Il est temps d’aller dormir chez Betti.']);
   g.locked = true;

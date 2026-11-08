@@ -14,6 +14,7 @@ import { openBulletin } from './bulletin.js';
 import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, usePump } from './centre.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
 import { atJetty, drawFishing, startFishing, updateFishing } from './peche.js';
+import { drawJour4, jossIlot, useBoat, useCable } from './jour4.js';
 let cabinPainted = false;
 import { EVENING, benchWait, clockLines, day, highTides, hour, levelNow, postLines, renderDaylight, renderTide, setHour } from './time.js';
 
@@ -488,7 +489,7 @@ function fishState(g: Game) {
 
 function updateFish(g: Game, dt: number) {
   const st = fishState(g);
-  if (g.map.id !== 'ville') {
+  if (g.map.id !== 'ville' || (day(g) === 4 && !g.flags.has('jossSaved'))) {
     st.fish = null;
     return;
   }
@@ -900,6 +901,26 @@ function atTheLake(g: Game) {
   });
 }
 
+// ---------- jour 4 : le déclic, devant la tour de l'horloge ----------
+function grandeMaree(g: Game) {
+  ui.say(
+    [
+      'Les deux lunes, alignées…',
+      'Le carnet de Joss : « Tous les trente jours, les deux lunes s’alignent : grande marée. Ne jamais rester au bord ce jour-là. »',
+      'C’est aujourd’hui.',
+      'Et l’eau monte une heure plus tard chaque jour : 6 h, 7 h, 8 h… Aujourd’hui, vers 9 h.',
+      'Le bulletin annonce 6 h. Et une journée calme. Tout le monde est au bord du lac.',
+      'Joss est sur l’îlot.',
+    ],
+    () => {
+      g.flags.add('j4Moons');
+      g.api.clue('azGrande');
+      g.api.clue('azl13');
+      g.save();
+    },
+  );
+}
+
 // ---------- la nuit chez Betti : un écran noir, puis le matin du jour 2 ----------
 function night(g: Game) {
   const next = day(g) + 1;
@@ -935,11 +956,10 @@ function night(g: Game) {
         g.api.clue('azl7');
         g.save();
       });
-    } else {
-      ui.say(['« Debout ! »', 'Betti est déjà partie. Une odeur de pain chaud flotte dans la pièce.'], () => {
-        g.flags.add('sliceDone');
+    } else if (next === 4) {
+      ui.say(['« Debout ! »', 'Betti, à la fenêtre, une tasse à la main.', '« Joss est parti pêcher sur l’îlot à l’aube, avec sa barque. Il avait retrouvé son carnet, il était tout content. »', '« Il dit que le bulletin annonce une journée calme. Tant mieux. »'], () => {
+        g.api.clue('azl12');
         g.save();
-        ui.say(['— Fin de la démo d’Azura —', 'La suite, le jour 4, arrive bientôt. Merci d’avoir joué.']);
       });
     }
   }, 5200);
@@ -1037,6 +1057,7 @@ export const azura: Chapter = {
       { label: 'Le soir (lit)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone'], items: [], at: { map: 'atelier', x: 7, y: 5, dir: 'right' } },
       { label: 'Jour 2 (après l’école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard'], items: [], at: { map: 'ville', x: 15, y: 15, dir: 'up' } },
       { label: 'Jour 3 (réveil)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3'], items: [], at: { map: 'atelier', x: 7, y: 5, dir: 'left' } },
+      { label: 'Jour 4 (réveil)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'canneTaken', 'cabaneOpen', 'oskarDeal', 'centreOpen', 'centreIn', 'inflowCut', 'drained', 'powerOn', 'serverRead', 'oskarIn', 'pxFound', 'jour4'], items: ['canne'], at: { map: 'atelier', x: 7, y: 5, dir: 'left' } },
       { label: 'Jour 3 (cabane de Joss)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3'], items: [], at: { map: 'chemin', x: 6, y: 17, dir: 'left' } },
       { label: 'Jour 3 (centre, avec Oskar)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'oskarDeal', 'centreOpen'], items: [], at: { map: 'cuves', x: 27, y: 9, dir: 'up' } },
       { label: 'Jour 2 (école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'bettiHome', 'jour2'], items: [], at: { map: 'ville', x: 27, y: 6, dir: 'up' } },
@@ -1131,6 +1152,8 @@ export const azura: Chapter = {
       updateFish(g, dt);
       updateWalk(g, dt);
       updateFishing(g, dt);
+      // le jour 4, quand la sirène sonne, ceux qui étaient au bord du lac sont montés
+      if (day(g) === 4 && g.map.id === 'ville') for (const o of g.map.objects) if (['enfant', 'passant3', 'passant3b'].includes(o.id)) o.hideWhen = 'sireneOn';
       if (g.flags.has('cabaneOpen') !== cabinPainted) paintCabinDoor((cabinPainted = g.flags.has('cabaneOpen')));
       const high = day(g) >= 2 && levelNow(g) > 0.6;
       if (high !== g.flags.has('mareeHaute')) {
@@ -1142,6 +1165,7 @@ export const azura: Chapter = {
       eveningNow = isEvening(g);
     },
     useItem(g, id) {
+      if (id === 'cable') return useCable(g);
       if (id === 'cleCabane') {
         const [fx, fy] = g.facing();
         if (g.map.id !== 'chemin' || fx !== 3 || fy !== 17) {
@@ -1164,6 +1188,20 @@ export const azura: Chapter = {
       return true;
     },
     beforeInteract(g, obj, fx, fy) {
+      // le jour 4 : rendre sa pince à Tom ; la barque ; Joss sur l'îlot
+      if (obj?.id === 'tom' && g.flags.has('sireneOn') && g.items.has('pince')) {
+        g.items.delete('pince');
+        ui.say(['Je rends sa pince à Tom.', '« Garde-la, j’ai failli dire. Non, rends-la. » Il la serre dans sa main.', '« Je l’avais débranchée parce qu’elle sonnait pour rien. Elle ne sonnait pas pour rien. »'], () => g.save());
+        return true;
+      }
+      if (obj?.id === 'barqueQuai') {
+        useBoat(g);
+        return true;
+      }
+      if (obj?.id === 'jossIlot') {
+        jossIlot(g);
+        return true;
+      }
       // la cabane de Joss : les murs, sous le grand décor
       if (!obj && g.map.id === 'chemin' && g.map.rows[fy]?.[fx] === 'N') {
         ui.say(['La cabane de pêche de Joss, sur ses pilotis. Des planches, un toit vert, un filet qui sèche.']);
@@ -1239,6 +1277,7 @@ export const azura: Chapter = {
       if (!obj && g.map.id === 'ville' && g.map.rows[fy]?.[fx] === 'N') {
         ui.say(clockLines(g), () => {
           if (g.flags.has('tideWitnessed') && levelNow(g) > 0.95) g.api.clue('azLunes');
+          if (day(g) === 4 && !g.flags.has('j4Moons')) grandeMaree(g);
         });
         return true;
       }
@@ -1261,6 +1300,7 @@ export const azura: Chapter = {
         if (obj.id === 'horloge') {
           ui.say(clockLines(g), () => {
             if (g.flags.has('tideWitnessed') && levelNow(g) > 0.95) g.api.clue('azLunes');
+          if (day(g) === 4 && !g.flags.has('j4Moons')) grandeMaree(g);
           });
           return true;
         }
@@ -1335,6 +1375,7 @@ export const azura: Chapter = {
       const [hx0, hy0] = g.heroPixel();
       const cox = Math.round(hx0 + T / 2 - w / 2), coy = Math.round(hy0 + T / 2 - (h - view.padBottom) / 2);
       renderTide(g, c, cox, coy, w, h);
+      drawJour4(g, c, cox, coy, w, h);
       if (isEvening(g)) {
         renderEvening(g, c, w, h);
         // le gardien après la teinte du soir : ses lumières ressortent dans la pénombre
@@ -1419,7 +1460,7 @@ export const azura: Chapter = {
       }
       // à l'école, la leçon commence dès qu'on entre, une fois par jour
       if (mapId === 'ecole') {
-        const due = g.flags.has('jour3') ? !g.flags.has('lesson3Heard') : g.flags.has('jour2') ? !g.flags.has('lesson2Heard') : !g.flags.has('lesson1Heard');
+        const due = g.flags.has('jour4') ? !g.flags.has('lesson4Heard') : g.flags.has('jour3') ? !g.flags.has('lesson3Heard') : g.flags.has('jour2') ? !g.flags.has('lesson2Heard') : !g.flags.has('lesson1Heard');
         if (due) window.setTimeout(() => SCRIPTS_AZ.lecon(g.api), 400);
       }
       // en sortant de l'école, le jour 2 : l'envie de voir l'eau monter

@@ -1218,11 +1218,31 @@ const barrel: Painter = (c, v) => {
   r(c, 4, 2, 8, 2, WOOD.deep); r(c, 5, 2, 6, 1, '#5fb8b0');
 };
 paintCabinDoor(false);
+/** La barque de Joss, amarrée, sur l'eau. */
+const barqueWater: Painter = (c) => {
+  waterFrame(0, false)(c, 0);
+  c.fillStyle = 'rgba(0,40,50,0.35)'; c.fillRect(1, 12, 15, 2);
+  r(c, 0, 6, 16, 6, WOOD.deep); r(c, 2, 12, 12, 1, WOOD.deep);
+  r(c, 1, 6, 14, 4, WOOD.base); r(c, 1, 6, 14, 1, WOOD.light); r(c, 7, 7, 2, 3, WOOD.dark);
+  r(c, 3, 3, 1, 6, WOOD.light); r(c, 12, 4, 1, 5, WOOD.light);
+  r(c, 15, 7, 1, 1, '#d8c8a0');
+};
 registerTiles({
+  barqueWater,
   cabinDoor: cabinDoor(false), cabinDoorOpen: cabinDoor(true), canneWall, woodJetty, woodFloor, woodWallTop, woodWallFront,
   netWall, tackleShelf, cabinTableBook: table(true), cabinTable: table(false), barrel,
 });
 registerIcons({
+  pince: (c) => {
+    r(c, 3, 9, 3, 6, AZ.red); r(c, 9, 9, 3, 6, AZ.red); r(c, 3, 9, 1, 6, '#ff9a9a');
+    r(c, 5, 6, 2, 4, AZ.metalDark); r(c, 8, 6, 2, 4, AZ.metalDark); r(c, 6, 5, 3, 2, AZ.metal);
+    r(c, 6, 1, 1, 5, AZ.metalLight); r(c, 8, 1, 1, 5, AZ.metalLight); r(c, 7, 6, 1, 1, AZ.ink);
+  },
+  cable: (c) => {
+    for (let i = 0; i < 10; i++) r(c, 3 + i, 8 + Math.round(Math.sin(i * 0.9) * 3), 2, 2, '#ffb02e');
+    r(c, 1, 7, 3, 4, AZ.metalDark); r(c, 0, 8, 1, 2, '#e8b04a');
+    r(c, 13, 7, 3, 4, AZ.metalDark); r(c, 15, 8, 1, 2, '#e8b04a');
+  },
   canne: (c) => {
     for (let i = 0; i < 13; i++) r(c, 2 + i, 14 - i, 1, 1, i < 3 ? WOOD.deep : WOOD.light);
     r(c, 3, 10, 3, 3, AZ.metalDark); r(c, 4, 11, 1, 1, AZ.metalLight);

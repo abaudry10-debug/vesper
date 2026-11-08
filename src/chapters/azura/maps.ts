@@ -219,7 +219,7 @@ function chemin(): GameMap {
     obj('panneauVille', 16, 17, 'pathSign', 'panneauVille'),
     obj('repere', post, river(post) - 1, 'waterPost', 'repere'),
     ...pylons,
-    npc('joss', joss[0], joss[1], 'joss', 'down', 'joss'),
+    npc('joss', joss[0], joss[1], 'joss', 'down', 'joss', { hideWhen: 'jour4' }),
     // la cabane de pêche de Joss, sur la rive sud, avec son ponton et sa canne (posée là au matin du jour 3)
     { id: 'porteCabane', x: 3, y: 17, sprite: 'cabinDoor', spriteWhen: ['cabaneOpen', 'cabinDoorOpen'], script: 'cabaneFermee', door: { to: 'cabane', x: 3, y: 4, dir: 'up', needs: 'cabaneOpen' } },
     obj('canne', 5, 17, 'canneWall', 'canne', { showWhen: 'jour3', hideWhen: 'canneTaken' }),
@@ -238,7 +238,7 @@ function chemin(): GameMap {
 
 // ---------- Nouvelle-Vesper ----------
 function ville(): GameMap {
-  const W = 34, H = 28;
+  const W = 34, H = 32;
   const b = new Builder(W, H, '"');
   b.rect(0, 0, W, 1, 'A').rect(0, 0, 1, H, 'A').rect(W - 1, 0, 1, H, 'A');
   b.rect(17, 0, 1, 7, '.');
@@ -260,8 +260,11 @@ function ville(): GameMap {
   blob(b, 17, 19.6, 1.8, 0.6, '"', 4, ',');
   // la passerelle au bord du lac, et le lac
   b.rect(1, 22, W - 2, 2, '=');
-  b.rect(1, 24, W - 2, 4, '~');
+  b.rect(1, 24, W - 2, 8, '~');
   b.rect(17, 24, 1, 2, '=');
+  // l'îlot, au milieu du lac : quelques cases d'herbe et un arbre
+  b.rect(11, 28, 3, 3, '"').set(14, 29, '"');
+  b.set(11, 28, 'A');
   b.points('A', [[1, 2], [10, 2], [23, 2], [32, 2], [1, 18], [32, 18], [12, 18], [22, 18], [14, 3], [20, 3], [1, 1], [2, 1], [31, 1], [32, 1], [1, 19], [32, 19], [11, 1], [22, 1]]);
   blob(b, 2.5, 15.5, 1.6, 1, ',', 5, '"');
   blob(b, 31.5, 15.5, 1.6, 1, ',', 6, '"');
@@ -279,7 +282,7 @@ function ville(): GameMap {
     obj('solaireJardin1', 14, 20, 'solarPanel', 'solaire'), obj('solaireJardin2', 20, 20, 'solarPanel', 'solaire'),
     obj('nomVille', 16, 3, 'townSign', 'nomVille'),
     obj('tableau', 14, 9, 'tideBoard', 'tableau'),
-    obj('sirene', 21, 9, 'sirenOff', 'sirene'),
+    obj('sirene', 21, 9, 'sirenOff', 'sirene', { spriteWhen: ['sireneOn', 'sirenOn'] }),
     obj('etal', 13, 13, 'stall', 'etal'),
     obj('banc1', 15, 14, 'bench', 'banc'),
     obj('banc2', 19, 14, 'bench', 'banc'),
@@ -312,6 +315,12 @@ function ville(): GameMap {
     npc('passant3', 20, 23, 'pass3', 'down', 'passant3', { hideWhen: 'mareeHaute' }),
     npc('passant3b', 20, 21, 'pass3', 'down', 'passant3', { showWhen: 'mareeHaute' }),
     npc('passant4', 26, 7, 'pass4', 'left', 'passant4', { npc: { look: 'pass4', dir: 'left', wander: 3 } }),
+    // le jour 4 : Joss sur l'îlot, sa barque, Betti après la vague
+    npc('jossIlot', 12, 29, 'joss', 'right', 'jossIlot', { showWhen: 'jour4', hideWhen: 'jossSaved' }),
+    obj('barqueQuai', 16, 25, 'barqueWater', 'barque', { showWhen: 'barqueOk', hideWhen: 'onIlot' }),
+    obj('barqueIlot', 15, 29, 'barqueWater', 'barqueIlot', { showWhen: 'onIlot' }),
+    npc('jossQuai', 15, 23, 'joss', 'right', 'jossQuai', { showWhen: 'jossSaved' }),
+    npc('bettiVague', 16, 17, 'betti', 'down', 'bettiVague', { showWhen: 'vague' }),
   ];
   // la ville est ceinte : des montagnes au nord, la barrière de la colonie sur les côtés
   for (let x = 0; x < W; x++) if (x !== 17) b.set(x, 0, 'M').set(x, 1, 'M');
@@ -341,7 +350,7 @@ function atelier(): GameMap {
     obj('etabli2', 3, 3, 'workbench', 'etabli'),
     obj('pieces', 2, 5, 'robotParts', 'pieces'),
     obj('lit', 8, 5, 'bedAz', 'lit'),
-    npc('betti', 6, 3, 'betti', 'down', 'betti'),
+    npc('betti', 6, 3, 'betti', 'down', 'betti', { hideWhen: 'vague' }),
   ];
   return { id: 'atelier', name: 'L’atelier de Betti', outdoor: false, width: 11, height: 9, rows: b.rows, objects };
 }

@@ -6,19 +6,23 @@ import { sfx } from '../../engine/audio.js';
 import { T } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
 
-type Outcome = 'rien' | 'presque' | 'cle' | 'vide';
+type Outcome = 'rien' | 'presque' | 'cle' | 'vide' | 'rate' | 'barque';
 interface Cast { t: number; tx: number; ty: number; outcome: Outcome; done: boolean }
 const casts = new WeakMap<Game, Cast>();
 
 const DUR = { cast: 0.4, wait: 1.3, tug: 0.7 };
-const total = (o: Outcome) => DUR.cast + DUR.wait + (o === 'presque' || o === 'cle' ? DUR.tug : 0.3);
+const bites = (o: Outcome) => o === 'presque' || o === 'cle' || o === 'barque';
+const total = (o: Outcome) => DUR.cast + DUR.wait + (bites(o) ? DUR.tug : 0.3);
 
-/** Le héros est sur le ponton et regarde l'eau. */
+/** Le héros est sur un ponton et regarde l'eau : celui de la cabane de Joss, ou celui du lac de la ville. */
 export function atJetty(g: Game): boolean {
-  if (g.map.id !== 'chemin' || g.map.rows[g.y]?.[g.x] !== 'j') return false;
   const [fx, fy] = g.facing();
-  return g.map.rows[fy]?.[fx] === '~';
+  if (g.map.rows[fy]?.[fx] !== '~') return false;
+  if (g.map.id === 'chemin') return g.map.rows[g.y]?.[g.x] === 'j';
+  return g.map.id === 'ville' && g.x === 17 && g.y === 25 && fy === 26;
 }
+/** Au jour 4, la barque de Joss dérive : on peut la rattraper depuis le ponton du lac. */
+export const boatAdrift = (g: Game) => g.map.id === 'ville' && g.flags.has('vague') && !g.flags.has('barqueOk');
 
 export function keyLost(g: Game) {
   return g.flags.has('jour3') && !g.items.has('cleCabane') && !g.flags.has('cabaneOpen');
@@ -27,7 +31,11 @@ export function keyLost(g: Game) {
 export function startFishing(g: Game) {
   const [tx, ty] = g.facing();
   let outcome: Outcome = 'vide';
-  if (keyLost(g)) {
+  if (boatAdrift(g)) {
+    const n = (g.counters.pecheBarque ?? 0) + 1;
+    g.counters.pecheBarque = n;
+    outcome = n === 1 ? 'rate' : 'barque';
+  } else if (g.map.id === 'chemin' && keyLost(g)) {
     const n = (g.counters.peche ?? 0) + 1;
     g.counters.peche = n;
     outcome = n === 1 ? 'rien' : n === 2 ? 'presque' : 'cle';
@@ -44,7 +52,7 @@ export function updateFishing(g: Game, dt: number) {
   c.t += dt;
   const tugAt = DUR.cast + DUR.wait;
   if (before < DUR.cast && c.t >= DUR.cast) sfx.blip();
-  if ((c.outcome === 'presque' || c.outcome === 'cle') && before < tugAt && c.t >= tugAt) sfx.clank();
+  if (bites(c.outcome) && before < tugAt && c.t >= tugAt) sfx.clank();
   if (c.t < total(c.outcome)) return;
   c.done = true;
   const end = () => {
@@ -62,6 +70,14 @@ export function updateFishing(g: Game, dt: number) {
       g.api.item('cleCabane');
       end();
     });
+  } else if (c.outcome === 'rate') {
+    ui.say(['La ligne file vers la barque… et retombe juste à côté de la corde.', 'Encore. Il faut viser l’amarre qui traîne derrière.'], end);
+  } else if (c.outcome === 'barque') {
+    ui.say(['Le bouchon passe par-dessus l’amarre. L’hameçon s’accroche à la corde !', 'Je tire, tout doucement. La barque de Joss glisse jusqu’au ponton.', 'Je l’amarre solidement.'], () => {
+      g.flags.add('barqueOk');
+      g.api.clue('azl15');
+      end();
+    });
   } else {
     ui.say(['Le bouchon flotte un long moment. Rien ne mord.'], end);
   }
@@ -76,7 +92,7 @@ export function drawFishing(g: Game, c: CanvasRenderingContext2D, ox: number, oy
   const endX = k.tx * T + 8 - ox, endY = k.ty * T + 9 - oy;
   const p = Math.min(1, k.t / DUR.cast);
   const tugAt = DUR.cast + DUR.wait;
-  const tugging = (k.outcome === 'presque' || k.outcome === 'cle') && k.t >= tugAt;
+  const tugging = bites(k.outcome) && k.t >= tugAt;
   let bx = tipX + (endX - tipX) * p, by = tipY + (endY - tipY) * p - Math.sin(p * Math.PI) * 10;
   if (p >= 1) by += Math.round(Math.sin(k.t * 5) * 0.8) + (tugging ? 2 + Math.round(Math.sin(k.t * 30)) : 0);
   // le fil

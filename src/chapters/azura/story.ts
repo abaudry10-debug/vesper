@@ -48,6 +48,11 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azIris', thread: 'arrivee', title: 'La commandante', text: 'Iris Aurel, commandante de la mission Aurore : « Le centre de clonage ? Fermé depuis l’accident de l’an 3. Il n’y a plus rien à voir. » Elle a détourné les yeux.' },
   { id: 'azVidange', thread: 'arrivee', title: 'La salle vidée', text: 'L’arrivée d’eau coupée, la pompe a vidé la salle des serveurs vers la rivière, à marée basse.' },
   { id: 'azPX07', thread: 'arrivee', title: 'PX-07', text: 'Le serveur du centre : copie locale des souvenirs perdue dans l’inondation de l’an 3, second chargement annulé. Récupération demandée à la source, sur Vesper, par AU-01 : dossier vide, tout est parti vers l’appareil PX-07. Oskar : « AU-01, c’est la commandante. Elle savait. » Avec cette copie, on pourrait refaire le chargement, correctement.' },
+  { id: 'azGrande', thread: 'eaux', title: 'La grande marée', text: 'Jour 4 : sur la tour, les deux lunes sont alignées. Le carnet de Joss : « Tous les trente jours, les deux lunes s’alignent : grande marée. » Et les heures avancent d’une heure par jour : aujourd’hui, vers 9 h. Le bulletin annonce 6 h et une journée calme.' },
+  { id: 'azSirene', thread: 'eaux', title: 'La sirène', text: 'J’ai rebranché la sirène avec la pince de Tom et un câble de Betti. En l’entendant, les colons ont retrouvé le vieux réflexe : évacuer les zones à risque.' },
+  { id: 'azVague', thread: 'eaux', title: 'La vague', text: 'À 9 h, le lac a reculé, puis une vague a passé la passerelle et traversé le jardin, jusqu’au pied des maisons. Personne n’était plus au bord de l’eau.' },
+  { id: 'azJoss4', thread: 'eaux', title: 'Joss', text: 'Ramené de l’îlot à l’étale. Nora a compris : chaque matin, elle recopiait les heures du premier jour, sans s’en rendre compte. La commandante regardait le lac, sans un mot.' },
+  { id: 'azLecon4', thread: 'ecole', title: 'La leçon du jour 4', text: '« Le jour du grand départ, les capsules ont envoyé nos corps jusqu’ici. » Nos corps ? Ce sont nos esprits qui sont partis. Les corps dorment toujours sur Vesper.' },
   { id: 'azLecon3', thread: 'ecole', title: 'La leçon du jour 3', text: '« Nos ancêtres ont voyagé deux ans pour arriver ici. » Deux ans ? Le voyage d’Aurore a duré deux cent douze ans.' },
   { id: 'azl1', thread: 'leads', title: 'Où sont les autres ?', text: 'Le sentier part vers le sud, au-delà des cuves.', doneWhen: 'bettiMet' },
   { id: 'azl2', thread: 'leads', title: 'L’atelier de Betti', text: 'En bas, près du lac. Passer d’abord voir le bulletin des eaux, sur la place.', doneWhen: 'drawingSeen' },
@@ -56,6 +61,10 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl4', thread: 'leads', title: 'Une nuit chez Betti', text: 'Betti me prête son lit, dans l’atelier, en bas près du lac. Le soir, la ville est belle : je peux m’y promener avant de dormir.', doneWhen: 'jour2' },
   { id: 'azl6', thread: 'leads', title: 'Voir l’eau monter', text: 'Le bulletin des eaux, sur la place, donne l’heure du jour. Un banc permet d’attendre. Ensuite, dormir chez Betti, le soir venu.', doneWhen: 'tideWitnessed' },
   { id: 'azl7', thread: 'leads', title: 'Le carnet de Joss', text: 'Le carnet de Joss est enfermé dans sa cabane de pêche, sur la rive sud de la rivière, au chemin des crêtes. Joss a perdu la clé : il pêchait devant la cabane.', doneWhen: 'carnetRead' },
+  { id: 'azl12', thread: 'leads', title: 'Une journée calme ?', text: 'Joss est parti pêcher sur l’îlot, au milieu du lac. Le bulletin annonce une journée calme. Mais le carnet de Joss parlait d’une grande marée, tous les trente jours… Regarder les lunes, sur la tour de l’horloge.', doneWhen: 'j4Moons' },
+  { id: 'azl13', thread: 'leads', title: 'Prévenir la ville', text: 'Grande marée vers 9 h, et personne ne me croit. La sirène ferait évacuer tout le monde : Tom l’a débranchée, ses fils sont grillés. Il faudrait une pince et un câble neuf.', doneWhen: 'sireneOn' },
+  { id: 'azl14', thread: 'leads', title: 'La barque de Joss', text: 'Joss est bloqué sur l’îlot, et sa barque dérive sur le lac. Avec la canne, depuis le petit ponton du lac, je pourrais accrocher l’amarre qui traîne.', doneWhen: 'barqueOk' },
+  { id: 'azl15', thread: 'leads', title: 'L’étale', text: 'La barque est au ponton, mais le courant tire vers le large. Attendre que l’eau s’arrête de bouger (l’étale, vers 10 h), puis ramer jusqu’à l’îlot.', doneWhen: 'jossSaved' },
   { id: 'azlCabane', thread: 'leads', title: 'La cabane verrouillée', text: 'La cabane de Joss est fermée à clé. Joss pêchait sur son ponton quand il l’a perdue… Elle est peut-être tombée à l’eau.', doneWhen: 'cabaneOpen' },
   { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Oskar m’attend devant la porte du centre, près des cuves.', doneWhen: 'centreIn' },
   { id: 'azl9', thread: 'leads', title: 'L’eau entre encore', text: 'L’eau entre toujours dans la salle des serveurs. La salle des pompes doit commander l’arrivée d’eau : suivre les tuyaux.', doneWhen: 'inflowCut' },
@@ -82,6 +91,8 @@ export const QUESTIONS_AZ: Question[] = [
 export const ITEMS_AZ: Record<string, ItemDef> = {
   fruit: { name: 'Fruit d’Azura', text: 'Orange, sucré, avec un goût de miel. Mme Ilda me l’a offert.' },
   canne: { name: 'Canne à pêche', text: 'La canne de Joss, avec son moulinet et un bouchon rouge et blanc. Joss pêche toujours depuis son ponton.', usable: true },
+  pince: { name: 'Pince de Tom', text: 'Une pince d’électricien, aux poignées rouges. Tom ne la quitte jamais.' },
+  cable: { name: 'Câble neuf', text: 'Un câble électrique neuf, de l’atelier de Betti. De quoi rebrancher la sirène.', usable: true },
   cleCabane: { name: 'Clé de la cabane', text: 'Une clé de cuivre, repêchée devant la cabane de Joss. Un petit médaillon gravé « J ».', usable: true },
 };
 
@@ -174,11 +185,25 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   tableau: (api) => api.say(['Le bulletin du Bureau des eaux.']),
   sirene: (api) =>
     api.say(
-      api.has('tomTalk')
+      api.has('sireneOn')
+        ? ['La sirène hurle encore, au-dessus de la place.']
+        : api.has('jour4') && api.has('j4Moons')
+          ? ['La sirène. Ses vieux fils sont grillés.', ...(api.hasItem('cable') && api.hasItem('pince') ? ['(Le câble et la pince sont dans mon sac.)'] : ['Il faudrait un câble neuf, et une pince.'])]
+          : api.has('tomTalk')
         ? ['La sirène. Tom l’a débranchée : elle sonnait pour rien.']
         : ['Une sirène rouge, en haut d’un mât.', 'Un câble pend à son pied. Débranché.'],
     ),
   tom: (api) => {
+    if (api.has('jour4')) {
+      if (api.has('vague')) return api.say(['« Je l’avais débranchée parce qu’elle sonnait pour rien. »', '« Elle ne sonnait pas pour rien. »']);
+      if (api.has('sireneOn')) return api.say(['« Bon… peut-être que j’ai eu tort. »']);
+      if (!api.has('j4Moons')) return api.say(['« Journée calme, d’après le bulletin. Ça fait du bien. »']);
+      if (api.hasItem('pince')) return api.say(['« Ma pince, rends-la-moi après, hein. »']);
+      return api.say(
+        ['Je lui parle des lunes, de la grande marée.', '« Une grande marée ? Le bulletin dit le contraire. »', 'Il hésite. Il regarde le lac.', '« …Bon. Si tu veux rebrancher ta sirène, les vieux fils sont grillés. Il te faudra un câble neuf. »', '« Et prends ma pince. »'],
+        () => api.item('pince'),
+      );
+    }
     if (api.has('lakeScene') && !api.has('jour2')) return api.say(['« Une belle nuit bien calme. Pas de sirène pour la gâcher. »']);
     if (api.has('tomTalk')) return api.say(['« Elle est bien plus calme, la place, sans cette sirène. »']);
     api.say(
@@ -226,6 +251,11 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     api.say(['« Les plus sucrés sont les orange. Ne le répète pas aux violets. »']);
   },
   nora: (api) => {
+    if (api.has('jour4')) {
+      if (api.has('vague')) return api.say(['« J’ai recopié… Tous les matins. »', 'Elle serre son bulletin contre elle.']);
+      if (!api.has('j4Moons')) return api.say(['« Bulletin du jour ! Pleine eau à 6 h : c’est passé. Journée calme. »']);
+      return api.say(['Je lui parle des lunes alignées, du carnet de Joss.', '« Mon calcul est bon. Ce sont les mêmes heures depuis… depuis… »', 'Elle s’arrête. Elle ne sait plus depuis quand.', '« Le bulletin fait foi. Je… je dois retourner travailler. »']);
+    }
     if (api.has('jour2')) {
       return api.say(['« Bulletin à jour ! Pleine eau à 6 h et 18 h. »', '« …Comme hier ? Oui. Enfin… c’est bien ce que mon calcul donne. »', 'Elle fronce les sourcils une seconde, puis se remet au travail.'], () => api.clue('azNora2'));
     }
@@ -277,9 +307,17 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   etagere: (api) => api.say(['Des outils, des pièces détachées, une petite batterie.', 'Betti bricole. Comme sa mère.']),
   etabli: (api) => api.say(['Un établi couvert de plans.', 'Des pattes mécaniques, une tête ronde… Elle construit quelque chose.']),
   lit: (api) => api.say(['Un lit fait au carré.']),
+  bettiVague: (api) => api.say(api.has('jossSaved') ? ['« Tu l’as ramené… Merci. »'] : api.has('barqueOk') ? ['« Le courant est encore trop fort. Attends que l’eau s’arrête. »'] : ['« La barque ! Avec la canne de Joss, depuis le petit ponton… tu pourrais l’attraper ? »']),
+  jossQuai: (api) => api.say(['« Je n’oublierai pas. Enfin… j’espère. »', 'Il essaie de sourire.']),
+  barqueIlot: (api) => api.say(['La barque. D’abord, Joss.']),
   bettiLac: (api) => api.say(['« Regarde-le… Il n’a pas peur de nous. »']),
   betti: (api) => {
     if (!api.has('drawingSeen')) return api.say(['« Fais comme chez toi. Regarde, si tu veux. »']);
+    if (api.has('jour4')) {
+      if (!api.has('j4Moons')) return api.say(['« Joss est parti pêcher sur l’îlot à l’aube. Il dit que le bulletin annonce une journée calme. »']);
+      if (api.hasItem('cable') || api.has('sireneOn')) return api.say(['« Vite ! »']);
+      return api.say(['Je lui parle des lunes, du carnet de Joss.', '« Une grande marée ? Aujourd’hui ? »', '« Il faut faire sonner la sirène. Tom l’a débranchée… Tiens, prends ce câble neuf. Vite ! »'], () => api.item('cable'));
+    }
     if (api.has('jour3')) return api.say(['« Joss est passé à l’aube, tout retourné. Son carnet est enfermé dans sa cabane, et il ne retrouve plus la clé. »', '« Il pêche toujours près du pont, sur le chemin des crêtes. »']);
     if (api.has('jour2')) {
       if (api.has('lesson2Heard')) return api.say(['« Reviens quand tu veux. »']);
@@ -374,7 +412,9 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   },
   oskarIn: (api) => api.say(['« PX-07… Il faut savoir ce que c’est. »']),
   iris: (api) =>
-    api.say(
+    api.has('jour4')
+      ? api.say(api.has('vague') ? ['La commandante regarde le lac, sans un mot.'] : api.has('j4Moons') ? ['Je lui parle de la grande marée.', '« Le bulletin fait foi. Je n’ai pas de temps pour ça. »', 'Elle s’éloigne déjà.'] : ['« Pas maintenant. »'])
+      : api.say(
       [
         '« Commandante Iris Aurel, mission Aurore. »',
         '« Le centre de clonage ? Fermé. Depuis l’accident de l’an 3. Il n’y a plus rien à voir. »',
@@ -446,6 +486,22 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   tableauClasse: (api) => api.say(['Un grand écran. Une planète orange, une flèche, une planète bleue.', 'Au-dessus : « D’OÙ VENONS-NOUS ? »']),
   pupitre: (api) => api.say(['Un pupitre blanc, avec un petit écran.', 'Quelqu’un a gravé une fusée dans le coin.']),
   lecon: (api) => {
+    if (api.has('jour4')) {
+      if (api.has('lesson4Heard')) return api.say(['« Allez, filez. Et pas près du lac, aujourd’hui ! »', '…Au moins, ça, elle s’en souvient.']);
+      return api.say(
+        [
+          '« Bonjour à tous. D’où venons-nous ? »',
+          '« De Vesper. Le jour du grand départ, les capsules ont envoyé nos corps jusqu’ici. »',
+          '« Nos esprits ! » lance Mina. « Les corps sont restés là-bas, dans les capsules ! »',
+          'La maîtresse la regarde, perdue. Elle cherche dans ses notes. Elle ne trouve pas.',
+          'Nos corps… Ils dorment toujours sur Vesper. Je les ai vus, sous le givre.',
+        ],
+        () => {
+          api.set('lesson4Heard');
+          api.clue('azLecon4');
+        },
+      );
+    }
     if (api.has('jour3')) {
       if (api.has('lesson3Heard')) return api.say(['« À demain matin. Et révisez vos dates ! »']);
       return api.say(

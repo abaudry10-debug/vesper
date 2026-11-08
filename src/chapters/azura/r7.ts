@@ -43,7 +43,7 @@ function cloneMap(srcId: string, extra: MapObject[]): GameMap {
 
 export const R7_MAPS: Record<string, GameMap> = {
   r7Ville: cloneMap('vesper', [{ id: 'r7Plaque', x: 22, y: 18, sprite: '', script: 'r7Plaque' }]),
-  r7Lab: cloneMap('lab', [{ id: 'r7Pixel', x: 3, y: 3, sprite: 'dogOff', spriteWhen: ['pixelWake', ''], script: 'r7Pixel', hideWhen: 'pixelOn' }]),
+  r7Lab: cloneMap('lab', [{ id: 'r7Pixel', x: 3, y: 3, sprite: 'dogSleep', spriteWhen: ['pixelWake', ''], script: 'r7Pixel', hideWhen: 'pixelOn' }]),
   r7Hangar: cloneMap('spatioportInt', []),
 };
 
@@ -366,7 +366,7 @@ export function r7Interact(g: Game, obj: MapObject | undefined): boolean {
       say(['Une plaque de recharge solaire, au milieu de la place des Missions. En plein soleil.', ...(g.items.has('bs1Vide') ? ['(La BS-1 vide est dans mon sac.)'] : [])]);
       return true;
     case 'r7Pixel':
-      say(['Pixel.', 'Couché au pied de ma capsule, le museau sur les pattes. Éteint.', 'Le petit panneau solaire de son dos est fendu. Il n’a plus aucune énergie.', 'Betti (radio), dans un souffle : « Pixel… »', ...(g.items.has('battery') ? ['(La BS-1 chargée est dans mon sac.)'] : [])]);
+      say(['Pixel.', 'Couché au pied de ma capsule, exactement là où je l’ai laissé. Les yeux fermés. Éteint.', 'Le petit panneau solaire de son dos est fendu. Il n’a plus aucune énergie.', 'Betti (radio), dans un souffle : « Pixel… »', ...(g.items.has('battery') ? ['(La BS-1 chargée est dans mon sac.)'] : [])]);
       return true;
   }
   if (!obj.id.startsWith('r7_')) return false;

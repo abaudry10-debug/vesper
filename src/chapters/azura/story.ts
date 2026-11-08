@@ -40,10 +40,14 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azLecon2', thread: 'ecole', title: 'La leçon du jour 2', text: '« Vesper se mourait. La mission Hélios est partie la première, avec douze pilotes… » Hélios ? Hier, elle disait Aurore.' },
   { id: 'azMina', thread: 'ecole', title: 'Mina', text: 'Une élève, née sur Azura, a corrigé la maîtresse : « C’était Aurore ! » La maîtresse ne l’a pas crue. Hélios, c’était la centrale, sur Vesper.' },
   { id: 'azCarnet', thread: 'eaux', title: 'Le carnet de Joss', text: '« Une heure de plus chaque jour. La grande lune ne ment jamais. » Et : « Tous les trente jours, les deux lunes s’alignent : grande marée. Ne jamais rester au bord ce jour-là. » Le bulletin, lui, annonce les mêmes heures depuis deux jours.' },
-  { id: 'azOskar', thread: 'arrivee', title: 'Oskar', text: 'Un vieux pilote d’Aurore, sur un banc de la place. Il m’a glissé son badge : « Toi, tu as des yeux neufs. Regarde, et ne dis rien à la commandante. »' },
+  { id: 'azOskar', thread: 'arrivee', title: 'Oskar', text: 'Un vieux pilote d’Aurore, sur un banc de la place. Ce matin, l’eau est montée deux heures après l’heure du bulletin. « Il se passe quelque chose, comme avant l’accident de l’an 3. » Il veut voir les relevés du centre de clonage, discrètement : rendez-vous devant la porte, près des cuves.' },
+  { id: 'azCulture', thread: 'arrivee', title: 'La salle de culture', text: 'Les données biologiques apportées par Aurore, la culture des corps, le chargement de l’esprit reçu du spatioport de Vesper, le réveil dans le champ des cuves. Un mur de 4 212 noms, dont « Moreau, Betti ».' },
+  { id: 'azMedecin', thread: 'arrivee', title: 'Le carnet du médecin', text: '« Transfert réussi : 4 212 sur 4 212. » Puis : « Anomalies mineures de mémoire chez certains sujets. À surveiller. » Le carnet s’arrête à l’an 3.' },
+  { id: 'az07', thread: 'arrivee', title: 'Sujet 07', text: 'Dans la salle de culture, une cuve à part : « SUJET 07 — Signal non reçu. Cuve maintenue en attente. » Moi. Voilà pourquoi je me suis réveillé onze ans après les autres.' },
+  { id: 'azJet', thread: 'arrivee', title: 'Le tuyau éclaté', text: 'L’eau de la rivière entrait encore dans la salle des serveurs, par le tuyau de refroidissement. En suivant les tuyaux, la vanne du bas était la bonne.' },
   { id: 'azIris', thread: 'arrivee', title: 'La commandante', text: 'Iris Aurel, commandante de la mission Aurore : « Le centre de clonage ? Fermé depuis l’accident de l’an 3. Il n’y a plus rien à voir. » Elle a détourné les yeux.' },
-  { id: 'azVidange', thread: 'arrivee', title: 'La salle vidée', text: 'En ouvrant les vannes depuis la sortie vers le lac, et à marée basse, la salle des serveurs s’est vidée.' },
-  { id: 'azPX07', thread: 'arrivee', title: 'PX-07', text: 'Le serveur du centre : copie locale perdue dans l’inondation de l’an 3. Copie de sauvegarde : aucune. Source : spatioport de Vesper. Dernière opération : transfert intégral vers l’appareil PX-07.' },
+  { id: 'azVidange', thread: 'arrivee', title: 'La salle vidée', text: 'L’arrivée d’eau coupée, la pompe a vidé la salle des serveurs vers la rivière, à marée basse.' },
+  { id: 'azPX07', thread: 'arrivee', title: 'PX-07', text: 'Le serveur du centre : copie locale perdue dans l’inondation de l’an 3. Copie de sauvegarde : aucune. Source : spatioport de Vesper. Dernière opération : transfert intégral vers l’appareil PX-07. Oskar : « Ce n’est pas un code d’Aurore. Ça vient de Vesper. »' },
   { id: 'azLecon3', thread: 'ecole', title: 'La leçon du jour 3', text: '« Nos ancêtres ont voyagé deux ans pour arriver ici. » Deux ans ? Le voyage d’Aurore a duré deux cent douze ans.' },
   { id: 'azl1', thread: 'leads', title: 'Où sont les autres ?', text: 'Le sentier part vers le sud, au-delà des cuves.', doneWhen: 'bettiMet' },
   { id: 'azl2', thread: 'leads', title: 'L’atelier de Betti', text: 'En bas, près du lac. Passer d’abord voir le bulletin des eaux, sur la place.', doneWhen: 'drawingSeen' },
@@ -52,9 +56,10 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl4', thread: 'leads', title: 'Une nuit chez Betti', text: 'Betti me prête son lit, dans l’atelier, en bas près du lac. Le soir, la ville est belle : je peux m’y promener avant de dormir.', doneWhen: 'jour2' },
   { id: 'azl6', thread: 'leads', title: 'Voir l’eau monter', text: 'Le bulletin des eaux, sur la place, donne l’heure du jour. Un banc permet d’attendre. Ensuite, dormir chez Betti, le soir venu.', doneWhen: 'tideWitnessed' },
   { id: 'azl7', thread: 'leads', title: 'Le carnet de Joss', text: 'Joss a perdu son carnet de pêche, quelque part près de la rivière, sur le chemin des crêtes.', doneWhen: 'carnetRead' },
-  { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Près des cuves. « Réservé aux pilotes. » Un pilote pourrait m’ouvrir.', doneWhen: 'centreIn' },
-  { id: 'azl9', thread: 'leads', title: 'La salle noyée', text: 'Vider la salle des serveurs avec les vannes. Le schéma, au mur, montre le chemin de l’eau.', doneWhen: 'drained' },
-  { id: 'azl10', thread: 'leads', title: 'Le serveur', text: 'Lire ce qui reste dans la salle des serveurs.', doneWhen: 'pxFound' },
+  { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Oskar m’attend devant la porte du centre, près des cuves.', doneWhen: 'centreIn' },
+  { id: 'azl9', thread: 'leads', title: 'L’eau entre encore', text: 'L’eau entre toujours dans la salle des serveurs. La salle des pompes doit commander l’arrivée d’eau : suivre les tuyaux.', doneWhen: 'inflowCut' },
+  { id: 'azl10', thread: 'leads', title: 'Vider la salle', text: 'La pompe de vidange renvoie l’eau à la rivière… si la rivière n’est pas trop haute.', doneWhen: 'drained' },
+  { id: 'azl11', thread: 'leads', title: 'Le serveur', text: 'Lire ce qui reste dans la salle des serveurs. Il faudra peut-être du courant.', doneWhen: 'pxFound' },
   { id: 'azl5', thread: 'leads', title: 'La leçon du matin', text: 'Retourner à l’école, comme chaque matin.', doneWhen: 'lesson2Heard' },
 ];
 
@@ -74,7 +79,6 @@ export const QUESTIONS_AZ: Question[] = [
 ];
 
 export const ITEMS_AZ: Record<string, ItemDef> = {
-  badgePilote: { name: 'Badge de pilote', text: 'Le badge d’Oskar, pilote d’Aurore. Il ouvre le centre de clonage.' },
   fruit: { name: 'Fruit d’Azura', text: 'Orange, sucré, avec un goût de miel. Mme Ilda me l’a offert.' },
 };
 
@@ -322,28 +326,34 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       () => {
         api.set('carnetRead');
         api.clue('azCarnet');
-        api.say(['« L’accident de l’an 3 »… Le centre de clonage, près des cuves, devait en garder une trace.'], () => api.clue('azl8'));
+        api.say(['Le bulletin a tort. Et personne ne semble le voir.']);
       },
     ),
   oskar: (api) => {
-    if (api.has('hasBadge')) return api.say(['« Chut. Va, et regarde bien. »']);
     api.say(
       [
-        '« Hm ? Un nouveau… Non. Le dormeur de la cuve 07. »',
+        '« Hm ? Le dormeur de la cuve 07… »',
         'Un vieil homme, dans un uniforme d’Aurore délavé.',
         '« Oskar. Pilote. Enfin… je l’étais. »',
-        '« Le centre de clonage ? La commandante dit qu’il est fermé depuis l’accident. Elle a ses raisons. »',
-        'Il pose quelque chose sur le banc, entre nous. Un badge.',
-        '« Moi, je n’y retourne plus. Toi, tu as des yeux neufs. Regarde, et ne dis rien à la commandante. »',
+        '« Ce matin, j’étais au bord du lac à 6 h, comme le dit le bulletin. Rien. »',
+        '« L’eau n’est montée que deux heures plus tard. Ça fait trois jours que ça cloche. »',
+        ...(api.has('carnetRead') ? ['Je lui parle du carnet de Joss : une heure de plus chaque jour.', '« Une heure par jour… Alors le bulletin ne bouge plus. Et personne ne le voit. »'] : []),
+        '« Il se passe quelque chose. Comme avant l’accident de l’an 3. Et la commandante ne veut rien entendre. »',
+        '« Je veux voir les relevés du centre de clonage. Mais elle me surveille. Toi, personne ne te connaît encore… »',
+        '« Retrouve-moi devant le centre, près des cuves. Discrètement. »',
       ],
       () => {
-        api.set('hasBadge');
-        api.item('badgePilote');
+        api.set('oskarDeal');
         api.clue('azOskar');
         api.clue('azl8');
       },
     );
   },
+  oskarGuet: (api) => {
+    if (api.has('centreOpen')) return api.say(['« Vas-y. Je fais le guet. Si quelqu’un vient, je siffle. »']);
+    api.say(['« Personne ne nous a suivis ? Bien. »', 'Il passe son badge devant la porte. Un déclic.', '« Vas-y. Je fais le guet. Si quelqu’un vient, je siffle. »'], () => api.set('centreOpen'));
+  },
+  oskarIn: (api) => api.say(['« PX-07… Il faut savoir ce que c’est. »']),
   iris: (api) =>
     api.say(
       [
@@ -353,18 +363,28 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       ],
       () => api.clue('azIris'),
     ),
-  vitreIn: (api) =>
+  baie: (api) =>
     api.say(
       api.has('drained')
-        ? ['Derrière la vitre, la salle des serveurs, vidée. Une trace d’eau sèche sur les murs.']
-        : ['Derrière la vitre, la salle des serveurs. L’eau leur arrive à mi-hauteur.', 'Turquoise, immobile. Comme le lac.'],
+        ? ['Derrière la baie, la salle des serveurs, vidée. Des traces d’eau sèche sur les armoires.']
+        : api.has('inflowCut')
+          ? ['Derrière la baie, la salle des serveurs. L’eau arrive à mi-hauteur, immobile. Le jet s’est arrêté.']
+          : ['Derrière la baie, la salle des serveurs, à moitié sous l’eau.', 'Au plafond, un tuyau a éclaté : un jet d’eau tombe, sans arrêt. La salle se remplit encore.'],
+      () => api.clue('azl9'),
     ),
+  planCentre: (api) => api.say(['Un plan lumineux du centre : « Hall — Salle de culture — Salle des serveurs — Salle des pompes ».', 'Sous « Salle des pompes » : « Prise d’eau de la rivière, refroidissement, culture, fontaines ».']),
   porteServeurs: (api) => api.say(['La porte vitrée ne s’ouvre pas : l’eau pousse de l’autre côté.']),
-  rack: (api) => api.say(['Une armoire de serveurs, noircie par l’eau. Plus rien ne s’allume.']),
+  rack: (api) => api.say(['Une armoire de serveurs, noircie par l’eau. Une ligne sèche marque la hauteur de la crue.']),
+  ecranMural: (api) => api.say(api.has('powerOn') ? ['L’écran mural fait défiler des journaux de transfert, des milliers de lignes.'] : ['Un grand écran mural, éteint.']),
+  petiteVitre: (api) => api.say(['Une petite vitre sur la salle des serveurs.']),
+  priseEau: (api) => api.say(['« PRISE D’EAU — RIVIÈRE ». L’eau entre ici, et se partage entre les trois tuyaux.']),
+  sortieCulture: (api) => api.say(['Une plaque : « CULTURE ».']),
+  sortieFontaines: (api) => api.say(['Une plaque : « FONTAINES DE LA VILLE ».']),
+  sortieServeurs: (api) => api.say(['Une plaque : « REFROIDISSEMENT — SALLE DES SERVEURS ».', 'C’est ce tuyau-là qui a éclaté.']),
   serveurPX: (api) =>
     api.say(
       [
-        'Un serveur a survécu : on l’a posé plus haut que les autres. Son écran grésille.',
+        'Le serveur qui a survécu, sur son estrade. Son écran s’allume.',
         '« SAUVEGARDE DES TRANSFERTS — MISSION AURORE »',
         '« Copie locale : PERDUE (inondation, an 3). »',
         '« Copie de sauvegarde : AUCUNE. »',
@@ -373,10 +393,30 @@ export const SCRIPTS_AZ: Record<string, Script> = {
         'PX-07… Un appareil ? Une machine ?',
         'Tout ce qui faisait nos souvenirs est parti… dans un « PX-07 ».',
       ],
-      () => {
-        api.set('pxFound');
-        api.clue('azPX07');
-      },
+      () => api.set('serverRead'),
+    ),
+  // ---------- la salle de culture ----------
+  noms: (api) =>
+    api.say(['Un mur couvert de plaques. Des noms, des milliers de noms.', '« Moreau, Betti ». « Moreau, Sam ». Plus loin, « Vey, Nora ».', 'Les 4 212.'], () => api.set('cultureNoms')),
+  etape1: (api) => api.say(['« 1. LES DONNÉES — L’ADN et les scans de chaque habitant, emportés par Aurore. »']),
+  etape2: (api) => api.say(['« 2. LA CULTURE — Chaque corps grandit dans son berceau, ici. »']),
+  etape3: (api) => api.say(['« 3. LE CHARGEMENT — L’esprit, reçu depuis le spatioport de Vesper, est chargé dans le corps. »']),
+  etape4: (api) => api.say(['« 4. LE RÉVEIL — Le corps est porté dans le champ des cuves, à ciel ouvert. »'], () => api.clue('azCulture')),
+  berceau: (api) => api.say(['Un berceau de culture, vide. Un dépôt séché tapisse le fond.']),
+  berceau07: (api) =>
+    api.say(
+      ['Une cuve à part, avec une étiquette ambre.', '« SUJET 07 — Signal non reçu. Cuve maintenue en attente. »', 'Une date a été ajoutée à la main : « an 11 — signal reçu. Culture lancée en urgence. »', 'C’est moi. Voilà pourquoi je me suis réveillé onze ans après les autres.'],
+      () => api.clue('az07'),
+    ),
+  carnetMedecin: (api) =>
+    api.say(
+      [
+        'Le carnet de bord du médecin de la mission.',
+        '« Transfert réussi : 4 212 sur 4 212. Tous les sujets réveillés. »',
+        '« Anomalies mineures de mémoire chez certains sujets : un mot, un nom. À surveiller. »',
+        'La dernière page date de l’an 3. Ensuite, plus rien.',
+      ],
+      () => api.clue('azMedecin'),
     ),
 
   // ---------- l'école ----------

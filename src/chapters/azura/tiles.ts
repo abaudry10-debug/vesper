@@ -697,6 +697,132 @@ const fall = (frame: number, foot: boolean): Painter => (c, v) => {
     for (let i = 0; i < 5; i++) r(c, (i * 4 + frame * 2) % T, 10 - (i % 2), 2, 2, '#ffffff');
   }
 };
+// ---------- le centre de clonage, remanié : verrières, salle de culture, salle des pompes, serveurs ----------
+/** Un cadre de verrière sur le mur : la scène derrière est dessinée et animée à part. */
+const glassPane: Painter = (c) => {
+  azWallFront(c, 0);
+  r(c, 0, 2, T, 13, AZ.ink); r(c, 0, 3, T, 11, '#0a1622');
+  r(c, 0, 2, T, 1, AZ.metalLight); r(c, 0, 14, T, 1, AZ.metalDark);
+};
+const centrePlan: Painter = (c) => {
+  metalFloor(c, 0);
+  r(c, 3, 3, 10, 10, AZ.metalDeep); r(c, 7, 12, 2, 3, AZ.metalDark);
+  r(c, 4, 4, 8, 7, AZ.screen); r(c, 5, 5, 2, 2, AZ.glow); r(c, 8, 5, 3, 2, '#3f6fd0'); r(c, 5, 8, 6, 2, '#2a8a80');
+};
+const namesWall: Painter = (c, v) => {
+  azWallFront(c, 0);
+  r(c, 1, 2, 14, 12, AZ.metalDark);
+  for (let y = 3; y < 13; y += 2) for (let x = 2; x < 14; x += 3) r(c, x, y, 2, 1, (x + y + v) % 7 === 0 ? AZ.amber : AZ.whiteShade);
+};
+const procPanel = (k: number): Painter => (c) => {
+  azWallFront(c, 0);
+  r(c, 1, 2, 14, 12, AZ.ink); r(c, 2, 3, 12, 10, AZ.paper);
+  r(c, 3, 4, 2, 2, AZ.teal); r(c, 6, 4, 1, 2, AZ.ink); // le numéro
+  if (k === 1) { r(c, 4, 8, 2, 4, '#3f6fd0'); r(c, 6, 8, 1, 4, AZ.red); r(c, 8, 8, 2, 4, '#3f6fd0'); r(c, 10, 8, 1, 4, AZ.red); } // l'ADN
+  if (k === 2) { r(c, 5, 7, 6, 6, AZ.glassDark); r(c, 7, 8, 2, 3, '#e0b490'); } // un corps dans sa cuve
+  if (k === 3) { r(c, 4, 9, 3, 3, '#e8622c'); r(c, 7, 10, 3, 1, AZ.ink); r(c, 10, 8, 3, 3, AZ.water); } // de Vesper à Azura
+  if (k === 4) { r(c, 5, 8, 6, 4, AZ.white); r(c, 6, 9, 4, 2, AZ.glass); r(c, 7, 7, 2, 1, AZ.sun); } // le réveil
+};
+const labDesk: Painter = (c) => {
+  metalFloor(c, 0);
+  r(c, 1, 5, 14, 6, AZ.metalDark); r(c, 1, 4, 14, 5, AZ.white); r(c, 1, 4, 14, 1, '#ffffff');
+  r(c, 3, 5, 5, 3, '#c98a4a'); r(c, 5, 5, 1, 3, '#8a5a2a'); r(c, 10, 5, 3, 2, AZ.glassDark);
+  r(c, 2, 11, 2, 4, AZ.metalDeep); r(c, 12, 11, 2, 4, AZ.metalDeep);
+};
+const growTankBase = (c: CanvasRenderingContext2D, label: boolean) => {
+  metalFloor(c, 0);
+  c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(2, 13, 12, 2);
+  r(c, 3, 1, 10, 14, AZ.ink); r(c, 4, 2, 8, 10, 'rgba(127,212,220,0.45)'); r(c, 4, 9, 8, 3, 'rgba(150,120,90,0.35)'); // le dépôt séché
+  r(c, 5, 3, 1, 5, 'rgba(255,255,255,0.55)');
+  r(c, 3, 12, 10, 3, AZ.metalDark); r(c, 3, 12, 10, 1, AZ.metalLight);
+  r(c, 4, 0, 8, 2, AZ.metalDeep);
+  if (label) { r(c, 5, 13, 6, 2, AZ.amber); r(c, 7, 13, 2, 1, AZ.ink); }
+  else r(c, 6, 13, 4, 1, AZ.glow);
+};
+const growTank: Painter = (c) => growTankBase(c, false);
+const growTank07: Painter = (c) => growTankBase(c, true);
+/** Les tuyaux, case par case : m = branchements (1 haut, 2 droite, 4 bas, 8 gauche). Tous de la même couleur. */
+const pipeArm = (c: CanvasRenderingContext2D, m: number) => {
+  const P = '#7d8a98', D = '#4a5564', L = '#b0bccb';
+  const seg = (x: number, y: number, w: number, h: number) => { r(c, x, y, w, h, D); r(c, x + (w > h ? 0 : 1), y + (w > h ? 1 : 0), w > h ? w : w - 2, w > h ? h - 2 : h, P); r(c, x + (w > h ? 0 : 1), y + (w > h ? 1 : 0), w > h ? w : 1, w > h ? 1 : h, L); };
+  if (m & 1) seg(5, 0, 6, 9);
+  if (m & 4) seg(5, 7, 6, 9);
+  if (m & 8) seg(0, 5, 9, 6);
+  if (m & 2) seg(7, 5, 9, 6);
+  r(c, 5, 5, 6, 6, D); r(c, 6, 6, 4, 4, P); r(c, 6, 6, 4, 1, L);
+};
+const pipeTile = (m: number): Painter => (c, v) => { metalFloor(c, v); pipeArm(c, m); };
+const pipeCross: Painter = (c, v) => {
+  metalFloor(c, v);
+  pipeArm(c, 1 | 4);
+  // le tuyau horizontal passe par-dessus, sur deux petits supports
+  r(c, 0, 4, T, 8, '#3a4452'); r(c, 0, 5, T, 6, '#7d8a98'); r(c, 0, 5, T, 1, '#b0bccb');
+  r(c, 3, 4, 2, 8, '#4a5564'); r(c, 11, 4, 2, 8, '#4a5564');
+};
+const pipeValve: Painter = (c, v) => {
+  metalFloor(c, v);
+  pipeArm(c, 2 | 8);
+  r(c, 3, 1, 10, 4, AZ.ink); r(c, 4, 2, 8, 2, AZ.red); r(c, 7, 0, 2, 7, AZ.ink); r(c, 7, 1, 2, 5, '#a83030');
+  r(c, 5, 11, 6, 3, AZ.metalDeep); r(c, 6, 12, 4, 1, '#8a8296'); // l'étiquette effacée
+};
+const pipeOut: Painter = (c) => {
+  azWallFront(c, 0);
+  r(c, 0, 5, 6, 6, '#4a5564'); r(c, 0, 6, 6, 4, '#7d8a98');
+  r(c, 6, 4, 9, 8, AZ.ink); r(c, 7, 5, 7, 6, AZ.paper); r(c, 8, 7, 5, 1, AZ.ink); r(c, 8, 9, 3, 1, AZ.ink);
+};
+const pipeIntake: Painter = (c) => {
+  azWallFront(c, 0);
+  r(c, 6, 3, 10, 10, AZ.ink); r(c, 7, 4, 8, 8, '#4a5564'); r(c, 8, 5, 6, 6, AZ.waterDeep); r(c, 9, 6, 2, 2, AZ.waterLight);
+  r(c, 1, 4, 5, 8, AZ.ink); r(c, 2, 5, 3, 6, AZ.paper); r(c, 2, 7, 3, 1, AZ.teal);
+};
+const pumpLever: Painter = (c, v) => {
+  metalFloor(c, v);
+  c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(1, 13, 14, 2);
+  r(c, 1, 5, 14, 9, AZ.ink); r(c, 2, 6, 12, 7, AZ.metalDark); r(c, 2, 6, 12, 1, AZ.metalLight);
+  r(c, 4, 8, 5, 4, AZ.metalDeep); r(c, 5, 9, 3, 2, AZ.glow); // le cadran
+  r(c, 11, 0, 2, 8, AZ.ink); r(c, 11, 1, 1, 6, '#c0c8d0'); r(c, 10, 0, 4, 2, AZ.red);
+};
+const wallScreen: Painter = (c, v) => {
+  azWallFront(c, 0);
+  r(c, 0, 2, T, 12, AZ.ink); r(c, 0, 3, T, 10, '#05101a');
+  r(c, 0, 3, T, 1, '#0e2a33');
+  if (v % 2) r(c, 3, 7, 2, 1, '#123a44');
+};
+const serverRackFloor: Painter = (c, v) => {
+  metalFloor(c, v);
+  c.fillStyle = 'rgba(0,0,0,0.3)'; c.fillRect(2, 13, 12, 2);
+  r(c, 3, 0, 10, 14, AZ.ink); r(c, 4, 1, 8, 12, '#2c3e4a');
+  for (let y = 2; y < 12; y += 3) { r(c, 5, y, 6, 2, '#3a4f5c'); r(c, 10, y, 1, 1, '#4a2a2a'); }
+  r(c, 4, 8, 8, 5, 'rgba(46,196,189,0.25)'); r(c, 4, 8, 8, 1, 'rgba(200,190,150,0.5)'); // la ligne de l'eau
+};
+const breaker: Painter = (c, v) => {
+  metalFloor(c, v);
+  r(c, 3, 1, 10, 13, AZ.ink); r(c, 4, 2, 8, 11, '#e8c040'); r(c, 4, 2, 8, 1, '#fff0a0');
+  r(c, 6, 4, 4, 6, AZ.ink); r(c, 7, 5, 2, 2, AZ.red); // la manette, en bas
+  r(c, 5, 11, 6, 1, AZ.ink); r(c, 7, 11, 1, 1, '#e8c040');
+};
+const coreBase: Painter = (c, v) => {
+  metalFloor(c, v);
+  r(c, 0, 0, T, T, '#2a3440'); r(c, 0, 0, T, 1, '#4a5868');
+};
+/** Le cœur de mémoire : une colonne de verre de 3 × 2 cases, posée sur son socle. Ses lumières sont dessinées à part. */
+export const CORE = { w: 48, h: 62 };
+function memoryCore(): HTMLCanvasElement {
+  const cv = document.createElement('canvas');
+  cv.width = CORE.w;
+  cv.height = CORE.h;
+  const c = cv.getContext('2d')!;
+  // le socle
+  r(c, 2, CORE.h - 14, 44, 14, AZ.ink); r(c, 3, CORE.h - 13, 42, 12, AZ.metalDark); r(c, 3, CORE.h - 13, 42, 2, AZ.metalLight);
+  r(c, 6, CORE.h - 6, 36, 1, AZ.glow);
+  // la colonne de verre
+  r(c, 10, 4, 28, CORE.h - 18, AZ.ink); r(c, 11, 5, 26, CORE.h - 20, 'rgba(10,26,40,0.95)');
+  r(c, 12, 6, 2, CORE.h - 24, 'rgba(255,255,255,0.18)');
+  // le chapeau
+  r(c, 8, 0, 32, 6, AZ.ink); r(c, 9, 1, 30, 4, AZ.metalDark); r(c, 9, 1, 30, 1, AZ.metalLight);
+  return cv;
+}
+
 const PAINTERS: Record<string, Painter> = {
     slab, azGrass, azFlowers, azTall, azPath, azStone, azDeck, azFloor, regolith, crater, metalFloor,
     bigCrater0: bigCrater(0), bigCrater1: bigCrater(1), bigCrater2: bigCrater(2), bigCrater3: bigCrater(3),
@@ -713,11 +839,15 @@ const PAINTERS: Record<string, Painter> = {
     workbench, robotParts, shelfAz, drawingPixel, bedAz, azFence,
     floodWindow, azPad, classBoard, desk, clockAz, benchDeck,
     notebook, pipeSchema, serverRack, serverTerm, benchIn, dryWindow,
+    glassPane, centrePlan, namesWall, labDesk, growTank, growTank07, pipeCross, pipeValve, pipeOut, pipeIntake, pumpLever, wallScreen, serverRackFloor, breaker, coreBase,
+    procPanel1: procPanel(1), procPanel2: procPanel(2), procPanel3: procPanel(3), procPanel4: procPanel(4),
+    ...Object.fromEntries(Array.from({ length: 16 }, (_, m) => [`pipe${m}`, pipeTile(m)])),
     azFall0: fall(0, false), azFall1: fall(1, false), azFallFoot0: fall(0, true), azFallFoot1: fall(1, true),
     valveBlue: valve('#3f6fd0', '#2a4a90'), valveRed: valve(AZ.red, '#a83030'), valveYellow: valve('#e8c040', '#a8882a'),
 };
 registerDecal('navette', navette());
 registerDecal('clockTower', clockTower());
+registerDecal('memoryCore', memoryCore());
 registerTiles(PAINTERS, ['azGrass', 'azPath', 'azStone', 'azFloor', 'regolith', 'metalFloor']);
 
 // ---------- lisières : l'herbe déborde, irrégulière, sur le sol voisin ----------

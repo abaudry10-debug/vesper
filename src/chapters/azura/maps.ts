@@ -14,7 +14,7 @@
 import type { Dir } from '../../engine/sprites.js';
 import { Builder, exit, type GameMap, type MapObject } from '../../engine/world.js';
 
-export const SOLID_AZ = new Set(['~', 'R', 'A', 'u', '|', '#', 'Z', 'F', '1', '2', '3', '4', 'k', 'Y', 'M', 'N', 'W']);
+export const SOLID_AZ = new Set(['~', 'R', 'A', 'u', '|', '#', 'Z', 'F', '1', '2', '3', '4', 'k', 'Y', 'M', 'N', 'W', 'K']);
 
 const obj = (id: string, x: number, y: number, sprite: string, script?: string, extra: Partial<MapObject> = {}): MapObject => ({ id, x, y, sprite, script, ...extra });
 const npc = (id: string, x: number, y: number, look: string, dir: Dir, script: string, extra: Partial<MapObject> = {}): MapObject => ({
@@ -150,7 +150,8 @@ function cuves(): GameMap {
   // un petit sentier qui part du grand chemin vers le centre et la navette
   b.rect(12, 8, 12, 1, '.').set(23, 9, '.');
   objects.push(
-    { id: 'porteCentre', x: 27, y: 8, sprite: 'aurDoorClosed', spriteWhen: ['hasBadge', 'aurDoor'], script: 'centreClonage', door: { to: 'centre', x: 5, y: 6, dir: 'up', needs: 'hasBadge' } },
+    { id: 'porteCentre', x: 27, y: 8, sprite: 'aurDoorClosed', spriteWhen: ['centreOpen', 'aurDoor'], script: 'centreClonage', door: { to: 'centre', x: 6, y: 6, dir: 'up', needs: 'centreOpen' } },
+    npc('oskarGuet', 26, 9, 'oskar', 'down', 'oskarGuet', { showWhen: 'oskarDeal', hideWhen: 'oskarIn' }),
     obj('vitreServeurs', 29, 8, 'floodWindow', 'serveurs', { spriteWhen: ['drained', 'dryWindow'] }),
     obj('vitreServeurs2', 30, 8, 'floodWindow', 'serveurs', { spriteWhen: ['drained', 'dryWindow'] }),
   );
@@ -294,7 +295,7 @@ function ville(): GameMap {
     obj('repere3', 25, 24, 'waterPost', 'repere'),
     npc('bettiPlace', 17, 4, 'betti', 'up', 'bettiAccueil', { hideWhen: 'bettiMet' }),
     npc('ilda', 14, 13, 'ilda', 'left', 'ilda'),
-    npc('oskar', 20, 14, 'oskar', 'left', 'oskar', { showWhen: 'jour3' }),
+    npc('oskar', 20, 14, 'oskar', 'left', 'oskar', { showWhen: 'jour3', hideWhen: 'oskarDeal' }),
     npc('iris', 27, 17, 'iris', 'down', 'iris', { showWhen: 'jour3' }),
     npc('bettiLac', 17, 23, 'betti', 'down', 'bettiLac', { showWhen: 'lakeScene', hideWhen: 'bettiHome' }),
     npc('tom', 21, 10, 'tom', 'up', 'tom'),
@@ -362,37 +363,103 @@ function ecole(): GameMap {
 }
 
 // ---------- le centre de clonage (jour 3) ----------
+// Le hall : une grande baie vitrée sur la salle des serveurs (noyée, et l'eau entre encore par un tuyau
+// éclaté), la porte de la salle de culture, la porte de la salle des pompes.
 function centre(): GameMap {
-  const b = new Builder(11, 8, 'm');
-  b.rect(0, 0, 11, 2, 'Z').rect(0, 0, 1, 8, 'Z').rect(10, 0, 1, 8, 'Z').rect(0, 7, 11, 1, 'Z');
-  b.set(5, 7, 'm');
+  const b = new Builder(13, 8, 'm');
+  b.rect(0, 0, 13, 2, 'Z').rect(0, 0, 1, 8, 'Z').rect(12, 0, 1, 8, 'Z').rect(0, 7, 13, 1, 'Z');
+  b.set(6, 7, 'm');
   const objects: MapObject[] = [
-    exit('sortie', 5, 7, { to: 'cuves', x: 27, y: 9, dir: 'down' }),
-    obj('vitreIn1', 2, 1, 'floodWindow', 'vitreIn', { spriteWhen: ['drained', 'dryWindow'] }),
-    obj('vitreIn2', 3, 1, 'floodWindow', 'vitreIn', { spriteWhen: ['drained', 'dryWindow'] }),
-    { id: 'porteServeurs', x: 5, y: 1, sprite: 'aurDoorClosed', spriteWhen: ['drained', 'aurDoor'], script: 'porteServeurs', door: { to: 'serveurs', x: 5, y: 4, dir: 'up', needs: 'drained' } },
-    obj('schema', 7, 1, 'pipeSchema', 'schema'),
-    obj('schema2', 8, 1, 'pipeSchema', 'schema'),
-    obj('vanneBleue', 2, 4, 'valveBlue', 'vanne'),
-    obj('vanneRouge', 5, 4, 'valveRed', 'vanne'),
-    obj('vanneJaune', 8, 4, 'valveYellow', 'vanne'),
-    obj('bancCentre', 9, 6, 'benchIn', 'banc'),
+    exit('sortie', 6, 7, { to: 'cuves', x: 27, y: 9, dir: 'down' }),
+    { id: 'porteCulture', x: 1, y: 1, sprite: 'aurDoor', door: { to: 'culture', x: 6, y: 6, dir: 'up' } },
+    ...[3, 4, 5, 6, 7].map((x) => obj(`baie${x}`, x, 1, 'glassPane', 'baie')),
+    { id: 'porteServeurs', x: 9, y: 1, sprite: 'aurDoorClosed', spriteWhen: ['drained', 'aurDoor'], script: 'porteServeurs', door: { to: 'serveurs', x: 7, y: 8, dir: 'up', needs: 'drained' } },
+    { id: 'portePompes', x: 11, y: 1, sprite: 'aurDoor', door: { to: 'pompes', x: 6, y: 8, dir: 'up' } },
+    obj('planCentre', 2, 6, 'centrePlan', 'planCentre'),
+    obj('bancCentre', 10, 6, 'benchIn', 'banc'),
   ];
-  return { id: 'centre', name: 'Le centre de clonage', outdoor: false, width: 11, height: 8, rows: b.rows, objects };
+  return { id: 'centre', name: 'Le centre de clonage', outdoor: false, width: 13, height: 8, rows: b.rows, objects };
 }
 
+// La salle de culture : les berceaux des corps, les plaques des 4 212 noms, le carnet du médecin, la cuve 07.
+function culture(): GameMap {
+  const b = new Builder(13, 8, 'm');
+  b.rect(0, 0, 13, 2, 'Z').rect(0, 0, 1, 8, 'Z').rect(12, 0, 1, 8, 'Z').rect(0, 7, 13, 1, 'Z');
+  b.set(6, 7, 'm');
+  const objects: MapObject[] = [
+    exit('sortie', 6, 7, { to: 'centre', x: 1, y: 2, dir: 'down' }),
+    obj('noms1', 1, 1, 'namesWall', 'noms'), obj('noms2', 2, 1, 'namesWall', 'noms'), obj('noms3', 3, 1, 'namesWall', 'noms'),
+    obj('etape1', 5, 1, 'procPanel1', 'etape1'), obj('etape2', 6, 1, 'procPanel2', 'etape2'),
+    obj('etape3', 7, 1, 'procPanel3', 'etape3'), obj('etape4', 8, 1, 'procPanel4', 'etape4'),
+    obj('carnetMedecin', 10, 2, 'labDesk', 'carnetMedecin'),
+    ...[2, 4, 8, 10].map((x) => obj(`berceau${x}`, x, 3, 'growTank', 'berceau')),
+    ...[2, 4, 8].map((x) => obj(`berceauB${x}`, x, 5, 'growTank', 'berceau')),
+    obj('cuve07b', 10, 5, 'growTank07', 'berceau07'),
+  ];
+  return { id: 'culture', name: 'La salle de culture', outdoor: false, width: 13, height: 8, rows: b.rows, objects };
+}
+
+// La salle des pompes : la prise d'eau de la rivière, trois tuyaux qui se croisent jusqu'à leurs sorties,
+// une vanne au départ de chacun (étiquettes effacées), la pompe de vidange, une petite vitre sur les serveurs.
+export const PIPE_PATHS: [number, number][][] = [
+  // A : vanne du haut → Culture
+  [[2, 3], [3, 3], [4, 3], [5, 3], [5, 4], [5, 5], [5, 6], [5, 7], [6, 7], [7, 7], [8, 7], [9, 7], [10, 7], [11, 7]],
+  // B : vanne du milieu → Fontaines de la ville
+  [[2, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 5], [7, 4], [7, 3], [8, 3], [9, 3], [10, 3], [11, 3]],
+  // C : vanne du bas → Refroidissement des serveurs
+  [[2, 7], [3, 7], [3, 6], [3, 5], [3, 4], [3, 3], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 2], [8, 3], [8, 4], [8, 5], [9, 5], [10, 5], [11, 5]],
+];
+/** Pour chaque case de tuyau : ses branchements (1 haut, 2 droite, 4 bas, 8 gauche), ou 'X' pour un croisement. */
+export const PIPES = new Map<string, number | 'X'>();
+for (const path of PIPE_PATHS) {
+  path.forEach(([x, y], i) => {
+    let m = 0;
+    for (const [nx, ny] of [path[i - 1], path[i + 1] ?? [x + 1, y]].filter(Boolean) as [number, number][]) {
+      if (ny < y) m |= 1; else if (nx > x) m |= 2; else if (ny > y) m |= 4; else if (nx < x) m |= 8;
+    }
+    if (i === 0) m |= 8; // la vanne, à gauche
+    const key = `${x},${y}`;
+    PIPES.set(key, PIPES.has(key) ? 'X' : m);
+  });
+}
+function pompes(): GameMap {
+  const b = new Builder(13, 10, 'm');
+  b.rect(0, 0, 13, 2, 'Z').rect(0, 0, 1, 10, 'Z').rect(12, 0, 1, 10, 'Z').rect(0, 9, 13, 1, 'Z');
+  b.set(6, 9, 'm');
+  const objects: MapObject[] = [
+    exit('sortie', 6, 9, { to: 'centre', x: 11, y: 2, dir: 'down' }),
+    obj('vanneA', 1, 3, 'pipeValve', 'vanne'), obj('vanneB', 1, 5, 'pipeValve', 'vanne'), obj('vanneC', 1, 7, 'pipeValve', 'vanne'),
+    obj('sortieCulture', 12, 7, 'pipeOut', 'sortieCulture'),
+    obj('sortieFontaines', 12, 3, 'pipeOut', 'sortieFontaines'),
+    obj('sortieServeurs', 12, 5, 'pipeOut', 'sortieServeurs'),
+    obj('priseEau', 0, 5, 'pipeIntake', 'priseEau'),
+    obj('petiteVitre', 10, 1, 'glassPane', 'petiteVitre'),
+    obj('pompe', 10, 8, 'pumpLever', 'pompe'),
+  ];
+  return { id: 'pompes', name: 'La salle des pompes', outdoor: false, width: 13, height: 10, rows: b.rows, objects };
+}
+
+// La salle des serveurs : des rangées d'armoires noircies, le cœur de mémoire au centre, l'écran mural,
+// le disjoncteur au fond, et le serveur qui a survécu sur son estrade.
 function serveurs(): GameMap {
-  const b = new Builder(11, 6, 'm');
-  b.rect(0, 0, 11, 2, 'Z').rect(0, 0, 1, 6, 'Z').rect(10, 0, 1, 6, 'Z').rect(0, 5, 11, 1, 'Z');
-  b.set(5, 5, 'm');
+  const b = new Builder(15, 10, 'm');
+  b.rect(0, 0, 15, 2, 'Z').rect(0, 0, 1, 10, 'Z').rect(14, 0, 1, 10, 'Z').rect(0, 9, 15, 1, 'Z');
+  b.set(7, 9, 'm');
+  b.rect(6, 4, 3, 2, 'K'); // le socle du cœur de mémoire
   const objects: MapObject[] = [
-    exit('sortie', 5, 5, { to: 'centre', x: 5, y: 2, dir: 'down' }),
-    obj('rack1', 1, 1, 'serverRack', 'rack'), obj('rack2', 2, 1, 'serverRack', 'rack'), obj('rack3', 3, 1, 'serverRack', 'rack'),
-    obj('rack4', 7, 1, 'serverRack', 'rack'), obj('rack5', 8, 1, 'serverRack', 'rack'), obj('rack6', 9, 1, 'serverRack', 'rack'),
-    obj('serveurPX', 5, 2, 'serverTerm', 'serveurPX'),
+    exit('sortie', 7, 9, { to: 'centre', x: 9, y: 2, dir: 'down' }),
+    ...[1, 2, 3, 11, 12, 13].map((x) => obj(`rackMur${x}`, x, 1, 'serverRack', 'rack')),
+    obj('ecran1', 6, 1, 'wallScreen', 'ecranMural'), obj('ecran2', 7, 1, 'wallScreen', 'ecranMural'), obj('ecran3', 8, 1, 'wallScreen', 'ecranMural'),
+    ...[3, 4, 6, 7].flatMap((y) => [obj(`rackG${y}`, 2, y, 'serverRackFloor', 'rack'), obj(`rackD${y}`, 12, y, 'serverRackFloor', 'rack')]),
+    obj('disjoncteur', 13, 8, 'breaker', 'disjoncteur'),
+    obj('serveurPX', 10, 3, 'serverTerm', 'serveurPX'),
+    npc('oskarIn', 7, 7, 'oskar', 'up', 'oskarIn', { showWhen: 'oskarIn' }),
   ];
-  return { id: 'serveurs', name: 'La salle des serveurs', outdoor: false, width: 11, height: 6, rows: b.rows, objects };
+  return {
+    id: 'serveurs', name: 'La salle des serveurs', outdoor: false, width: 15, height: 10, rows: b.rows, objects,
+    decals: [{ x: 6, y: 4, w: 3, h: 2, kind: 'memoryCore' }],
+  };
 }
 
-export const MAPS_AZ: Record<string, GameMap> = { cuves: cuves(), chemin: chemin(), ville: ville(), atelier: atelier(), ecole: ecole(), centre: centre(), serveurs: serveurs() };
+export const MAPS_AZ: Record<string, GameMap> = { cuves: cuves(), chemin: chemin(), ville: ville(), atelier: atelier(), ecole: ecole(), centre: centre(), culture: culture(), pompes: pompes(), serveurs: serveurs() };
 export const START_AZ = { map: 'cuves', x: 4, y: 7, dir: 'up' as Dir };

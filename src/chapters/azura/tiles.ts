@@ -686,14 +686,12 @@ const dryWindow: Painter = (c) => {
 /** Une cascade qui tombe de la montagne : des filets d'eau qui défilent, de l'écume en bas. */
 const fall = (frame: number, foot: boolean): Painter => (c, v) => {
   azRockFace(c, v);
-  r(c, 1, 0, 14, T, AZ.waterDeep);
-  r(c, 2, 0, 12, T, AZ.water);
+  r(c, 0, 0, T, T, AZ.water);
   for (let i = 0; i < 6; i++) {
-    const x = 2 + ((i * 5 + 3) % 12), y = (i * 7 + frame * 8) % T;
+    const x = 1 + ((i * 5 + 3) % 14), y = (i * 7 + frame * 8) % T;
     r(c, x, y, 1, 6, AZ.waterLight);
     r(c, x, (y + 9) % T, 1, 3, '#ffffff');
   }
-  r(c, 1, 0, 1, T, '#1d8f8c'); r(c, 14, 0, 1, T, '#1d8f8c');
   if (foot) {
     r(c, 0, 11, T, 5, 'rgba(234,255,251,0.85)');
     for (let i = 0; i < 5; i++) r(c, (i * 4 + frame * 2) % T, 10 - (i % 2), 2, 2, '#ffffff');

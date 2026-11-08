@@ -73,7 +73,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl17', thread: 'leads', title: 'Les plans de la mère de Betti', text: 'En entendant « PX-07 », Betti est partie en courant vers son atelier : sa mère numérotait ses prototypes.', doneWhen: 'j4Plans' },
   { id: 'azl18', thread: 'leads', title: 'Vesper, maintenant', text: 'La liaison 47,2 n’est grande ouverte que tant que les lunes sont alignées : jusqu’à ce soir. Au centre des pilotes, piloter le robot R-7 sur Vesper et ramener Pixel.', doneWhen: 'j4Liaison' },
   { id: 'r7l1', thread: 'leads', title: 'Trouver Pixel', text: 'Je pilote R-7 depuis Azura. Pixel doit être au laboratoire Lazare, près de ma capsule. Attention : au soleil, le robot surchauffe ; à l’ombre des murs, il refroidit.', doneWhen: 'bs1Taken' },
-  { id: 'r7l2', thread: 'leads', title: 'Recharger la BS-1', text: 'La BS-1 du pod mobile est vide. La poser sur la grande plaque solaire de la place, attendre à l’ombre, puis la reprendre.', doneWhen: 'bs1Charged' },
+  { id: 'r7l2', thread: 'leads', title: 'Recharger la BS-1', text: 'La BS-1 de ma capsule est vide. La poser sur la plaque de recharge solaire de la place des Missions, attendre à l’ombre, puis la reprendre.', doneWhen: 'bs1Charged' },
   { id: 'r7l3', thread: 'leads', title: 'Réveiller Pixel', text: 'La BS-1 est pleine. La brancher sur Pixel, au laboratoire Lazare (depuis le sac).', doneWhen: 'pixelOn' },
   { id: 'r7l4', thread: 'leads', title: 'Le spatioport', text: 'Pixel me suit. Le ramener au spatioport : l’antenne et l’ordinateur des archives sont là-bas.', doneWhen: 'r7Transmit' },
   { id: 'azlCabane', thread: 'leads', title: 'La cabane verrouillée', text: 'La cabane de Joss est fermée à clé. Joss pêchait sur son ponton quand il l’a perdue… Elle est peut-être tombée à l’eau.', doneWhen: 'cabaneOpen' },
@@ -104,7 +104,7 @@ export const ITEMS_AZ: Record<string, ItemDef> = {
   canne: { name: 'Canne à pêche', text: 'La canne de Joss, avec son moulinet et un bouchon rouge et blanc. Joss pêche toujours depuis son ponton.', usable: true },
   pince: { name: 'Pince de Tom', text: 'Une pince d’électricien, aux poignées rouges. Tom ne la quitte jamais.' },
   cable: { name: 'Câble neuf', text: 'Un câble électrique neuf, de l’atelier de Betti. De quoi rebrancher la sirène.', usable: true },
-  bs1Vide: { name: 'BS-1 (vide)', text: 'La batterie de Pixel, retirée du pod mobile. Le voyant est éteint. À recharger au soleil, sur la plaque de la place.', usable: true },
+  bs1Vide: { name: 'BS-1 (vide)', text: 'La batterie de Pixel, retirée de ma capsule. Le voyant est éteint. À recharger au soleil, sur la plaque de la place des Missions.', usable: true },
   battery: { name: 'BS-1 (chargée)', text: 'La batterie de Pixel, pleine. Il faut la brancher sur son dos.', usable: true },
   cleCabane: { name: 'Clé de la cabane', text: 'Une clé de cuivre, repêchée devant la cabane de Joss. Un petit médaillon gravé « J ».', usable: true },
 };

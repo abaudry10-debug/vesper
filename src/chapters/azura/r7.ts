@@ -6,65 +6,46 @@
 // robot, jusqu'à reconnaître la voix du héros dans le haut-parleur.
 import type { Game } from '../../engine/game.js';
 import { sfx } from '../../engine/audio.js';
-import { T, dogSprite } from '../../engine/sprites.js';
+import { P, T, dogSprite } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
-import { Builder, SOLID, exit, type GameMap, type MapObject } from '../../engine/world.js';
+import { SOLID, type GameMap, type MapObject } from '../../engine/world.js';
+import { MAPS as V_MAPS } from '../vesper/maps.js';
 import { readLegacy } from '../../engine/legacy.js';
 
 export const isR7 = (g: Game) => g.map.id.startsWith('r7');
 
-// ---------- les lieux ----------
-function hangar(): GameMap {
-  const b = new Builder(12, 9, '=');
-  b.border('X').rect(1, 1, 10, 1, 'X');
-  b.set(5, 8, '=');
-  const objects: MapObject[] = [
-    exit('sortie', 5, 8, { to: 'r7Ville', x: 5, y: 5, dir: 'down' }),
-    { id: 'r7Archives', x: 8, y: 2, sprite: 'archiveTerm', script: 'r7Archives' },
-    { id: 'r7Antenne', x: 3, y: 2, sprite: 'terminal', script: 'r7Antenne' },
-    { id: 'r7Socle', x: 2, y: 5, sprite: 'terminalOff', script: 'r7Socle' },
-  ];
-  return { id: 'r7Hangar', name: 'Vesper — le spatioport (caméra de R-7)', outdoor: false, width: 12, height: 9, rows: b.rows, objects };
+// ---------- les lieux : les cartes du chapitre 1, onze ans plus tard ----------
+// On reprend la ville, le laboratoire Lazare et le hangar du spatioport tels quels. Les portes vers
+// les autres lieux sont ensevelies sous le sable ; les objets ne servent plus, sauf ceux de la mission.
+const KEEP: Record<string, [string, string]> = {
+  vesper: ['r7Ville', 'Vesper — onze ans plus tard'],
+  lab: ['r7Lab', 'Vesper — le laboratoire Lazare'],
+  spatioportInt: ['r7Hangar', 'Vesper — le spatioport'],
+};
+// le robot de patrouille, c'est nous ; Pixel n'est plus là où on l'avait trouvé ; les cartes mémoire ont été lues
+const DROP = new Set(['robot', 'pixelOff', 'pixelSleep', 'memoCard1', 'memoCard6']);
+
+function cloneMap(srcId: string, extra: MapObject[]): GameMap {
+  const src = V_MAPS[srcId];
+  const [id, name] = KEEP[srcId];
+  const objects: MapObject[] = [];
+  for (const o of src.objects) {
+    if (DROP.has(o.id) || o.hiddenUntil) continue;
+    const n: MapObject = { id: `r7_${o.id}`, x: o.x, y: o.y, sprite: o.spriteWhen ? o.spriteWhen[1] : o.sprite };
+    if (o.door && KEEP[o.door.to]) {
+      const [to] = KEEP[o.door.to];
+      n.door = { to, x: o.door.x, y: o.door.y, dir: o.door.dir };
+    } else n.script = o.door ? 'r7Loin' : o.script ? 'r7Vieux' : undefined;
+    objects.push(n);
+  }
+  return { ...src, id, name, rows: [...src.rows], objects: [...objects, ...extra] };
 }
 
-function ville(): GameMap {
-  const W = 26, H = 16;
-  const b = new Builder(W, H, '.');
-  b.rect(1, 6, W - 2, 2, ',');
-  b.rect(2, 1, 8, 4, '#'); // le spatioport
-  b.rect(16, 1, 8, 4, '#'); // le laboratoire Lazare
-  b.rect(3, 11, 5, 3, '#').rect(17, 12, 6, 2, '#'); // des immeubles effondrés
-  b.border('*');
-  b.points('T', [[11, 2], [14, 3], [1, 9], [24, 9], [10, 14], [15, 14]]);
-  const objects: MapObject[] = [
-    { id: 'r7PorteSpatio', x: 5, y: 4, sprite: 'bunkerDoorOpen', door: { to: 'r7Hangar', x: 5, y: 7, dir: 'up' } },
-    { id: 'r7PorteLab', x: 19, y: 4, sprite: 'labDoorOpen', door: { to: 'r7Lab', x: 5, y: 8, dir: 'up' } },
-    { id: 'r7Plaque', x: 12, y: 10, sprite: '', script: 'r7Plaque' },
-    { id: 'r7Thermo', x: 13, y: 5, sprite: 'thermometer', script: 'r7Thermo' },
-  ];
-  return {
-    id: 'r7Ville', name: 'Vesper — onze ans plus tard', outdoor: true, width: W, height: H, rows: b.rows, objects,
-    skins: [{ x: 2, y: 1, w: 8, h: 4, style: 'spatio' }, { x: 16, y: 1, w: 8, h: 4, style: 'lab' }],
-    marks: [{ x: 3, y: 4, sprite: 'rocketEmblem' }, { x: 8, y: 4, sprite: 'rocketEmblem' }, { x: 17, y: 4, sprite: 'labEmblem' }, { x: 22, y: 4, sprite: 'labEmblem' }],
-  };
-}
-
-function lab(): GameMap {
-  const b = new Builder(12, 10, '=');
-  b.border('X').rect(1, 1, 10, 1, 'X').rect(5, 5, 2, 1, 'X');
-  b.set(5, 9, '=');
-  const objects: MapObject[] = [
-    exit('sortie', 5, 9, { to: 'r7Ville', x: 19, y: 5, dir: 'down' }),
-    { id: 'r7Capsule07', x: 2, y: 2, sprite: 'capsule', script: 'r7Capsule07' },
-    { id: 'r7CapsuleA', x: 4, y: 2, sprite: 'capsuleFrost', script: 'r7CapsuleFrost' },
-    { id: 'r7CapsuleB', x: 6, y: 2, sprite: 'capsuleFrost', script: 'r7CapsuleFrost' },
-    { id: 'r7Pod', x: 9, y: 3, sprite: 'terminalOff', script: 'r7Pod' },
-    { id: 'r7Pixel', x: 3, y: 3, sprite: 'dogOff', spriteWhen: ['pixelWake', ''], script: 'r7Pixel', hideWhen: 'pixelOn' },
-  ];
-  return { id: 'r7Lab', name: 'Vesper — le laboratoire Lazare', outdoor: false, width: 12, height: 10, rows: b.rows, objects };
-}
-
-export const R7_MAPS: Record<string, GameMap> = { r7Hangar: hangar(), r7Ville: ville(), r7Lab: lab() };
+export const R7_MAPS: Record<string, GameMap> = {
+  r7Ville: cloneMap('vesper', [{ id: 'r7Plaque', x: 22, y: 18, sprite: '', script: 'r7Plaque' }]),
+  r7Lab: cloneMap('lab', [{ id: 'r7Pixel', x: 3, y: 3, sprite: 'dogOff', spriteWhen: ['pixelWake', ''], script: 'r7Pixel', hideWhen: 'pixelOn' }]),
+  r7Hangar: cloneMap('spatioportInt', []),
+};
 
 /** Sur Vesper, les cases pleines sont celles du chapitre 1. */
 export const r7Blocked = (g: Game, x: number, y: number): boolean | undefined => {
@@ -85,6 +66,7 @@ export function updateR7(g: Game, dt: number) {
     return;
   }
   g.heroAlpha = 0; // on ne voit pas le héros : on voit R-7
+  if (ui.dialogOpen() || g.locked) return; // le temps ne compte pas pendant qu'on lit
   const temp = g.counters.r7temp ?? 20;
   const shade = shadeAt(g, g.x, g.y);
   if (shade && g.map.id === 'r7Ville') lastShade.set(g, [g.map.id, g.x, g.y]);
@@ -108,7 +90,7 @@ function overheat(g: Game) {
   sfx.zap();
   window.setTimeout(() => {
     const ls = lastShade.get(g);
-    const [x, y] = ls && ls[0] === g.map.id ? [ls[1], ls[2]] : [5, 5]; // sinon : devant la porte du spatioport, à l'ombre
+    const [x, y] = ls && ls[0] === g.map.id ? [ls[1], ls[2]] : [7, 6]; // sinon : devant le laboratoire, à l'ombre
     g.x = x;
     g.y = y;
     g.moving = null;
@@ -121,42 +103,38 @@ function overheat(g: Game) {
 
 // ---------- le dessin : R-7, la plaque, Pixel qui grogne, l'image de la caméra ----------
 function drawRobot(c: CanvasRenderingContext2D, x: number, y: number, dir: string, t: number, moving: boolean) {
+  // le robot de patrouille de la ville, relevé : la même carcasse grise, le même œil rouge
   const r = (xx: number, yy: number, w: number, h: number, col: string) => {
     c.fillStyle = col;
     c.fillRect(x + xx, y + yy, w, h);
   };
-  c.fillStyle = 'rgba(0,0,0,0.25)';
-  c.beginPath();
-  c.ellipse(x + 8, y + 15, 7, 2, 0, 0, Math.PI * 2);
-  c.fill();
-  // les chenilles
-  r(2, 11, 12, 4, '#2a2228');
-  const step = moving ? Math.floor(t * 12) % 3 : 0;
-  for (let i = 0; i < 4; i++) r(3 + ((i * 3 + step) % 11), 12, 1, 2, '#6a5a60');
-  // le corps, peinture jaune écaillée
-  r(3, 5, 10, 7, '#a8782a');
-  r(3, 5, 10, 1, '#e8b850');
-  r(4, 7, 3, 3, '#5a4a3a');
-  r(10, 9, 2, 2, '#7a6040');
-  r(9, 6, 1, 1, '#c84838');
-  // la tête, et son objectif
-  r(5, 1, 6, 4, '#8a8a92');
-  r(5, 1, 6, 1, '#b8b8c0');
+  c.fillStyle = 'rgba(0,0,0,0.3)';
+  c.fillRect(x + 2, y + 14, 12, 2);
+  const step = moving ? Math.floor(t * 10) % 2 : 0;
+  // les deux roues
+  r(3, 12 + step, 3, 3, P.metalDark);
+  r(10, 13 - step, 3, 2, P.metalDark);
+  // le corps
+  r(3, 6, 10, 7, P.metal);
+  r(3, 6, 10, 1, P.metalLight);
+  r(5, 8, 3, 2, P.metalDark);
+  r(10, 10, 2, 2, P.rust);
+  r(3, 12, 10, 1, P.metalDark);
+  // la tête, et son œil rouge
+  r(4, 1, 8, 5, P.metal);
+  r(4, 1, 8, 1, P.metalLight);
   if (dir !== 'up') {
     const ex = dir === 'left' ? 5 : dir === 'right' ? 8 : 6;
-    r(ex, 2, 3, 2, '#14101c');
-    r(ex + 1, 2, 1, 1, '#5ff0e0');
-  }
-  // l'antenne, qui clignote
-  r(10, -2, 1, 3, '#5a5a62');
-  r(10, -3, 1, 1, Math.floor(t * 2) % 2 ? '#ff5a5a' : '#6a2a2a');
+    r(ex, 3, 3, 1, Math.floor(t * 3) % 7 === 0 ? '#6a2a2a' : P.red);
+  } else r(6, 3, 4, 1, P.metalDark);
+  r(12, 2, 1, 2, P.rust);
 }
 
 /** Sous les personnages : la plaque solaire, la BS-1 posée dessus, et Pixel quand il grogne. */
 export function drawR7Under(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
   if (!isR7(g)) return;
   if (g.map.id === 'r7Ville') {
-    const sx = 12 * T - ox, sy = 10 * T - oy;
+    const sx = 22 * T - ox, sy = 18 * T - oy;
     c.fillStyle = '#2a2236'; c.fillRect(sx - 1, sy + 2, T + 2, 12);
     c.fillStyle = '#3a4a8a'; c.fillRect(sx, sy + 3, T, 10);
     c.fillStyle = '#5a7ad0';
@@ -223,36 +201,43 @@ export function renderR7(g: Game, c: CanvasRenderingContext2D, w: number, h: num
 // ---------- les interactions ----------
 const say = (lines: string[], then?: () => void) => ui.say(lines, then);
 
+const OLD: Record<string, string[]> = {
+  note: ['Un vieux papier. Le soleil a tout effacé.'],
+  sign: ['Un panneau, décoloré par onze ans de soleil.'],
+  signLeft: ['Un panneau, décoloré par onze ans de soleil.'],
+  signRight: ['Un panneau, décoloré par onze ans de soleil.'],
+  signDown: ['Un panneau, décoloré par onze ans de soleil.'],
+  thermometer: ['Le vieux thermomètre de rue. L’aiguille est bloquée tout en haut.', 'Iris (radio) : « Au soleil, tu chauffes. À l’ombre des murs, tu refroidis. »'],
+  car: ['Une épave de voiture, à moitié ensevelie.'],
+  crate: ['Une caisse, ensablée.'],
+  monument: ['La plaque des missions. Le sable a recouvert les noms.'],
+  poster: ['L’affiche du programme LAZARE. Elle est presque blanche.'],
+  terminal: ['Un terminal. L’écran est mort.'],
+  terminalOff: ['Un terminal. L’écran est mort.'],
+  book: ['Un registre, gonflé par la chaleur. Les pages collent entre elles.'],
+  locker: ['Un casier, vide.'],
+  lockerOpen: ['Un casier, vide.'],
+  heatAlert: ['L’alarme de chaleur. Elle ne sonne plus depuis longtemps.'],
+  shelf: ['Une étagère, couverte de sable.'],
+  missionBoard: ['Le tableau des missions. Le sable s’est glissé jusque derrière la vitre.'],
+  varnDesk: ['Le bureau du Dr Varn. Personne n’y a touché.'],
+};
+
 export function r7Interact(g: Game, obj: MapObject | undefined): boolean {
   if (!isR7(g) || !obj) return false;
   switch (obj.id) {
-    case 'r7Archives':
+    case 'r7_archiveTerm':
       say(g.flags.has('pixelOn')
         ? ['L’ordinateur des archives. Le dossier MISSION_AURORE, vide.', 'Pixel le renifle, la queue basse. C’est ici qu’il s’était branché, il y a des années.', '— Fin de la démo d’Azura —', 'La suite (la transmission de Pixel vers Azura) arrive bientôt. Merci d’avoir joué.']
         : ['L’ordinateur des archives du spatioport. Le dossier MISSION_AURORE : vide.', 'C’est ici que Pixel s’était branché, pour se recharger.']);
       if (g.flags.has('pixelOn')) g.flags.add('sliceDone');
       return true;
-    case 'r7Antenne':
-      say(['La console de l’antenne du spatioport. « LIAISON 47,2 — ACTIVE ».', 'C’est par elle que je pilote R-7, depuis Azura.']);
-      return true;
-    case 'r7Socle':
-      say(['Le socle de recharge de R-7, couvert de sable. Onze ans qu’il attendait ici.']);
-      return true;
-    case 'r7Thermo':
-      say(['Un vieux thermomètre de rue, sur un poteau. L’aiguille est bloquée tout en haut.', 'Iris (radio) : « Au soleil, tu chauffes. À l’ombre des murs, tu refroidis. »']);
-      return true;
-    case 'r7Capsule07':
-      say(['Ma capsule. Fermée, couverte de poussière.', 'Mon corps dort là-dedans. Le vrai. Celui d’avant.', 'Je n’arrive pas à regarder plus longtemps.']);
-      return true;
-    case 'r7CapsuleFrost':
-      say(['Une capsule givrée. Une forme immobile, sous le givre.', 'Quelqu’un, sur Azura, a son esprit. Et a perdu ses souvenirs.']);
-      return true;
-    case 'r7Pod':
+    case 'r7_capsule07':
       if (g.flags.has('bs1Taken')) {
-        say(['Le pod mobile que j’ai assemblé pour partir. Vide, maintenant.']);
+        say(['Ma capsule. Mon corps dort là-dedans. Le vrai. Celui d’avant.', 'Je n’arrive pas à regarder plus longtemps.']);
         return true;
       }
-      say(['Le pod mobile que j’ai assemblé, il y a onze ans, pour partir.', 'Au fond, la BS-1. La batterie de Pixel. Elle a servi à m’envoyer là-bas.', 'Je la retire avec la pince de R-7. Le voyant est éteint : elle est vide.', 'Iris (radio) : « Une batterie solaire ? Il y a une grande plaque de recharge sur la place, en plein soleil. »'], () => {
+      say(['Ma capsule. Fermée, couverte de poussière. Mon corps dort là-dedans.', 'Sur le flanc, le logement de l’amorce. La BS-1 y est toujours : c’est elle qui m’a envoyé là-bas.', 'Je la retire avec la pince de R-7. Le voyant est éteint : elle est vide.', 'Iris (radio) : « Une batterie solaire ? Pose-la en plein soleil. Sur la place des Missions, il y a une plaque de recharge. »'], () => {
         g.flags.add('bs1Taken');
         g.items.add('bs1Vide');
         sfx.item();
@@ -260,6 +245,10 @@ export function r7Interact(g: Game, obj: MapObject | undefined): boolean {
         g.api.clue('r7l2');
         g.save();
       });
+      return true;
+    case 'r7_capsuleA':
+    case 'r7_capsuleB':
+      say(['Une capsule givrée. Une forme immobile, sous le givre.', 'Quelqu’un, sur Azura, a son esprit. Et a perdu ses souvenirs.']);
       return true;
     case 'r7Plaque':
       if (g.flags.has('bs1Charged') && !g.items.has('battery') && !g.flags.has('pixelWake')) {
@@ -275,13 +264,19 @@ export function r7Interact(g: Game, obj: MapObject | undefined): boolean {
         say(['La BS-1 charge, posée sur la plaque. Le voyant clignote.', 'Mieux vaut attendre à l’ombre.']);
         return true;
       }
-      say(['Une grande plaque de recharge solaire, au milieu de la place. En plein soleil.', ...(g.items.has('bs1Vide') ? ['(La BS-1 vide est dans mon sac.)'] : [])]);
+      say(['Une plaque de recharge solaire, au milieu de la place des Missions. En plein soleil.', ...(g.items.has('bs1Vide') ? ['(La BS-1 vide est dans mon sac.)'] : [])]);
       return true;
     case 'r7Pixel':
-      say(['Pixel.', 'Couché au pied de ma capsule, le museau sur les pattes. Éteint.', 'Le petit panneau solaire de son dos est fendu. Il n’a plus aucune énergie.', 'Betti (radio), dans un souffle : « Pixel… »', ...(g.items.has('battery') ? ['(La BS-1 chargée est dans mon sac.)'] : [])], () => g.api.clue('r7l1b'));
+      say(['Pixel.', 'Couché au pied de ma capsule, le museau sur les pattes. Éteint.', 'Le petit panneau solaire de son dos est fendu. Il n’a plus aucune énergie.', 'Betti (radio), dans un souffle : « Pixel… »', ...(g.items.has('battery') ? ['(La BS-1 chargée est dans mon sac.)'] : [])]);
       return true;
   }
-  return false;
+  if (!obj.id.startsWith('r7_')) return false;
+  if (obj.script === 'r7Loin') {
+    say([obj.sprite ? 'La porte est ensevelie sous le sable.' : 'Une dune bouche le passage.', 'Iris (radio) : « Ne t’éloigne pas : le signal faiblit. Le laboratoire, la place, le spatioport. »']);
+    return true;
+  }
+  say(OLD[obj.sprite] ?? ['Couvert de sable. Onze ans ont passé.']);
+  return true;
 }
 
 /** Pixel, réveillé mais méfiant : il faut lui parler dans le haut-parleur de R-7. */
@@ -316,7 +311,7 @@ export function r7UseItem(g: Game, id: string): boolean {
   if (!isR7(g)) return false;
   const [fx, fy] = g.facing();
   if (id === 'bs1Vide') {
-    if (g.map.id === 'r7Ville' && fx === 12 && fy === 10) {
+    if (g.map.id === 'r7Ville' && fx === 22 && fy === 18) {
       g.items.delete('bs1Vide');
       g.flags.add('bs1OnPlate');
       g.counters.r7charge = 0;
@@ -343,14 +338,15 @@ export function r7UseItem(g: Game, id: string): boolean {
 export function startR7(g: Game) {
   g.flags.add('r7On');
   g.counters.r7temp = 20;
-  g.warp('r7Hangar', 2, 4, 'down');
+  g.warp('r7Ville', 30, 14, 'down');
   window.setTimeout(() => {
     say(
       [
-        'Une image granuleuse, orange. Un hangar, du sable partout.',
-        'Je bouge les commandes. L’image tourne. Je suis… R-7.',
-        'Oskar (radio) : « Tu le tiens ! Les chenilles répondent ? »',
-        'Iris (radio) : « Attention à la chaleur. Le robot n’a pas été entretenu depuis onze ans. En plein soleil, il surchauffe vite. Reste à l’ombre des murs. »',
+        'Une image granuleuse, de travers. Du sable, collé contre l’objectif.',
+        'Je bouge les commandes. L’image bascule… et se redresse. Le robot se relève.',
+        'Le robot de patrouille. Celui que j’avais trouvé renversé dans la rue, il y a onze ans.',
+        'Oskar (radio) : « R-7, un robot de patrouille de la ville. Tu le tiens ! Il répond ? »',
+        'Iris (radio) : « Attention à la chaleur. Il n’a pas été entretenu depuis onze ans. En plein soleil, il surchauffe vite. Reste à l’ombre des murs. »',
         'Betti (radio) : « Pixel… Il doit être au laboratoire Lazare. Près de ta capsule. »',
       ],
       () => {

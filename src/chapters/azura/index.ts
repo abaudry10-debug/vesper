@@ -1142,6 +1142,21 @@ export const azura: Chapter = {
       eveningNow = isEvening(g);
     },
     useItem(g, id) {
+      if (id === 'cleCabane') {
+        const [fx, fy] = g.facing();
+        if (g.map.id !== 'chemin' || fx !== 3 || fy !== 17) {
+          ui.say(['La clé de la cabane de Joss. Il faudrait être devant sa porte.']);
+          return true;
+        }
+        g.items.delete('cleCabane');
+        g.flags.add('cabaneOpen');
+        sfx.door();
+        ui.say(['La clé tourne. Clac. La porte de la cabane s’ouvre.'], () => {
+          g.save();
+          g.warp('cabane', 3, 4, 'up');
+        });
+        return true;
+      }
       if (id !== 'canne') return false;
       if (atJetty(g)) startFishing(g);
       else if (g.map.rows[g.facing()[1]]?.[g.facing()[0]] === '~') ui.say(['Rien ne mord, ici. Joss pêchait toujours depuis son ponton.']);
@@ -1152,17 +1167,6 @@ export const azura: Chapter = {
       // la cabane de Joss : les murs, sous le grand décor
       if (!obj && g.map.id === 'chemin' && g.map.rows[fy]?.[fx] === 'N') {
         ui.say(['La cabane de pêche de Joss, sur ses pilotis. Des planches, un toit vert, un filet qui sèche.']);
-        return true;
-      }
-      // la porte : la clé repêchée l'ouvre
-      if (obj?.id === 'porteCabane' && !g.flags.has('cabaneOpen') && g.items.has('cleCabane')) {
-        g.items.delete('cleCabane');
-        g.flags.add('cabaneOpen');
-        sfx.door();
-        ui.say(['La clé tourne. Clac. La porte de la cabane s’ouvre.'], () => {
-          g.save();
-          g.warp('cabane', 3, 4, 'up');
-        });
         return true;
       }
       // le ponton : on pêche, ou on regarde l'eau
@@ -1217,7 +1221,7 @@ export const azura: Chapter = {
           ui.say(
             g.flags.has('cabaneOpen')
               ? ['« Tu as ouvert ma cabane ? Le carnet est sur la table. Rapporte-le-moi, tu veux ? »']
-              : ['« Mon carnet ! J’y notais toutes les marées, depuis des années. Il est dans ma cabane, de l’autre côté de la rivière. »', '« Mais la clé… Je l’avais ce matin, j’en suis sûr. Je pêchais devant la cabane. Ou c’était hier ? »', '« Et ma canne ! Je l’ai laissée là-bas, elle aussi. »'],
+              : ['« Mon carnet ! J’y notais toutes les marées, depuis des années. Il est dans ma cabane, de l’autre côté de la rivière. »', '« Et la clé… Je l’ai perdue en pêchant, devant la cabane. Ce matin ? Ou c’était hier ? »'],
             () => g.api.clue('azl7'),
           );
         } else {

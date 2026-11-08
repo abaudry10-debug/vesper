@@ -82,7 +82,7 @@ export const QUESTIONS_AZ: Question[] = [
 export const ITEMS_AZ: Record<string, ItemDef> = {
   fruit: { name: 'Fruit d’Azura', text: 'Orange, sucré, avec un goût de miel. Mme Ilda me l’a offert.' },
   canne: { name: 'Canne à pêche', text: 'La canne de Joss, avec son moulinet et un bouchon rouge et blanc. Joss pêche toujours depuis son ponton.', usable: true },
-  cleCabane: { name: 'Clé de la cabane', text: 'Une clé de cuivre, repêchée devant la cabane de Joss. Un petit médaillon gravé « J ».' },
+  cleCabane: { name: 'Clé de la cabane', text: 'Une clé de cuivre, repêchée devant la cabane de Joss. Un petit médaillon gravé « J ».', usable: true },
 };
 
 
@@ -319,10 +319,10 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     api.has('cabaneOpen')
       ? api.say(['La porte de la cabane est ouverte.'])
       : api.has('jour3')
-      ? api.say(['La porte de la cabane est fermée à clé. Une plaque gravée : « JOSS ».', 'Joss pêchait devant quand il a perdu sa clé…'], () => api.clue('azlCabane'))
+      ? api.say(api.hasItem('cleCabane') ? ['La porte de la cabane est fermée à clé.', '(La clé est dans mon sac.)'] : ['La porte de la cabane est fermée à clé. Une plaque gravée : « JOSS ».', 'Joss pêchait devant quand il a perdu sa clé…'], () => api.clue('azlCabane'))
       : api.say(['La cabane de pêche de Joss. Fermée. Il y range son matériel.']),
   canne: (api) =>
-    api.say(['Une canne à pêche, appuyée contre la cabane. Celle de Joss.', 'Il l’a oubliée là ce matin.'], () => {
+    api.say(['Une canne à pêche, appuyée contre la cabane. Celle de Joss.'], () => {
       api.set('canneTaken');
       api.item('canne');
     }),

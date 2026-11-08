@@ -1159,6 +1159,7 @@ export const azura: Chapter = {
         case 'k': return withFringe('crystals' + (Math.floor(g.time * 1.5 + x * 0.7 + y) % 2), grassMask(g, x, y));
         case 'm': return 'metalFloor';
         case 'N': return g.map.id === 'ville' ? 'azStone' : 'azPad';
+        case 'W': return (g.map.rows[y + 1]?.[x] === 'W' ? 'azFall' : 'azFallFoot') + (Math.floor(g.time * 6) % 2);
         case 'd': return 'slab';
         case 'c': {
           // horizontale, sauf si la conduite file vers le haut ou le bas
@@ -1342,10 +1343,12 @@ export const azura: Chapter = {
       grad.addColorStop(1, 'rgba(255,240,200,0.06)');
       c.fillStyle = grad;
       c.fillRect(0, 0, w, h);
+      // (dans le monde, pas sur l'écran : elles ne suivent pas le héros)
       c.fillStyle = 'rgba(20,60,70,0.07)';
-      for (let i = 0; i < 3; i++) {
-        const cx = ((g.time * 5 + i * 140) % (w + 160)) - 80;
-        const cy = ((i * 97) % h) + 20;
+      const mw = g.map.width * T, mh = g.map.height * T;
+      for (let i = 0; i < 4; i++) {
+        const cx = ((g.time * 5 + i * 173) % (mw + 200)) - 100 - cox;
+        const cy = ((i * 131) % mh) + 30 - coy;
         c.beginPath();
         c.ellipse(cx, cy, 60, 26, 0, 0, Math.PI * 2);
         c.fill();
@@ -1358,8 +1361,8 @@ export const azura: Chapter = {
       // un drone de la colonie qui passe, avec son ombre au sol
       const period = 22;
       const k = (g.time % period) / period;
-      const dx = -30 + k * (w + 60);
-      const dy = h * 0.3 + Math.sin(g.time * 0.7) * 10;
+      const dx = -30 + k * (g.map.width * T + 60) - cox;
+      const dy = g.map.height * T * 0.3 + Math.sin(g.time * 0.7) * 10 - coy;
       c.fillStyle = 'rgba(10,20,30,0.18)';
       c.fillRect(Math.round(dx) + 6, Math.round(dy) + 18, 9, 3);
       c.fillStyle = '#5f6b7a';

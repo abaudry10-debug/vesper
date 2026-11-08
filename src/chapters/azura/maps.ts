@@ -14,7 +14,7 @@
 import type { Dir } from '../../engine/sprites.js';
 import { Builder, exit, type GameMap, type MapObject } from '../../engine/world.js';
 
-export const SOLID_AZ = new Set(['~', 'R', 'A', 'u', '|', '#', 'Z', 'F', '1', '2', '3', '4', 'k', 'Y', 'M', 'N']);
+export const SOLID_AZ = new Set(['~', 'R', 'A', 'u', '|', '#', 'Z', 'F', '1', '2', '3', '4', 'k', 'Y', 'M', 'N', 'W']);
 
 const obj = (id: string, x: number, y: number, sprite: string, script?: string, extra: Partial<MapObject> = {}): MapObject => ({ id, x, y, sprite, script, ...extra });
 const npc = (id: string, x: number, y: number, look: string, dir: Dir, script: string, extra: Partial<MapObject> = {}): MapObject => ({
@@ -143,7 +143,8 @@ function cuves(): GameMap {
   objects.push(...tall('registre', 10, 5, 'holoTop', 'holoBase', 'cuveLog'));
   objects.push(...pylon('pyl1', 2, 4), ...pylon('pyl2', 32, 4), ...pylon('pyl3', 2, 12), ...pylon('pyl4', 33, 10));
   // le centre de clonage : les conduites des cuves y mènent toutes
-  b.rect(25, 4, 7, 5, '#');
+  b.rect(24, 4, 9, 1, '"');
+  b.rect(25, 5, 7, 4, '#');
   b.rect(20, 6, 5, 1, 'c');
   b.rect(24, 9, 9, 1, ':');
   // un petit sentier qui part du grand chemin vers le centre et la navette
@@ -163,10 +164,13 @@ function cuves(): GameMap {
   objects.push(exit('versChemin2', 12, 17, { to: 'chemin', x: 15, y: 1, dir: 'down' }));
   // au nord, une vraie chaîne de montagnes ; ailleurs, la barrière de la colonie
   b.rect(0, 0, W, 4, 'M');
+  // derrière le centre, une cascade tombe de la montagne et une rivière file vers l'est
+  b.rect(22, 3, 13, 1, '~');
+  b.rect(28, 0, 2, 3, 'W');
   enclose(b, [[4, 7]], [[11, 17], [12, 17]], (_x, y) => (y <= 5 ? 'M' : 'Y'));
   return {
     id: 'cuves', name: 'Le champ des cuves', outdoor: true, width: W, height: H, rows: b.rows, objects, voidTile: 'azForest',
-    skins: [{ x: 25, y: 4, w: 7, h: 5, style: 'aur' }],
+    skins: [{ x: 25, y: 5, w: 7, h: 4, style: 'aur' }],
     decals: [{ x: 26, y: 12, w: 5, h: 3, kind: 'navette' }],
   };
 }

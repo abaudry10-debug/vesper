@@ -683,6 +683,22 @@ const dryWindow: Painter = (c) => {
   r(c, 3, 5, 1, 3, 'rgba(255,255,255,0.5)');
 };
 
+/** Une cascade qui tombe de la montagne : des filets d'eau qui défilent, de l'écume en bas. */
+const fall = (frame: number, foot: boolean): Painter => (c, v) => {
+  azRockFace(c, v);
+  r(c, 1, 0, 14, T, AZ.waterDeep);
+  r(c, 2, 0, 12, T, AZ.water);
+  for (let i = 0; i < 6; i++) {
+    const x = 2 + ((i * 5 + 3) % 12), y = (i * 7 + frame * 8) % T;
+    r(c, x, y, 1, 6, AZ.waterLight);
+    r(c, x, (y + 9) % T, 1, 3, '#ffffff');
+  }
+  r(c, 1, 0, 1, T, '#1d8f8c'); r(c, 14, 0, 1, T, '#1d8f8c');
+  if (foot) {
+    r(c, 0, 11, T, 5, 'rgba(234,255,251,0.85)');
+    for (let i = 0; i < 5; i++) r(c, (i * 4 + frame * 2) % T, 10 - (i % 2), 2, 2, '#ffffff');
+  }
+};
 const PAINTERS: Record<string, Painter> = {
     slab, azGrass, azFlowers, azTall, azPath, azStone, azDeck, azFloor, regolith, crater, metalFloor,
     bigCrater0: bigCrater(0), bigCrater1: bigCrater(1), bigCrater2: bigCrater(2), bigCrater3: bigCrater(3),
@@ -699,6 +715,7 @@ const PAINTERS: Record<string, Painter> = {
     workbench, robotParts, shelfAz, drawingPixel, bedAz, azFence,
     floodWindow, azPad, classBoard, desk, clockAz, benchDeck,
     notebook, pipeSchema, serverRack, serverTerm, benchIn, dryWindow,
+    azFall0: fall(0, false), azFall1: fall(1, false), azFallFoot0: fall(0, true), azFallFoot1: fall(1, true),
     valveBlue: valve('#3f6fd0', '#2a4a90'), valveRed: valve(AZ.red, '#a83030'), valveYellow: valve('#e8c040', '#a8882a'),
 };
 registerDecal('navette', navette());

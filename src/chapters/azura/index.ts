@@ -15,6 +15,8 @@ import { openBulletin } from './bulletin.js';
 import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, usePump } from './centre.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
 import { atJetty, drawFishing, startFishing, updateFishing } from './peche.js';
+import { R7_MAPS, drawR7Robot, drawR7Under, isR7, r7Blocked, r7Interact, r7PixelGrowl, r7UseItem, renderR7, startR7, updateR7 } from './r7.js';
+Object.assign(MAPS_AZ, R7_MAPS);
 import { boatBlocked, confession, dock, drawBoatOver, drawBoatUnder, drawJour4, jossIlot, plans, useBoat, useCable } from './jour4.js';
 let cabinPainted = false;
 import { EVENING, benchWait, clockLines, day, highTides, hour, levelNow, postLines, renderDaylight, renderTide, setHour } from './time.js';
@@ -234,7 +236,7 @@ function treesCanvas(g: Game, x: number, y: number): HTMLCanvasElement | null {
 }
 
 function renderVoid(g: Game, c: CanvasRenderingContext2D, x: number, y: number, sx: number, sy: number) {
-  if (!g.map.outdoor) return false;
+  if (!g.map.outdoor || isR7(g)) return false;
   const W = g.map.width, H = g.map.height;
   const cell = voidCell(g, x, y);
   const d = cell.d;
@@ -274,6 +276,11 @@ function renderVoid(g: Game, c: CanvasRenderingContext2D, x: number, y: number, 
 
 /** Les cimes de la forêt du décor débordent sur le bord de la carte : pas de ligne droite. */
 function renderOverlay(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number, x0: number, y0: number) {
+  if (isR7(g)) {
+    drawR7Under(g, c, ox, oy);
+    drawR7Robot(g, c, ox, oy);
+    return;
+  }
   if (!g.map.outdoor) return;
   drawBoatUnder(g, c, ox, oy, (x, y) => c.drawImage(person(PEOPLE.joss, 'right', 0), x, y));
   const W = g.map.width, H = g.map.height;
@@ -1060,7 +1067,7 @@ export const azura: Chapter = {
   switches: { labels: [], order: [] },
   intro: [],
   features: { heatWaves: false, movement: 'grid' },
-  music: (map) => (['atelier', 'cabane', 'pilotes', 'ecole', 'centre', 'culture', 'pompes', 'serveurs'].includes(map.id) || eveningNow ? 'home' : 'azura'),
+  music: (map) => (map.id === 'r7Ville' ? 'outdoor' : map.id.startsWith('r7') ? 'lab' : ['atelier', 'cabane', 'pilotes', 'ecole', 'centre', 'culture', 'pompes', 'serveurs'].includes(map.id) || eveningNow ? 'home' : 'azura'),
   dialogStyle: 'azura',
   cutTargets: {},
   solid: SOLID_AZ,
@@ -1075,6 +1082,7 @@ export const azura: Chapter = {
       { label: 'Jour 2 (après l’école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard'], items: [], at: { map: 'ville', x: 15, y: 15, dir: 'up' } },
       { label: 'Jour 3 (réveil)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3'], items: [], at: { map: 'atelier', x: 7, y: 5, dir: 'left' } },
       { label: 'Jour 4 (réveil)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'canneTaken', 'cabaneOpen', 'oskarDeal', 'centreOpen', 'centreIn', 'inflowCut', 'drained', 'powerOn', 'serverRead', 'oskarIn', 'pxFound', 'jour4'], items: ['canne'], at: { map: 'atelier', x: 7, y: 5, dir: 'left' } },
+      { label: 'Jour 4 (Vesper, R-7)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'canneTaken', 'cabaneOpen', 'oskarDeal', 'centreOpen', 'centreIn', 'pxFound', 'jour4', 'j4Moons', 'sireneOn', 'vague', 'barqueOk', 'jossSaved', 'jossLeft', 'j4Oskar', 'j4Confession', 'j4Plans', 'j4Soir', 'j4Plan'], items: ['canne'], at: { map: 'pilotes', x: 8, y: 3, dir: 'up' } },
       { label: 'Jour 3 (cabane de Joss)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3'], items: [], at: { map: 'chemin', x: 6, y: 17, dir: 'left' } },
       { label: 'Jour 3 (centre, avec Oskar)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'oskarDeal', 'centreOpen'], items: [], at: { map: 'cuves', x: 27, y: 9, dir: 'up' } },
       { label: 'Jour 2 (école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'bettiHome', 'jour2'], items: [], at: { map: 'ville', x: 27, y: 6, dir: 'up' } },
@@ -1102,6 +1110,7 @@ export const azura: Chapter = {
   },
   hooks: {
     tileName(g, ch, x, y, below) {
+      if (isR7(g)) return undefined; // Vesper : les tuiles du chapitre 1
       const ct = centreTile(g, x, y, ch);
       if (ct) return ct;
       if (g.map.id === 'cabane') {
@@ -1169,6 +1178,7 @@ export const azura: Chapter = {
       updateFish(g, dt);
       updateWalk(g, dt);
       updateFishing(g, dt);
+      updateR7(g, dt);
       // (sauvegardes d'avant la correction) Joss est sauvé : il n'est plus sur l'île, ni dans la barque
       if (g.flags.has('jossSaved')) {
         g.flags.add('jossLeft');
@@ -1186,8 +1196,9 @@ export const azura: Chapter = {
       if (g.flags.has('lakeNow') && !g.flags.has('lakeScene') && !ui.dialogOpen() && !g.locked) lakeScene(g);
       eveningNow = isEvening(g);
     },
-    blocked: (g, x, y) => boatBlocked(g, x, y),
+    blocked: (g, x, y) => r7Blocked(g, x, y) ?? boatBlocked(g, x, y),
     useItem(g, id) {
+      if (r7UseItem(g, id)) return true;
       if (id === 'cable') return useCable(g);
       if (id === 'cleCabane') {
         const [fx, fy] = g.facing();
@@ -1211,6 +1222,14 @@ export const azura: Chapter = {
       return true;
     },
     beforeInteract(g, obj, fx, fy) {
+      // sur Vesper, avec R-7
+      if (r7PixelGrowl(g, fx, fy)) return true;
+      if (r7Interact(g, obj)) return true;
+      // au centre des pilotes : la console de la liaison 47,2
+      if (obj?.id === 'console47' && g.flags.has('j4Plan') && !g.flags.has('r7On')) {
+        ui.say(['Iris allume la console. « LIAISON 47,2 — VESPER ». Le cadran s’emballe, puis se stabilise.', 'Sur l’écran, une image tremblée apparaît : un hangar ensablé, une lumière orange.', 'Oskar me tend les commandes. « À toi. »'], () => startR7(g));
+        return true;
+      }
       // en barque : accoster
       if (!obj && dock(g, fx, fy)) return true;
       // le jour 4, l'après-midi : les plans de la mère de Betti
@@ -1399,6 +1418,7 @@ export const azura: Chapter = {
       return emerging.get(g)?.stage === 'out';
     },
     renderAtmosphere(g, c, w, h) {
+      if (renderR7(g, c, w, h)) return true;
       drawSteam(g, c);
       if (!g.map.outdoor) {
         renderCentre(g, c, w, h);

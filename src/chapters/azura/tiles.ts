@@ -1233,6 +1233,10 @@ registerTiles({
   netWall, tackleShelf, cabinTableBook: table(true), cabinTable: table(false), barrel,
 });
 registerIcons({
+  bs1Vide: (c) => {
+    r(c, 4, 3, 8, 11, '#3a3448'); r(c, 6, 1, 4, 2, '#5a5468'); r(c, 5, 4, 6, 9, '#22202c');
+    r(c, 6, 11, 4, 1, '#6a2a2a'); r(c, 5, 4, 1, 9, '#4a4458');
+  },
   pince: (c) => {
     r(c, 3, 9, 3, 6, AZ.red); r(c, 9, 9, 3, 6, AZ.red); r(c, 3, 9, 1, 6, '#ff9a9a');
     r(c, 5, 6, 2, 4, AZ.metalDark); r(c, 8, 6, 2, 4, AZ.metalDark); r(c, 6, 5, 3, 2, AZ.metal);

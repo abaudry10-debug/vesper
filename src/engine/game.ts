@@ -462,6 +462,8 @@ export class Game {
     if (x < 0 || y < 0 || x >= this.map.width || y >= this.map.height) return false;
     if (!allowHero && x === this.x && y === this.y) return false;
     if (this.objAt(x, y)) return false;
+    const hk = ch().hooks.blocked?.(this, x, y);
+    if (hk !== undefined) return !hk;
     return !this.solidChar(x, y);
   }
 

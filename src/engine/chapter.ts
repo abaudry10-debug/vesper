@@ -22,6 +22,8 @@ export interface ChapterFeatures {
 export interface ChapterHooks {
   /** Avant toute interaction (touche A). Renvoie true si le chapitre l'a prise en charge. */
   beforeInteract?(g: Game, obj: MapObject | undefined, fx: number, fy: number): boolean;
+  /** Pour décider soi-même si une case est franchissable (undefined : la règle habituelle). */
+  blocked?(g: Game, x: number, y: number): boolean | undefined;
   /** Une case sans objet devant soi : un petit texte de décor. */
   describeTile?(g: Game, ch: string, fx: number, fy: number): void;
   /** Utilisation d'un objet du sac. Renvoie true si le chapitre l'a prise en charge. */

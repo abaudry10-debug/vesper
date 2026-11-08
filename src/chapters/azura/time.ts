@@ -67,7 +67,7 @@ export const NIGHT = 23;
 export function benchWait(g: Game, onTide: (h: number) => void) {
   const h = hour(g);
   if (day(g) === 4 && !g.flags.has('vague')) return ui.say(['Pas le temps de m’asseoir.']);
-  if (day(g) === 4 && !g.flags.has('jossSaved') && h >= 10) return ui.say(['Pas le temps de m’asseoir : Joss attend sur l’îlot.']);
+  if (day(g) === 4 && !g.flags.has('jossSaved') && h >= 10) return ui.say(['Pas le temps de m’asseoir : Joss attend sur son île.']);
   const max = dayDone(g) ? EVENING : NIGHT;
   if (h >= max) return ui.say(h >= NIGHT ? ['Il est tard. Il faut que j’aille dormir.'] : ['Le soir est tombé. Il est temps d’aller dormir chez Betti.']);
   g.locked = true;

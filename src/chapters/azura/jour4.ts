@@ -71,7 +71,9 @@ function startWave(g: Game) {
           'Là où tout le monde se tenait il y a une heure.',
           'Betti arrive en courant.',
           '« Tu as vu ça ? Sans la sirène… »',
-          '« Joss ! Il est sur l’îlot, au milieu du lac ! Et sa barque… Regarde, elle part à la dérive ! »',
+          '« Joss ! Il était sur l’île, de l’autre côté du lac ! »',
+          '« Et sa barque… La vague l’a arrachée de son ponton. Regarde, elle a dérivé jusque devant notre ponton ! »',
+          '« Sans barque, il ne peut plus revenir. Avec la canne de Joss, depuis le bout du ponton, tu pourrais attraper la corde. »',
         ],
         () => {
           g.api.clue('azVague');
@@ -119,7 +121,7 @@ export function drawJour4(g: Game, c: CanvasRenderingContext2D, ox: number, oy: 
   }
   // la barque de Joss, à la dérive
   if (g.flags.has('vague') && !g.flags.has('barqueOk')) {
-    const bx = (21 + Math.sin(g.time * 0.35) * 1.2) * T - ox, by = 27 * T + Math.sin(g.time * 1.4) * 1.5 - oy;
+    const bx = (17 + Math.sin(g.time * 0.5) * 0.4) * T - ox, by = 28 * T + Math.sin(g.time * 1.4) * 1.5 - oy;
     drawBoat(c, Math.round(bx), Math.round(by));
     // l'amarre rompue qui traîne derrière
     c.fillStyle = '#d8c8a0';
@@ -140,47 +142,106 @@ export function drawBoat(c: CanvasRenderingContext2D, x: number, y: number) {
 /** La barque, au ponton : on ne part qu'à l'étale. */
 export function useBoat(g: Game) {
   if (hour(g) < ETALE) {
-    ui.say(['La barque de Joss, amarrée au ponton.', 'Mais le courant tire encore très fort vers le large. Je n’arriverais jamais jusqu’à l’îlot.', 'Il faut attendre que l’eau s’arrête de bouger. L’étale.'], () => g.api.clue('azl15'));
+    ui.say(['La barque de Joss, amarrée au ponton.', 'Mais le courant tire encore très fort vers le large. Je n’arriverais jamais jusqu’à l’île.', 'Il faut attendre que l’eau s’arrête de bouger. L’étale.'], () => g.api.clue('azl15'));
     return;
   }
-  ui.say(['L’eau ne bouge plus. C’est l’étale.', 'Je saute dans la barque et je rame vers l’îlot, de toutes mes forces.'], () => {
-    g.flags.add('onIlot');
-    g.warp('ville', 13, 29, 'left');
+  ui.say(['L’eau ne bouge plus. C’est l’étale.', 'Je saute dans la barque. Joss est de l’autre côté de l’île, tout au sud du lac.'], () => {
+    g.flags.add('enBarque');
+    g.flags.add('barqueOut');
+    g.warp('ville', 16, 25, 'down');
+    window.setTimeout(() => g.save(), 900);
   });
 }
 
-/** Joss, sur l'îlot. */
+/** En barque : on n'avance que sur l'eau. */
+export const boatBlocked = (g: Game, x: number, y: number): boolean | undefined =>
+  g.map.id === 'ville' && g.flags.has('enBarque') ? g.map.rows[y]?.[x] !== '~' : undefined;
+
+/** Joss, sur la rive sud de l'île : on l'aborde en barque. */
 export function jossIlot(g: Game) {
+  if (!g.flags.has('enBarque')) return ui.say(['Joss !']);
   ui.say(
     [
       '« Toi ! »',
-      'Joss est trempé, accroché au seul arbre de l’îlot.',
+      'Joss est trempé, accroché à une racine, au bord de l’eau.',
       '« J’ai entendu la sirène. J’ai cru que c’était encore une erreur. Le bulletin disait calme… »',
-      '« Et puis l’eau est montée d’un coup. Ma barque est partie. Je ne savais plus quoi faire. »',
+      '« Et puis l’eau est montée d’un coup. Ma barque a été arrachée du ponton. Je ne savais plus quoi faire. »',
       '« Avant, j’aurais su. Tous les trente jours… C’était dans mon carnet. »',
-      'Je lui tends la main. « Monte. Vite, avant que l’eau redescende. »',
+      'Je lui tends la main. Il se hisse dans la barque.',
+      '« Ramène-nous. Vite, avant que l’eau se remette à bouger. »',
     ],
     () => {
-      g.flags.add('jossSaved');
-      g.flags.delete('onIlot');
-      g.warp('ville', 17, 24, 'up');
-      window.setTimeout(() => {
-        ui.say(
-          [
-            'Sur la passerelle, on nous attend. Betti, Nora, Tom, Mme Ilda.',
-            'Joss pose le pied sur la passerelle. Betti le serre dans ses bras.',
-            'Nora, toute pâle : « J’ai recopié. Chaque matin, j’ai recopié les heures du premier jour. Je ne m’en rendais même pas compte. »',
-            '« Sans la sirène… » Tom ne finit pas sa phrase.',
-            'Plus loin, sur les marches du centre des pilotes, la commandante regarde le lac, sans un mot.',
-          ],
-          () => {
-            g.api.clue('azJoss4');
-            g.flags.add('sliceDone4');
-            g.save();
-            ui.say(['— Fin de la démo d’Azura —', 'La suite du jour 4 (la vérité sur PX-07) arrive bientôt. Merci d’avoir joué.']);
-          },
-        );
-      }, 1300);
+      g.flags.add('jossAboard');
+      g.save();
     },
   );
+}
+
+/** Accoster : au ponton de la ville (avec Joss), ou au petit ponton de l'île. */
+export function dock(g: Game, fx: number, fy: number): boolean {
+  if (!g.flags.has('enBarque')) return false;
+  const ch = g.map.rows[fy]?.[fx];
+  if (ch === 'j') {
+    ui.say([g.flags.has('jossAboard') ? 'Le ponton de Joss. On rentre : la ville est au nord.' : 'Le petit ponton de Joss, vide. Lui est de l’autre côté de l’île, au sud.']);
+    return true;
+  }
+  if (ch !== '=') return false;
+  if (!g.flags.has('jossAboard')) {
+    ui.say(['Pas sans Joss. Il est sur l’île, tout au sud du lac.']);
+    return true;
+  }
+  g.flags.delete('enBarque');
+  g.flags.delete('barqueOut');
+  g.flags.add('jossSaved');
+  g.warp('ville', fx, fy, 'up');
+  window.setTimeout(() => {
+    ui.say(
+      [
+        'Sur la passerelle, on nous attend. Betti, Nora, Tom, Mme Ilda.',
+        'Joss pose le pied sur la passerelle. Betti le serre dans ses bras.',
+        'Nora, toute pâle : « J’ai recopié. Chaque matin, j’ai recopié les heures du premier jour. Je ne m’en rendais même pas compte. »',
+        '« Sans la sirène… » Tom ne finit pas sa phrase.',
+        'Plus loin, sur les marches du centre des pilotes, la commandante regarde le lac, sans un mot.',
+      ],
+      () => {
+        g.api.clue('azJoss4');
+        g.flags.add('sliceDone4');
+        g.save();
+        ui.say(['— Fin de la démo d’Azura —', 'La suite du jour 4 (la vérité sur PX-07) arrive bientôt. Merci d’avoir joué.']);
+      },
+    );
+  }, 1300);
+  return true;
+}
+
+/** La barque sous le héros (avec Joss à l'arrière), puis son bord avant, par-dessus ses jambes. */
+export function drawBoatUnder(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number, drawJoss: (x: number, y: number) => void) {
+  if (!g.flags.has('enBarque') || g.map.id !== 'ville') return;
+  const [hx, hy] = g.heroPixel();
+  const rock = Math.round(Math.sin(g.time * 2.2) * 1);
+  const x = Math.round(hx - ox) - 4, y = Math.round(hy - oy) + 3 + rock;
+  c.fillStyle = 'rgba(0,40,50,0.35)'; c.fillRect(x + 1, y + 13, 22, 3);
+  c.fillStyle = '#553826'; c.fillRect(x, y + 5, 24, 9);
+  c.fillStyle = '#7a5034'; c.fillRect(x + 2, y + 6, 20, 6);
+  if (g.flags.has('jossAboard')) drawJoss(x - 6, y - 4);
+}
+export function drawBoatOver(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
+  if (!g.flags.has('enBarque') || g.map.id !== 'ville') return;
+  const [hx, hy] = g.heroPixel();
+  const rock = Math.round(Math.sin(g.time * 2.2) * 1);
+  const x = Math.round(hx - ox) - 4, y = Math.round(hy - oy) + 3 + rock;
+  c.fillStyle = '#a8754a'; c.fillRect(x, y + 9, 24, 4);
+  c.fillStyle = '#c9955f'; c.fillRect(x, y + 9, 24, 1);
+  c.fillStyle = '#553826'; c.fillRect(x + 1, y + 13, 22, 1);
+  // les rames, qui battent l'eau quand on avance
+  const row = g.moving ? Math.round(Math.sin(g.time * 10) * 2) : 0;
+  c.fillStyle = '#c9955f';
+  c.fillRect(x - 3, y + 10 + row, 4, 1);
+  c.fillRect(x + 23, y + 10 - row, 4, 1);
+  // le sillage
+  if (g.moving) {
+    c.fillStyle = 'rgba(234,255,251,0.6)';
+    c.fillRect(x + 2, y + 15, 3, 1);
+    c.fillRect(x + 19, y + 15, 3, 1);
+  }
 }

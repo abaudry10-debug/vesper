@@ -3,7 +3,7 @@ import { playTheme, sfx } from '../../engine/audio.js';
 import type { Chapter } from '../../engine/chapter.js';
 import { view, type Game } from '../../engine/game.js';
 import { T, hash } from '../../engine/sprites.js';
-import { registerTiles, tile } from '../../engine/sprites.js';
+import { person, registerTiles, tile } from '../../engine/sprites.js';
 import type { PersonLook } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
 import { MAPS_AZ, SOLID_AZ, START_AZ } from './maps.js';
@@ -14,7 +14,7 @@ import { openBulletin } from './bulletin.js';
 import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, usePump } from './centre.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
 import { atJetty, drawFishing, startFishing, updateFishing } from './peche.js';
-import { drawJour4, jossIlot, useBoat, useCable } from './jour4.js';
+import { boatBlocked, dock, drawBoatOver, drawBoatUnder, drawJour4, jossIlot, useBoat, useCable } from './jour4.js';
 let cabinPainted = false;
 import { EVENING, benchWait, clockLines, day, highTides, hour, levelNow, postLines, renderDaylight, renderTide, setHour } from './time.js';
 
@@ -274,6 +274,7 @@ function renderVoid(g: Game, c: CanvasRenderingContext2D, x: number, y: number, 
 /** Les cimes de la forêt du décor débordent sur le bord de la carte : pas de ligne droite. */
 function renderOverlay(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number, x0: number, y0: number) {
   if (!g.map.outdoor) return;
+  drawBoatUnder(g, c, ox, oy, (x, y) => c.drawImage(person(PEOPLE.joss, 'right', 0), x, y));
   const W = g.map.width, H = g.map.height;
   const x1 = x0 + Math.ceil(view.w / 16) + 2, y1 = y0 + Math.ceil(view.h / 16) + 2;
   for (let y = Math.max(0, y0); y <= Math.min(H - 1, y1); y++) {
@@ -489,7 +490,8 @@ function fishState(g: Game) {
 
 function updateFish(g: Game, dt: number) {
   const st = fishState(g);
-  if (g.map.id !== 'ville' || (day(g) === 4 && !g.flags.has('jossSaved'))) {
+  const boat = g.flags.has('enBarque');
+  if (g.map.id !== 'ville' || (day(g) === 4 && !g.flags.has('jossSaved') && !boat)) {
     st.fish = null;
     return;
   }
@@ -511,6 +513,8 @@ function updateFish(g: Game, dt: number) {
     for (let x = 2; x < g.map.width - 2; x++) {
       if (g.map.rows[y][x] !== '~' || g.map.rows[y][x - 1] !== '~' || g.map.rows[y][x + 1] !== '~') continue;
       if (Math.abs(x - g.x) > 6 || Math.abs(y - g.y) > 8) continue;
+      // en barque, il rôde tout près : à deux ou trois longueurs
+      if (boat && (Math.abs(x - g.x) + Math.abs(y - g.y) < 2 || Math.abs(x - g.x) > 3 || Math.abs(y - g.y) > 3)) continue;
       spots.push([x, y]);
     }
   }
@@ -522,7 +526,13 @@ function updateFish(g: Game, dt: number) {
   const kinds: FishKind[] = ['dos', 'dos', 'tete', 'queue'];
   const kind = kinds[Math.floor(Math.random() * kinds.length)];
   st.fish = { x: x * T + T / 2, y: y * T + 10, kind, t: 0, dur: kind === 'tete' ? 5 : kind === 'dos' ? 4.4 : 3.2, flip: Math.random() < 0.5 };
-  st.timer = 14 + Math.random() * 16;
+  st.timer = boat ? 5 + Math.random() * 4 : 14 + Math.random() * 16;
+  if (boat && !g.flags.has('boatFish')) {
+    g.flags.add('boatFish');
+    window.setTimeout(() => {
+      if (!ui.dialogOpen()) ui.say(['Quelque chose de très grand passe sous la barque.', 'La coque tremble. Je rame plus vite.']);
+    }, 700);
+  }
   // la première fois : on le remarque, et le journal le note
   if (!g.flags.has('fishSeen')) {
     g.flags.add('fishSeen');
@@ -910,7 +920,7 @@ function grandeMaree(g: Game) {
       'C’est aujourd’hui.',
       'Et l’eau monte une heure plus tard chaque jour : 6 h, 7 h, 8 h… Aujourd’hui, vers 9 h.',
       'Le bulletin annonce 6 h. Et une journée calme. Tout le monde est au bord du lac.',
-      'Joss est sur l’îlot.',
+      'Joss est sur son île, au bord de l’eau.',
     ],
     () => {
       g.flags.add('j4Moons');
@@ -957,7 +967,7 @@ function night(g: Game) {
         g.save();
       });
     } else if (next === 4) {
-      ui.say(['« Debout ! »', 'Betti, à la fenêtre, une tasse à la main.', '« Joss est parti pêcher sur l’îlot à l’aube, avec sa barque. Il avait retrouvé son carnet, il était tout content. »', '« Il dit que le bulletin annonce une journée calme. Tant mieux. »'], () => {
+      ui.say(['« Debout ! »', 'Betti, à la fenêtre, une tasse à la main.', '« Joss est parti pêcher sur son île à l’aube, de l’autre côté du lac, avec sa barque. Il avait retrouvé son carnet, il était tout content. »', '« Il dit que le bulletin annonce une journée calme. Tant mieux. »', '« Tu as vu le ciel, ce matin ? Les deux lunes sont presque l’une sur l’autre. »'], () => {
         g.api.clue('azl12');
         g.save();
       });
@@ -1164,6 +1174,7 @@ export const azura: Chapter = {
       if (g.flags.has('lakeNow') && !g.flags.has('lakeScene') && !ui.dialogOpen() && !g.locked) lakeScene(g);
       eveningNow = isEvening(g);
     },
+    blocked: (g, x, y) => boatBlocked(g, x, y),
     useItem(g, id) {
       if (id === 'cable') return useCable(g);
       if (id === 'cleCabane') {
@@ -1188,6 +1199,8 @@ export const azura: Chapter = {
       return true;
     },
     beforeInteract(g, obj, fx, fy) {
+      // en barque : accoster
+      if (!obj && dock(g, fx, fy)) return true;
       // le jour 4 : rendre sa pince à Tom ; la barque ; Joss sur l'îlot
       if (obj?.id === 'tom' && g.flags.has('sireneOn') && g.items.has('pince')) {
         g.items.delete('pince');
@@ -1376,6 +1389,7 @@ export const azura: Chapter = {
       const cox = Math.round(hx0 + T / 2 - w / 2), coy = Math.round(hy0 + T / 2 - (h - view.padBottom) / 2);
       renderTide(g, c, cox, coy, w, h);
       drawJour4(g, c, cox, coy, w, h);
+      drawBoatOver(g, c, cox, coy);
       if (isEvening(g)) {
         renderEvening(g, c, w, h);
         // le gardien après la teinte du soir : ses lumières ressortent dans la pénombre
@@ -1428,6 +1442,11 @@ export const azura: Chapter = {
       return true;
     },
     onEnterMap(g, mapId) {
+      // jour 4 : en sortant, le ciel met sur la piste des lunes
+      if (mapId === 'ville' && day(g) === 4 && !g.flags.has('j4Moons') && !g.flags.has('j4Sky')) {
+        g.flags.add('j4Sky');
+        window.setTimeout(() => ui.say(['Dans le ciel pâle, les deux lunes se touchent presque.', 'Le carnet de Joss parlait des lunes… La tour de l’horloge, sur la place, a un cadran des lunes.']), 900);
+      }
       // jour 3 : en ressortant du centre avec Oskar, la journée s'achève
       if (mapId === 'cuves' && day(g) === 3 && g.flags.has('pxFound') && hour(g) < EVENING) {
         g.locked = true;

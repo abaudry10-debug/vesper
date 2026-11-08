@@ -51,7 +51,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azGrande', thread: 'eaux', title: 'La grande marée', text: 'Jour 4 : sur la tour, les deux lunes sont alignées. Le carnet de Joss : « Tous les trente jours, les deux lunes s’alignent : grande marée. » Et les heures avancent d’une heure par jour : aujourd’hui, vers 9 h. Le bulletin annonce 6 h et une journée calme.' },
   { id: 'azSirene', thread: 'eaux', title: 'La sirène', text: 'J’ai rebranché la sirène avec la pince de Tom et un câble de Betti. En l’entendant, les colons ont retrouvé le vieux réflexe : évacuer les zones à risque.' },
   { id: 'azVague', thread: 'eaux', title: 'La vague', text: 'À 9 h, le lac a reculé, puis une vague a passé la passerelle et traversé le jardin, jusqu’au pied des maisons. Personne n’était plus au bord de l’eau.' },
-  { id: 'azJoss4', thread: 'eaux', title: 'Joss', text: 'Ramené de l’îlot à l’étale. Nora a compris : chaque matin, elle recopiait les heures du premier jour, sans s’en rendre compte. La commandante regardait le lac, sans un mot.' },
+  { id: 'azJoss4', thread: 'eaux', title: 'Joss', text: 'Ramené de son île en barque, à l’étale. Nora a compris : chaque matin, elle recopiait les heures du premier jour, sans s’en rendre compte. La commandante regardait le lac, sans un mot.' },
   { id: 'azLecon4', thread: 'ecole', title: 'La leçon du jour 4', text: '« Le jour du grand départ, les capsules ont envoyé nos corps jusqu’ici. » Nos corps ? Ce sont nos esprits qui sont partis. Les corps dorment toujours sur Vesper.' },
   { id: 'azLecon3', thread: 'ecole', title: 'La leçon du jour 3', text: '« Nos ancêtres ont voyagé deux ans pour arriver ici. » Deux ans ? Le voyage d’Aurore a duré deux cent douze ans.' },
   { id: 'azl1', thread: 'leads', title: 'Où sont les autres ?', text: 'Le sentier part vers le sud, au-delà des cuves.', doneWhen: 'bettiMet' },
@@ -61,10 +61,10 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl4', thread: 'leads', title: 'Une nuit chez Betti', text: 'Betti me prête son lit, dans l’atelier, en bas près du lac. Le soir, la ville est belle : je peux m’y promener avant de dormir.', doneWhen: 'jour2' },
   { id: 'azl6', thread: 'leads', title: 'Voir l’eau monter', text: 'Le bulletin des eaux, sur la place, donne l’heure du jour. Un banc permet d’attendre. Ensuite, dormir chez Betti, le soir venu.', doneWhen: 'tideWitnessed' },
   { id: 'azl7', thread: 'leads', title: 'Le carnet de Joss', text: 'Le carnet de Joss est enfermé dans sa cabane de pêche, sur la rive sud de la rivière, au chemin des crêtes. Joss a perdu la clé : il pêchait devant la cabane.', doneWhen: 'carnetRead' },
-  { id: 'azl12', thread: 'leads', title: 'Une journée calme ?', text: 'Joss est parti pêcher sur l’îlot, au milieu du lac. Le bulletin annonce une journée calme. Mais le carnet de Joss parlait d’une grande marée, tous les trente jours… Regarder les lunes, sur la tour de l’horloge.', doneWhen: 'j4Moons' },
+  { id: 'azl12', thread: 'leads', title: 'Une journée calme ?', text: 'Joss est parti pêcher sur son île, de l’autre côté du lac. Le bulletin annonce une journée calme. Mais le carnet de Joss parlait d’une grande marée, tous les trente jours… Regarder les lunes, sur la tour de l’horloge.', doneWhen: 'j4Moons' },
   { id: 'azl13', thread: 'leads', title: 'Prévenir la ville', text: 'Grande marée vers 9 h, et personne ne me croit. La sirène ferait évacuer tout le monde : Tom l’a débranchée, ses fils sont grillés. Il faudrait une pince (Tom en a toujours une) et un câble neuf (l’atelier de Betti ?).', doneWhen: 'sireneOn' },
-  { id: 'azl14', thread: 'leads', title: 'La barque de Joss', text: 'Joss est bloqué sur l’îlot, et sa barque dérive sur le lac. Avec la canne, depuis le petit ponton du lac, je pourrais accrocher l’amarre qui traîne.', doneWhen: 'barqueOk' },
-  { id: 'azl15', thread: 'leads', title: 'L’étale', text: 'La barque est au ponton, mais le courant tire vers le large. Attendre que l’eau s’arrête de bouger (l’étale, vers 10 h), puis ramer jusqu’à l’îlot.', doneWhen: 'jossSaved' },
+  { id: 'azl14', thread: 'leads', title: 'La barque de Joss', text: 'Joss est bloqué sur son île, de l’autre côté du lac. La vague a arraché sa barque : elle a dérivé jusque devant le ponton de la ville. Avec la canne, depuis le bout du ponton, je pourrais accrocher l’amarre qui traîne.', doneWhen: 'barqueOk' },
+  { id: 'azl15', thread: 'leads', title: 'L’étale', text: 'La barque est au ponton, mais le courant tire vers le large. Attendre que l’eau s’arrête de bouger (l’étale, vers 10 h), puis ramer jusqu’à Joss, au sud de l’île, et le ramener au ponton.', doneWhen: 'jossSaved' },
   { id: 'azlCabane', thread: 'leads', title: 'La cabane verrouillée', text: 'La cabane de Joss est fermée à clé. Joss pêchait sur son ponton quand il l’a perdue… Elle est peut-être tombée à l’eau.', doneWhen: 'cabaneOpen' },
   { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Oskar m’attend devant la porte du centre, près des cuves.', doneWhen: 'centreIn' },
   { id: 'azl9', thread: 'leads', title: 'L’eau entre encore', text: 'L’eau entre toujours dans la salle des serveurs. La salle des pompes doit commander l’arrivée d’eau : suivre les tuyaux.', doneWhen: 'inflowCut' },
@@ -307,14 +307,14 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   etagere: (api) => api.say(['Des outils, des pièces détachées, une petite batterie.', 'Betti bricole. Comme sa mère.']),
   etabli: (api) => api.say(['Un établi couvert de plans.', 'Des pattes mécaniques, une tête ronde… Elle construit quelque chose.']),
   lit: (api) => api.say(['Un lit fait au carré.']),
-  bettiVague: (api) => api.say(api.has('jossSaved') ? ['« Tu l’as ramené… Merci. »'] : api.has('barqueOk') ? ['« Le courant est encore trop fort. Attends que l’eau s’arrête. »'] : ['« La barque ! Avec la canne de Joss, depuis le petit ponton… tu pourrais l’attraper ? »']),
+  bettiVague: (api) => api.say(api.has('jossSaved') ? ['« Tu l’as ramené… Merci. »'] : api.has('barqueOk') ? ['« Le courant est encore trop fort. Attends que l’eau s’arrête : regarde les lunes, sur la tour. »'] : ['« La barque est juste devant le ponton ! Avec la canne de Joss, depuis le bout du ponton, tu pourrais attraper la corde. »']),
   jossQuai: (api) => api.say(['« Je n’oublierai pas. Enfin… j’espère. »', 'Il essaie de sourire.']),
-  barqueIlot: (api) => api.say(['La barque. D’abord, Joss.']),
+  barqueIle: (api) => api.say(['Au loin, la barque de Joss, amarrée au petit ponton de son île.']),
   bettiLac: (api) => api.say(['« Regarde-le… Il n’a pas peur de nous. »']),
   betti: (api) => {
     if (!api.has('drawingSeen')) return api.say(['« Fais comme chez toi. Regarde, si tu veux. »']);
     if (api.has('jour4')) {
-      if (!api.has('j4Moons')) return api.say(['« Joss est parti pêcher sur l’îlot à l’aube. Il dit que le bulletin annonce une journée calme. »']);
+      if (!api.has('j4Moons')) return api.say(['« Joss est parti pêcher sur son île à l’aube, de l’autre côté du lac. Il dit que le bulletin annonce une journée calme. »']);
       if (api.hasItem('cable') || api.has('sireneOn')) return api.say(['« Vite ! »']);
       return api.say(['Je lui parle des lunes, du carnet de Joss.', '« Une grande marée ? Aujourd’hui ? »', '« Il faut faire sonner la sirène. Tom l’a débranchée… Tiens, prends ce câble neuf. Vite ! »'], () => api.item('cable'));
     }

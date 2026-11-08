@@ -238,7 +238,7 @@ function chemin(): GameMap {
 
 // ---------- Nouvelle-Vesper ----------
 function ville(): GameMap {
-  const W = 34, H = 32;
+  const W = 34, H = 46;
   const b = new Builder(W, H, '"');
   b.rect(0, 0, W, 1, 'A').rect(0, 0, 1, H, 'A').rect(W - 1, 0, 1, H, 'A');
   b.rect(17, 0, 1, 7, '.');
@@ -260,11 +260,15 @@ function ville(): GameMap {
   blob(b, 17, 19.6, 1.8, 0.6, '"', 4, ',');
   // la passerelle au bord du lac, et le lac
   b.rect(1, 22, W - 2, 2, '=');
-  b.rect(1, 24, W - 2, 8, '~');
+  b.rect(1, 24, W - 2, H - 24, '~');
   b.rect(17, 24, 1, 2, '=');
-  // l'îlot, au milieu du lac : quelques cases d'herbe et un arbre
-  b.rect(11, 28, 3, 3, '"').set(14, 29, '"');
-  b.set(11, 28, 'A');
+  // l'île de Joss, loin au sud du lac : on n'en voit que le bord depuis le ponton
+  blob(b, 13, 36, 6.5, 3.2, '"', 11, '~');
+  blob(b, 12, 36.5, 3.4, 1.6, ',', 3, '"');
+  blob(b, 16.5, 35.5, 1.6, 1, ';', 6, '"');
+  b.points('A', [[9, 34], [10, 33], [16, 34], [18, 36], [8, 36], [14, 33]]);
+  b.points('u', [[11, 34], [17, 37], [9, 38]]);
+  b.set(13, 32, 'j').set(13, 31, 'j'); // le petit ponton de Joss, côté ville
   b.points('A', [[1, 2], [10, 2], [23, 2], [32, 2], [1, 18], [32, 18], [12, 18], [22, 18], [14, 3], [20, 3], [1, 1], [2, 1], [31, 1], [32, 1], [1, 19], [32, 19], [11, 1], [22, 1]]);
   blob(b, 2.5, 15.5, 1.6, 1, ',', 5, '"');
   blob(b, 31.5, 15.5, 1.6, 1, ',', 6, '"');
@@ -316,9 +320,9 @@ function ville(): GameMap {
     npc('passant3b', 20, 21, 'pass3', 'down', 'passant3', { showWhen: 'mareeHaute' }),
     npc('passant4', 26, 7, 'pass4', 'left', 'passant4', { npc: { look: 'pass4', dir: 'left', wander: 3 } }),
     // le jour 4 : Joss sur l'îlot, sa barque, Betti après la vague
-    npc('jossIlot', 12, 29, 'joss', 'right', 'jossIlot', { showWhen: 'jour4', hideWhen: 'jossSaved' }),
-    obj('barqueQuai', 16, 25, 'barqueWater', 'barque', { showWhen: 'barqueOk', hideWhen: 'onIlot' }),
-    obj('barqueIlot', 15, 29, 'barqueWater', 'barqueIlot', { showWhen: 'onIlot' }),
+    npc('jossIlot', 14, 39, 'joss', 'down', 'jossIlot', { showWhen: 'jour4', hideWhen: 'jossAboard' }),
+    obj('barqueIle', 14, 31, 'barqueWater', 'barqueIle', { showWhen: 'jour4', hideWhen: 'vague' }),
+    obj('barqueQuai', 16, 25, 'barqueWater', 'barque', { showWhen: 'barqueOk', hideWhen: 'barqueOut' }),
     npc('jossQuai', 15, 23, 'joss', 'right', 'jossQuai', { showWhen: 'jossSaved' }),
     npc('bettiVague', 16, 17, 'betti', 'down', 'bettiVague', { showWhen: 'vague' }),
   ];

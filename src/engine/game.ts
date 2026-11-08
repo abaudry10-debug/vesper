@@ -250,6 +250,8 @@ export class Game {
       if (obj.passWhen) return !this.flags.has(obj.passWhen);
       return true;
     }
+    const hk = ch().hooks.blocked?.(this, x, y);
+    if (hk !== undefined) return hk;
     return this.solidChar(x, y);
   }
 

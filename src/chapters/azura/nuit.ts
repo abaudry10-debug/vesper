@@ -6,6 +6,7 @@ import type { Game } from '../../engine/game.js';
 import { sfx } from '../../engine/audio.js';
 import * as ui from '../../engine/ui.js';
 import { readLegacy } from '../../engine/legacy.js';
+import { dogSprite, person, type Dir, type PersonLook } from '../../engine/sprites.js';
 import { restoreBag, saveRobot } from './r7.js';
 import { setHour } from './time.js';
 import { projectMemory, transferMontage } from './souvenirs.js';
@@ -64,8 +65,9 @@ function backToAzura(g: Game) {
         'Oskar : « C’est passé ? »',
         'Iris, penchée sur la console : « Les données ne sont pas arrivées ici. L’antenne les a envoyées au seul endroit assez grand pour les recevoir : les serveurs du centre de clonage. »',
         'Elle fait défiler les relevés. Elle s’arrête.',
-        '« Le médecin l’avait écrit. Courbe d’effacement : dix ans de lenteur, puis la chute. Sans second chargement, tout part d’un coup. »',
-        '« Nous sommes en l’an 11. »',
+        '« Le carnet du médecin… Il l’avait prévu. Le premier chargement était défectueux : les souvenirs ne se sont jamais vraiment fixés. »',
+        '« Pendant une dizaine d’années, ils s’effacent lentement : un mot, un nom, une date. Puis, d’un coup, tout part. »',
+        '« Nous sommes en l’an 11. C’est maintenant. Ce soir, toute la colonie est en train de perdre la mémoire. »',
         'Oskar : « Écoute. »',
         'Dehors, une voix. « Qui suis-je ? » Puis une autre. « Où suis-je ? »',
         'Iris : « C’est en train d’arriver. Ce soir. »',
@@ -101,7 +103,7 @@ export function lostLines(g: Game, id: string): boolean {
   return true;
 }
 
-/** À l'atelier : Betti a fini le corps… et elle oublie. */
+/** À l'atelier : Betti a fini le corps… et elle oublie. Elle nous suit, le corps dans les bras. */
 export function bettiNight(g: Game) {
   ui.say(
     [
@@ -116,22 +118,96 @@ export function bettiNight(g: Game) {
     ],
     () => {
       g.flags.add('bettiJoins');
+      g.flags.add('bettiFollow');
+      g.api.clue('azl19b');
+      placeFollower(g);
       g.save();
-      ui.say(['Nous traversons la ville, dans la nuit. Des silhouettes errent sous les lampadaires.', 'Le chemin des crêtes. Les cuves. Le centre de clonage, grand ouvert.'], () => {
-        g.warp('serveurs', 7, 6, 'up');
-        window.setTimeout(() => ui.say(['La salle des serveurs. Le cœur de mémoire brille de toutes ses lumières. Des milliers.', 'Betti s’arrête devant, le chien de métal dans les bras.']), 1300);
-      });
     },
   );
 }
 
-/** Au terminal des serveurs : Pixel passe dans son nouveau corps. */
+// ---------- Betti qui nous suit, une case derrière, d'une carte à l'autre ----------
+const follow = new WeakMap<Game, { x: number; y: number; px: number; py: number; dir: string; last: string; map: string }>();
+const DIRS: Record<string, [number, number]> = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+
+export function placeFollower(g: Game) {
+  const [dx, dy] = DIRS[g.dir] ?? [0, 1];
+  let x = g.x - dx, y = g.y - dy;
+  if (g.blocked(x, y)) [x, y] = [g.x, g.y];
+  follow.set(g, { x, y, px: x * 16, py: y * 16, dir: g.dir, last: `${g.x},${g.y}`, map: g.map.id });
+}
+
+export function updateFollower(g: Game, dt: number) {
+  if (!g.flags.has('bettiFollow')) return;
+  let f = follow.get(g);
+  if (!f || f.map !== g.map.id) {
+    placeFollower(g);
+    f = follow.get(g)!;
+  }
+  const here = `${g.x},${g.y}`;
+  if (here !== f.last) {
+    // le héros a changé de case : Betti prend celle qu'il vient de quitter
+    const [lx, ly] = f.last.split(',').map(Number);
+    if (Math.abs(lx - g.x) + Math.abs(ly - g.y) === 1) {
+      f.dir = lx < f.x ? 'left' : lx > f.x ? 'right' : ly < f.y ? 'up' : 'down';
+      f.x = lx;
+      f.y = ly;
+    } else placeFollower(g);
+    f.last = here;
+  }
+  const k = Math.min(1, dt * 7);
+  f.px += (f.x * 16 - f.px) * k;
+  f.py += (f.y * 16 - f.py) * k;
+}
+
+export function followerAt(g: Game, x: number, y: number) {
+  const f = follow.get(g);
+  return !!f && g.flags.has('bettiFollow') && f.map === g.map.id && f.x === x && f.y === y;
+}
+
+export function drawFollower(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number, look: PersonLook) {
+  const f = follow.get(g);
+  if (!f || !g.flags.has('bettiFollow') || f.map !== g.map.id) return;
+  const moving = Math.abs(f.px - f.x * 16) + Math.abs(f.py - f.y * 16) > 1;
+  const frame = moving ? (Math.floor(g.time * 7) % 2 ? 1 : 2) : 0;
+  c.drawImage(person(look, f.dir as Dir, frame), Math.round(f.px - ox), Math.round(f.py - oy) - 3);
+  // le chien de métal, dans ses bras (jusqu'à ce que Pixel s'y éveille)
+  if (!g.flags.has('pixel2')) c.drawImage(dogSprite(f.dir === 'left' ? 'left' : 'right', { pose: 'lie', off: true }), Math.round(f.px - ox) + (f.dir === 'left' ? -5 : 5), Math.round(f.py - oy) + 1);
+}
+
+/** Ce que dit Betti en chemin : elle s'efface, pas à pas. */
+export function bettiTalk(g: Game) {
+  const lines: Record<string, string[]> = {
+    serveurs: ['Betti regarde autour d’elle, perdue.', '« Qui êtes-vous ? … Et moi, qui suis-je ? »', 'Elle serre le dessin. Le chien de métal glisse un peu dans ses bras.'],
+    ville: ['« On va où ? »', 'Elle regarde les lampadaires comme si elle les voyait pour la première fois.'],
+    chemin: ['« Il fait nuit… On marche depuis longtemps ? »'],
+    cuves: ['« Toutes ces cuves… J’en sortais, moi aussi ? »'],
+    centre: ['« C’est grand, ici. Je suis déjà venue ? »'],
+  };
+  ui.say(lines[g.map.id] ?? ['Betti me suit, le chien de métal dans les bras. Elle ne dit rien.']);
+}
+
+/** Dans la salle des serveurs, sans le nouveau corps : les données attendent. */
+export function serverWaiting(g: Game) {
+  ui.say([
+    'Le cœur de mémoire brille de toutes ses lumières. Des milliers.',
+    'Sur l’écran : « RÉCEPTION 47,2 : TERMINÉE. 4 211 DOSSIERS. 1 CONSCIENCE : PX-07. »',
+    '« CONSCIENCE EN ATTENTE. AUCUN SUPPORT COMPATIBLE. »',
+    'La réception a marché. Mais pour que Pixel revive, il faut un corps capable d’absorber ses données… et de les transmettre ensuite aux colons.',
+    'Le nouveau corps. Celui que Betti a construit.',
+  ]);
+}
+
+/** Au terminal des serveurs : Betti pose le chien de métal ; le transfert se fait, Pixel s'éveille. */
 export function wakePixel2(g: Game) {
   const ach = (readLegacy().vesper?.data?.achievements as string[] | undefined) ?? [];
+  const f = follow.get(g);
+  const [bx, by] = f && f.map === g.map.id ? [f.x, f.y] : [g.x + 1, g.y];
   ui.say(
     [
       'Sur l’écran : « RÉCEPTION 47,2 : TERMINÉE. 4 211 DOSSIERS. 1 CONSCIENCE : PX-07. »',
-      'Betti pose le chien de métal devant le terminal. Je branche le câble sur son flanc.',
+      '« SUPPORT COMPATIBLE DÉTECTÉ. »',
+      'Betti pose le chien de métal par terre, sans savoir pourquoi. Comme si ses mains, elles, se souvenaient.',
       '« TRANSFERT PX-07 → NOUVEAU CORPS. »',
       'Rien. Puis un ronronnement.',
       'L’œil s’allume, bleu vif.',
@@ -148,7 +224,7 @@ export function wakePixel2(g: Game) {
     () => {
       g.flags.add('pixel2');
       g.flags.add('pixelOn');
-      g.pixel = { x: g.x + 1, y: g.y, dir: 'left', moving: null };
+      g.pixel = { x: bx, y: by, dir: 'left', moving: null };
       sfx.success();
       g.api.clue('azPixel2');
       g.api.clue('azl20');
@@ -181,6 +257,7 @@ export function rechargeBetti(g: Game) {
           ],
           () => {
             g.flags.add('bettiRestored');
+            g.flags.delete('bettiFollow');
             g.api.clue('azBettiRetour');
             g.save();
             ui.say(['— Fin de la démo d’Azura —', 'La suite (rendre leur mémoire aux autres colons, chacun avec son ancre) arrive bientôt. Merci d’avoir joué.']);

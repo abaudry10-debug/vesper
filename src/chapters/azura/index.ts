@@ -15,7 +15,7 @@ import { openBulletin } from './bulletin.js';
 import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, usePump } from './centre.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
 import { atJetty, drawFishing, startFishing, updateFishing } from './peche.js';
-import { bettiNight, lostLines, rechargeBetti, sendPixel, wakePixel2 } from './nuit.js';
+import { bettiNight, bettiTalk, drawFollower, followerAt, lostLines, rechargeBetti, sendPixel, serverWaiting, updateFollower, wakePixel2 } from './nuit.js';
 import { R7_MAPS, drawR7Robot, drawR7Under, isR7, quitR7, r7Blocked, r7Body, r7Interact, r7PixelGrowl, r7UseItem, renderR7, startR7, updateR7 } from './r7.js';
 Object.assign(MAPS_AZ, R7_MAPS);
 import { boatBlocked, confession, dock, drawBoatOver, drawBoatUnder, drawJour4, jossIlot, plans, useBoat, useCable } from './jour4.js';
@@ -282,6 +282,7 @@ function renderOverlay(g: Game, c: CanvasRenderingContext2D, ox: number, oy: num
     drawR7Robot(g, c, ox, oy);
     return;
   }
+  drawFollower(g, c, ox, oy, PEOPLE.betti);
   if (!g.map.outdoor) return;
   drawBoatUnder(g, c, ox, oy, (x, y) => c.drawImage(person(PEOPLE.joss, 'right', 0), x, y));
   const W = g.map.width, H = g.map.height;
@@ -1182,6 +1183,9 @@ export const azura: Chapter = {
       updateWalk(g, dt);
       updateFishing(g, dt);
       updateR7(g, dt);
+      // (parties d'avant cette version) Betti était partie avec nous sans nous suivre à l'écran
+      if (g.flags.has('bettiJoins') && !g.flags.has('bettiRestored') && !g.flags.has('bettiFollow')) g.flags.add('bettiFollow');
+      updateFollower(g, dt);
       // (sauvegardes d'avant la correction) Joss est sauvé : il n'est plus sur l'île, ni dans la barque
       if (g.flags.has('jossSaved')) {
         g.flags.add('jossLeft');
@@ -1240,6 +1244,14 @@ export const azura: Chapter = {
       if (obj && lostLines(g, obj.id)) return true;
       if (obj?.id === 'bettiPlans' && g.flags.has('oubli') && !g.flags.has('bettiJoins')) {
         bettiNight(g);
+        return true;
+      }
+      if (!obj && followerAt(g, fx, fy)) {
+        bettiTalk(g);
+        return true;
+      }
+      if (obj?.id === 'serveurPX' && g.flags.has('pixelSent') && !g.flags.has('bettiJoins')) {
+        serverWaiting(g);
         return true;
       }
       if (obj?.id === 'serveurPX' && g.flags.has('bettiJoins') && !g.flags.has('pixel2')) {

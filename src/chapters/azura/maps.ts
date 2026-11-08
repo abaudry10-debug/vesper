@@ -457,7 +457,7 @@ function culture(): GameMap {
     ...[2, 4, 8].map((x) => obj(`berceauB${x}`, x, 5, 'growTank', 'berceau')),
     obj('cuve07b', 10, 5, 'growTank07', 'berceau07'),
     obj('fauteuil', 6, 4, 'loadChair', 'fauteuil'),
-    npc('bettiCult', 7, 5, 'betti', 'left', 'bettiCult', { showWhen: 'pixel2' }),
+    npc('bettiCult', 7, 5, 'betti', 'left', 'bettiCult', { showWhen: 'bettiRestored' }),
   ];
   return { id: 'culture', name: 'La salle de culture', outdoor: false, width: 13, height: 8, rows: b.rows, objects };
 }
@@ -517,7 +517,6 @@ function serveurs(): GameMap {
     obj('disjoncteur', 13, 8, 'breaker', 'disjoncteur'),
     obj('serveurPX', 10, 3, 'serverTerm', 'serveurPX'),
     npc('oskarIn', 7, 7, 'oskar', 'up', 'oskarIn', { showWhen: 'oskarIn' }),
-    npc('bettiServ', 6, 7, 'betti', 'up', 'bettiServ', { showWhen: 'bettiJoins', hideWhen: 'pixel2' }),
   ];
   return {
     id: 'serveurs', name: 'La salle des serveurs', outdoor: false, width: 15, height: 10, rows: b.rows, objects,

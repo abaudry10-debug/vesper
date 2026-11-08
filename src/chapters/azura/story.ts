@@ -81,6 +81,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'r7l3', thread: 'leads', title: 'Réveiller Pixel', text: 'La BS-1 est pleine. La brancher sur Pixel (depuis le sac).', doneWhen: 'pixelOn' },
   { id: 'r7l4', thread: 'leads', title: 'Le spatioport', text: 'Pixel me suit. Le ramener au spatioport : l’antenne et l’ordinateur des archives sont là-bas.', doneWhen: 'r7Transmit' },
   { id: 'azl19', thread: 'leads', title: 'Le nouveau corps', text: 'Les données de Pixel sont arrivées sur les serveurs du centre de clonage. Betti a fini son nouveau corps, à l’atelier. Mais tout le monde oublie, ce soir.', doneWhen: 'bettiJoins' },
+  { id: 'azl19b', thread: 'leads', title: 'Au centre de clonage', text: 'Betti me suit, le nouveau corps dans les bras. L’emmener jusqu’à la salle des serveurs du centre de clonage, près des cuves.', doneWhen: 'pixel2' },
   { id: 'azl20', thread: 'leads', title: 'Le second chargement', text: 'Dans la salle de culture du centre, le fauteuil de chargement. Betti d’abord, avec son dessin.', doneWhen: 'bettiRestored' },
   { id: 'azlCabane', thread: 'leads', title: 'La cabane verrouillée', text: 'La cabane de Joss est fermée à clé. Joss pêchait sur son ponton quand il l’a perdue… Elle est peut-être tombée à l’eau.', doneWhen: 'cabaneOpen' },
   { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Oskar m’attend devant la porte du centre, près des cuves.', doneWhen: 'centreIn' },

@@ -62,7 +62,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl6', thread: 'leads', title: 'Voir l’eau monter', text: 'Le bulletin des eaux, sur la place, donne l’heure du jour. Un banc permet d’attendre. Ensuite, dormir chez Betti, le soir venu.', doneWhen: 'tideWitnessed' },
   { id: 'azl7', thread: 'leads', title: 'Le carnet de Joss', text: 'Le carnet de Joss est enfermé dans sa cabane de pêche, sur la rive sud de la rivière, au chemin des crêtes. Joss a perdu la clé : il pêchait devant la cabane.', doneWhen: 'carnetRead' },
   { id: 'azl12', thread: 'leads', title: 'Une journée calme ?', text: 'Joss est parti pêcher sur l’îlot, au milieu du lac. Le bulletin annonce une journée calme. Mais le carnet de Joss parlait d’une grande marée, tous les trente jours… Regarder les lunes, sur la tour de l’horloge.', doneWhen: 'j4Moons' },
-  { id: 'azl13', thread: 'leads', title: 'Prévenir la ville', text: 'Grande marée vers 9 h, et personne ne me croit. La sirène ferait évacuer tout le monde : Tom l’a débranchée, ses fils sont grillés. Il faudrait une pince et un câble neuf.', doneWhen: 'sireneOn' },
+  { id: 'azl13', thread: 'leads', title: 'Prévenir la ville', text: 'Grande marée vers 9 h, et personne ne me croit. La sirène ferait évacuer tout le monde : Tom l’a débranchée, ses fils sont grillés. Il faudrait une pince (Tom en a toujours une) et un câble neuf (l’atelier de Betti ?).', doneWhen: 'sireneOn' },
   { id: 'azl14', thread: 'leads', title: 'La barque de Joss', text: 'Joss est bloqué sur l’îlot, et sa barque dérive sur le lac. Avec la canne, depuis le petit ponton du lac, je pourrais accrocher l’amarre qui traîne.', doneWhen: 'barqueOk' },
   { id: 'azl15', thread: 'leads', title: 'L’étale', text: 'La barque est au ponton, mais le courant tire vers le large. Attendre que l’eau s’arrête de bouger (l’étale, vers 10 h), puis ramer jusqu’à l’îlot.', doneWhen: 'jossSaved' },
   { id: 'azlCabane', thread: 'leads', title: 'La cabane verrouillée', text: 'La cabane de Joss est fermée à clé. Joss pêchait sur son ponton quand il l’a perdue… Elle est peut-être tombée à l’eau.', doneWhen: 'cabaneOpen' },
@@ -188,7 +188,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       api.has('sireneOn')
         ? ['La sirène hurle encore, au-dessus de la place.']
         : api.has('jour4') && api.has('j4Moons')
-          ? ['La sirène. Ses vieux fils sont grillés.', ...(api.hasItem('cable') && api.hasItem('pince') ? ['(Le câble et la pince sont dans mon sac.)'] : ['Il faudrait un câble neuf, et une pince.'])]
+          ? ['La sirène. Ses vieux fils sont grillés.', ...(api.hasItem('cable') && api.hasItem('pince') ? ['(Le câble et la pince sont dans mon sac.)'] : ['Il faudrait un câble neuf, et une pince. Tom a toujours une pince à la main ; Betti doit avoir des câbles, à l’atelier.'])]
           : api.has('tomTalk')
         ? ['La sirène. Tom l’a débranchée : elle sonnait pour rien.']
         : ['Une sirène rouge, en haut d’un mât.', 'Un câble pend à son pied. Débranché.'],
@@ -200,7 +200,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       if (!api.has('j4Moons')) return api.say(['« Journée calme, d’après le bulletin. Ça fait du bien. »']);
       if (api.hasItem('pince')) return api.say(['« Ma pince, rends-la-moi après, hein. »']);
       return api.say(
-        ['Je lui parle des lunes, de la grande marée.', '« Une grande marée ? Le bulletin dit le contraire. »', 'Il hésite. Il regarde le lac.', '« …Bon. Si tu veux rebrancher ta sirène, les vieux fils sont grillés. Il te faudra un câble neuf. »', '« Et prends ma pince. »'],
+        ['Je lui parle des lunes, de la grande marée.', '« Une grande marée ? Le bulletin dit le contraire. »', 'Il hésite. Il regarde le lac.', '« …Bon. Si tu veux rebrancher ta sirène, les vieux fils sont grillés. Il te faudra un câble neuf. Betti en a sûrement, à son atelier. »', '« Et prends ma pince. »'],
         () => api.item('pince'),
       );
     }

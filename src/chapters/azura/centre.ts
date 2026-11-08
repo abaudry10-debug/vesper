@@ -139,7 +139,7 @@ function renderServerRoom(g: Game, c: CanvasRenderingContext2D, w: number, h: nu
   for (let row = 0; row < 18; row++) {
     for (let col = 0; col < 12; col++) {
       const i = row * 12 + col;
-      const alive = i % 37 === 11 || i === 100 || i === 151;
+      const alive = g.flags.has('pixelSent') || i % 37 === 11 || i === 100 || i === 151;
       const px = cx + 12 + col * 2, py = cy + 7 + row * 2;
       c.fillStyle = alive && power ? `rgba(95,240,224,${(0.5 + 0.5 * Math.sin(g.time * 3 + i)) * pw})` : power ? '#16222e' : '#0c141c';
       c.fillRect(px, py, 1, 1);

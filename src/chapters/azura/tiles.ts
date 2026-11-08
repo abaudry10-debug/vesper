@@ -1227,7 +1227,19 @@ const barqueWater: Painter = (c) => {
   r(c, 3, 3, 1, 6, WOOD.light); r(c, 12, 4, 1, 5, WOOD.light);
   r(c, 15, 7, 1, 1, '#d8c8a0');
 };
+/** Le fauteuil de chargement de la salle de culture. */
+const loadChair: Painter = (c) => {
+  metalFloor(c, 0);
+  c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(2, 13, 12, 2);
+  r(c, 3, 6, 10, 7, AZ.white); r(c, 3, 6, 10, 1, AZ.whiteShade); r(c, 4, 8, 8, 4, '#c8e6ec');
+  r(c, 4, 2, 8, 4, AZ.whiteShade); r(c, 5, 3, 6, 2, AZ.white); // le dossier
+  r(c, 5, 0, 6, 2, AZ.metalDark); r(c, 6, 1, 4, 1, AZ.glow); // le casque
+  r(c, 1, 9, 2, 1, AZ.metalDark); r(c, 13, 9, 2, 1, AZ.metalDark);
+  r(c, 4, 13, 2, 2, AZ.metalDeep); r(c, 10, 13, 2, 2, AZ.metalDeep);
+  r(c, 13, 2, 1, 6, AZ.tealDark); r(c, 14, 1, 1, 3, AZ.tealDark);
+};
 registerTiles({
+  loadChair,
   barqueWater,
   cabinDoor: cabinDoor(false), cabinDoorOpen: cabinDoor(true), canneWall, woodJetty, woodFloor, woodWallTop, woodWallFront,
   netWall, tackleShelf, cabinTableBook: table(true), cabinTable: table(false), barrel,

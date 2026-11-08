@@ -392,10 +392,7 @@ export function r7Interact(g: Game, obj: MapObject | undefined): boolean {
   if (!isR7(g) || !obj) return false;
   switch (obj.id) {
     case 'r7_archiveTerm':
-      say(g.flags.has('pixelOn')
-        ? ['L’ordinateur des archives. Le dossier MISSION_AURORE, vide.', 'Pixel le renifle, la queue basse. C’est ici qu’il s’était branché, il y a des années.', '— Fin de la démo d’Azura —', 'La suite (la transmission de Pixel vers Azura) arrive bientôt. Merci d’avoir joué.']
-        : ['L’ordinateur des archives du spatioport. Le dossier MISSION_AURORE : vide.', 'C’est ici que Pixel s’était branché, pour se recharger.']);
-      if (g.flags.has('pixelOn')) g.flags.add('sliceDone');
+      say(['L’ordinateur des archives du spatioport. Le dossier MISSION_AURORE : vide.', 'C’est ici que Pixel s’était branché, pour se recharger.']);
       return true;
     case 'r7_capsule07':
       if (g.flags.has('bs1Taken')) {

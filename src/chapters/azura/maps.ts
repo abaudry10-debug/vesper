@@ -324,6 +324,7 @@ function ville(): GameMap {
     obj('barqueIle', 14, 31, 'barqueWater', 'barqueIle', { showWhen: 'jour4', hideWhen: 'vague' }),
     obj('barqueQuai', 16, 25, 'barqueWater', 'barque', { showWhen: 'barqueOk', hideWhen: 'barqueOut' }),
     npc('jossQuai', 15, 23, 'joss', 'right', 'jossQuai', { showWhen: 'jossSaved' }),
+    npc('minaNuit', 16, 13, 'mina', 'down', 'minaNuit', { showWhen: 'oubli', hideWhen: 'aube' }),
     npc('bettiVague', 16, 17, 'betti', 'down', 'bettiVague', { showWhen: 'vague', hideWhen: 'j4Oskar' }),
   ];
   // la ville est ceinte : des montagnes au nord, la barrière de la colonie sur les côtés
@@ -356,7 +357,7 @@ function atelier(): GameMap {
     obj('lit', 8, 5, 'bedAz', 'lit'),
     npc('betti', 6, 3, 'betti', 'down', 'betti', { hideWhen: 'vague' }),
     // le jour 4 : Betti et les plans de sa mère, puis Oskar et la commandante, le soir
-    npc('bettiPlans', 3, 4, 'betti', 'up', 'bettiPlans', { showWhen: 'j4Confession' }),
+    npc('bettiPlans', 3, 4, 'betti', 'up', 'bettiPlans', { showWhen: 'j4Confession', hideWhen: 'bettiJoins' }),
     npc('irisAtelier', 6, 5, 'iris', 'left', 'irisAtelier', { showWhen: 'j4Soir', hideWhen: 'j4Plan' }),
     npc('oskarAtelier', 7, 4, 'oskar', 'left', 'oskarAtelier', { showWhen: 'j4Soir', hideWhen: 'j4Plan' }),
   ];
@@ -455,6 +456,8 @@ function culture(): GameMap {
     ...[2, 4, 8, 10].map((x) => obj(`berceau${x}`, x, 3, 'growTank', 'berceau')),
     ...[2, 4, 8].map((x) => obj(`berceauB${x}`, x, 5, 'growTank', 'berceau')),
     obj('cuve07b', 10, 5, 'growTank07', 'berceau07'),
+    obj('fauteuil', 6, 4, 'loadChair', 'fauteuil'),
+    npc('bettiCult', 7, 5, 'betti', 'left', 'bettiCult', { showWhen: 'pixel2' }),
   ];
   return { id: 'culture', name: 'La salle de culture', outdoor: false, width: 13, height: 8, rows: b.rows, objects };
 }
@@ -514,6 +517,7 @@ function serveurs(): GameMap {
     obj('disjoncteur', 13, 8, 'breaker', 'disjoncteur'),
     obj('serveurPX', 10, 3, 'serverTerm', 'serveurPX'),
     npc('oskarIn', 7, 7, 'oskar', 'up', 'oskarIn', { showWhen: 'oskarIn' }),
+    npc('bettiServ', 6, 7, 'betti', 'up', 'bettiServ', { showWhen: 'bettiJoins', hideWhen: 'pixel2' }),
   ];
   return {
     id: 'serveurs', name: 'La salle des serveurs', outdoor: false, width: 15, height: 10, rows: b.rows, objects,

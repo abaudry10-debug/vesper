@@ -15,6 +15,7 @@ import { openBulletin } from './bulletin.js';
 import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, usePump } from './centre.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
 import { atJetty, drawFishing, startFishing, updateFishing } from './peche.js';
+import { bettiNight, lostLines, rechargeBetti, sendPixel, wakePixel2 } from './nuit.js';
 import { R7_MAPS, drawR7Robot, drawR7Under, isR7, r7Blocked, r7Interact, r7PixelGrowl, r7UseItem, renderR7, startR7, updateR7 } from './r7.js';
 Object.assign(MAPS_AZ, R7_MAPS);
 import { boatBlocked, confession, dock, drawBoatOver, drawBoatUnder, drawJour4, jossIlot, plans, useBoat, useCable } from './jour4.js';
@@ -1083,6 +1084,7 @@ export const azura: Chapter = {
       { label: 'Jour 3 (réveil)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3'], items: [], at: { map: 'atelier', x: 7, y: 5, dir: 'left' } },
       { label: 'Jour 4 (réveil)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'canneTaken', 'cabaneOpen', 'oskarDeal', 'centreOpen', 'centreIn', 'inflowCut', 'drained', 'powerOn', 'serverRead', 'oskarIn', 'pxFound', 'jour4'], items: ['canne'], at: { map: 'atelier', x: 7, y: 5, dir: 'left' } },
       { label: 'Jour 4 (Vesper, R-7)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'canneTaken', 'cabaneOpen', 'oskarDeal', 'centreOpen', 'centreIn', 'pxFound', 'jour4', 'j4Moons', 'sireneOn', 'vague', 'barqueOk', 'jossSaved', 'jossLeft', 'j4Oskar', 'j4Confession', 'j4Plans', 'j4Soir', 'j4Plan'], items: ['canne'], at: { map: 'pilotes', x: 8, y: 3, dir: 'up' } },
+      { label: 'Jour 4 (nuit, après le transfert)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'canneTaken', 'cabaneOpen', 'oskarDeal', 'centreOpen', 'centreIn', 'inflowCut', 'drained', 'powerOn', 'serverRead', 'oskarIn', 'pxFound', 'jour4', 'j4Moons', 'sireneOn', 'vague', 'barqueOk', 'jossSaved', 'jossLeft', 'j4Oskar', 'j4Confession', 'j4Plans', 'j4Soir', 'j4Plan', 'r7Up', 'bs1Taken', 'bs1OnPlate', 'bs1Charged', 'bs1PickedUp', 'pixelWake', 'pixelSent', 'oubli'], items: ['canne'], at: { map: 'ville', x: 17, y: 15, dir: 'down' } },
       { label: 'Jour 3 (cabane de Joss)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3'], items: [], at: { map: 'chemin', x: 6, y: 17, dir: 'left' } },
       { label: 'Jour 3 (centre, avec Oskar)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'oskarDeal', 'centreOpen'], items: [], at: { map: 'cuves', x: 27, y: 9, dir: 'up' } },
       { label: 'Jour 2 (école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'bettiHome', 'jour2'], items: [], at: { map: 'ville', x: 27, y: 6, dir: 'up' } },
@@ -1224,7 +1226,25 @@ export const azura: Chapter = {
     },
     beforeInteract(g, obj, fx, fy) {
       // sur Vesper, avec R-7
+      if (obj?.id === 'r7_archiveTerm' && g.flags.has('pixelOn') && !g.flags.has('pixelSent')) {
+        sendPixel(g);
+        return true;
+      }
       if (r7PixelGrowl(g, fx, fy)) return true;
+      // la nuit de l'oubli
+      if (obj && lostLines(g, obj.id)) return true;
+      if (obj?.id === 'bettiPlans' && g.flags.has('oubli') && !g.flags.has('bettiJoins')) {
+        bettiNight(g);
+        return true;
+      }
+      if (obj?.id === 'serveurPX' && g.flags.has('bettiJoins') && !g.flags.has('pixel2')) {
+        wakePixel2(g);
+        return true;
+      }
+      if (obj?.id === 'fauteuil' && g.flags.has('pixel2') && !g.flags.has('bettiRestored')) {
+        rechargeBetti(g);
+        return true;
+      }
       if (r7Interact(g, obj)) return true;
       // au centre des pilotes : la console de la liaison 47,2
       if (obj?.id === 'console47' && g.flags.has('j4Plan') && !g.flags.has('r7On')) {

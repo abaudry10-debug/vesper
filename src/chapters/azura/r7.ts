@@ -60,10 +60,7 @@ const CHARGE_TIME = 14;
 let overheating = false;
 
 export function updateR7(g: Game, dt: number) {
-  if (!isR7(g)) {
-    if (g.heroAlpha === 0 && !g.flags.has('r7On')) g.heroAlpha = 1;
-    return;
-  }
+  if (!isR7(g)) return; // (ne pas toucher à heroAlpha ici : le réveil dans la cuve s'en sert)
   g.heroAlpha = 0; // on ne voit pas le héros : on voit R-7
   // (parties commencées avant) le sac du héros reste sur Azura
   for (const id of [...g.items]) if (id !== 'bs1Vide' && id !== 'battery') {
@@ -515,6 +512,7 @@ export function startR7(g: Game) {
 
 /** En revenant sur Azura : le héros retrouve son sac. */
 export function restoreBag(g: Game) {
+  g.heroAlpha = 1;
   for (const f of [...g.flags]) {
     if (!f.startsWith('stash:')) continue;
     g.items.add(f.slice(6));

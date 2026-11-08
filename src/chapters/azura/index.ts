@@ -1091,6 +1091,7 @@ export const azura: Chapter = {
   },
   begin(g: Game) {
     playTheme('azura');
+    g.heroAlpha = 0; // caché jusqu'à ce qu'il sorte de sa cuve
     const sky = skyOpening(() => {});
     ui.say(['…', 'Du bleu.', 'Un ciel bleu… et deux lunes.', 'Au-dessus de l’horizon, une planète immense, cerclée d’anneaux.', 'L’air est frais. Il sent l’herbe… et le métal chaud.'], () => {
       ui.fade(() => {

@@ -6,7 +6,7 @@ import type { Game } from '../../engine/game.js';
 import { sfx } from '../../engine/audio.js';
 import * as ui from '../../engine/ui.js';
 import { readLegacy } from '../../engine/legacy.js';
-import { restoreBag } from './r7.js';
+import { restoreBag, saveRobot } from './r7.js';
 import { setHour } from './time.js';
 import { projectMemory, transferMontage } from './souvenirs.js';
 
@@ -23,10 +23,17 @@ export function sendPixel(g: Game) {
       g.locked = true;
       transferMontage(() => {
         g.locked = false;
+        // le vieux corps reste là, éteint, comme au chapitre 1
+        const px = g.pixel ?? { x: g.x - 1, y: g.y };
+        g.counters.r7bx = px.x;
+        g.counters.r7by = px.y;
+        g.flags.add('pixelBody');
+        g.flags.delete('pixelOn');
+        g.pixel = null;
         ui.say(
           [
             'TRANSFERT 47,2 : TERMINÉ.',
-            'L’œil de Pixel faiblit… puis s’éteint. Son vieux corps se couche, doucement, au pied de l’ordinateur.',
+            'L’œil de Pixel faiblit… puis s’éteint. Son vieux corps se fige, au pied de l’ordinateur. Exactement comme le jour où je l’ai trouvé, dans la rue.',
             'Je fais rouler R-7 jusqu’à lui. Le robot s’assoit à côté, face à la porte ouverte. Face au soleil.',
             'Iris (radio) : « Je coupe la liaison. »',
           ],
@@ -38,6 +45,8 @@ export function sendPixel(g: Game) {
 }
 
 function backToAzura(g: Game) {
+  saveRobot(g);
+  g.items.delete('liaison');
   g.flags.delete('pixelOn');
   g.flags.delete('r7On');
   g.flags.add('pixelSent');

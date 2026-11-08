@@ -50,6 +50,7 @@ export const R7_MAPS: Record<string, GameMap> = {
 /** Sur Vesper, les cases pleines sont celles du chapitre 1. */
 export const r7Blocked = (g: Game, x: number, y: number): boolean | undefined => {
   if (!isR7(g)) return undefined;
+  if (g.map.id === 'r7Hangar' && g.flags.has('pixelBody') && x === g.counters.r7bx && y === g.counters.r7by) return true;
   const ch = g.map.rows[y]?.[x];
   return ch === undefined || SOLID.has(ch);
 };
@@ -63,7 +64,7 @@ export function updateR7(g: Game, dt: number) {
   if (!isR7(g)) return; // (ne pas toucher à heroAlpha ici : le réveil dans la cuve s'en sert)
   g.heroAlpha = 0; // on ne voit pas le héros : on voit R-7
   // (parties commencées avant) le sac du héros reste sur Azura
-  for (const id of [...g.items]) if (id !== 'bs1Vide' && id !== 'battery') {
+  for (const id of [...g.items]) if (id !== 'bs1Vide' && id !== 'battery' && id !== 'liaison') {
     g.flags.add(`stash:${id}`);
     g.items.delete(id);
   }
@@ -221,6 +222,10 @@ export function drawR7Under(g: Game, c: CanvasRenderingContext2D, ox: number, oy
       c.fillStyle = full ? '#5ff0e0' : Math.floor(g.time * 3) % 2 ? '#ffd45e' : '#a88a2e';
       c.fillRect(sx + 5, sy + 6, Math.max(1, Math.round(6 * k)), 4);
     }
+  }
+  // le vieux corps de Pixel, après le transfert : la même image que lorsqu'on l'avait trouvé, au chapitre 1
+  if (g.map.id === 'r7Hangar' && g.flags.has('pixelBody')) {
+    c.drawImage(dogSprite('right', { pose: 'stand', off: true }), (g.counters.r7bx ?? 14) * T - ox, (g.counters.r7by ?? 9) * T - oy - 1);
   }
   if (g.map.id === 'r7Lab' && g.flags.has('pixelWake') && !g.flags.has('pixelOn')) {
     const growl = Math.floor(g.time * 9) % 2;
@@ -498,12 +503,62 @@ export function r7UseItem(g: Game, id: string): boolean {
 }
 
 /** À la console du centre des pilotes : on prend les commandes de R-7. */
+const R7_ORDER = ['r7Ville', 'r7Lab', 'r7Hangar'];
+/** Garder la place du robot, pour le retrouver là où on l'a laissé. */
+export function saveRobot(g: Game) {
+  if (!isR7(g)) return;
+  g.counters.r7m = R7_ORDER.indexOf(g.map.id);
+  g.counters.r7x = g.x;
+  g.counters.r7y = g.y;
+}
+
+/** Rendre les commandes (depuis le sac) : on revient sur Azura, le robot reste où il est. */
+export function quitR7(g: Game) {
+  ui.confirm('Rendre les commandes et revenir sur Azura ? R-7 restera là où il est.', () => {
+    saveRobot(g);
+    if (g.flags.has('pixelOn') && !g.flags.has('pixelSent')) {
+      g.flags.add('r7PixelFollow');
+      g.flags.delete('pixelOn');
+    }
+    g.pixel = null;
+    g.items.delete('liaison');
+    g.flags.delete('r7On');
+    g.warp('pilotes', 8, 3, 'up');
+    window.setTimeout(() => {
+      restoreBag(g);
+      g.save();
+      ui.say(['Je lâche les commandes. Sur l’écran, R-7 s’immobilise.', 'Oskar : « La liaison reste ouverte jusqu’à ce soir. Reprends quand tu veux, à la console. »']);
+    }, 1300);
+  }, undefined, ['Rendre les commandes', 'Rester']);
+}
+
 export function startR7(g: Game) {
+  const resume = g.flags.has('r7Started') || g.flags.has('r7Up');
+  // (parties d'avant cette version) le transfert est fait mais la place du corps n'a pas été notée
+  if (g.flags.has('pixelSent') && !g.flags.has('pixelBody')) {
+    g.flags.add('pixelBody');
+    Object.assign(g.counters, { r7bx: 14, r7by: 9, r7m: 2, r7x: 15, r7y: 9 });
+  }
   g.flags.add('r7On');
-  // le sac du héros reste sur Azura : on ne garde que ce que porte le robot
+  g.flags.add('r7Started');
+  // le sac du héros reste sur Azura : on ne garde que ce que porte le robot (et ses commandes)
   for (const id of [...g.items]) {
     g.flags.add(`stash:${id}`);
     g.items.delete(id);
+  }
+  g.items.add('liaison');
+  if (resume) {
+    // on retrouve R-7 là où on l'avait laissé ; Pixel aussi, s'il le suivait
+    if (g.flags.has('r7PixelFollow')) {
+      g.flags.delete('r7PixelFollow');
+      g.flags.add('pixelOn');
+    }
+    g.counters.r7temp = 30;
+    g.warp(R7_ORDER[g.counters.r7m ?? 0] ?? 'r7Ville', g.counters.r7x ?? 30, g.counters.r7y ?? 14, 'down');
+    window.setTimeout(() => say(g.flags.has('pixelSent')
+      ? ['L’image revient. R-7 est toujours là, à côté du vieux corps de Pixel.']
+      : ['L’image revient. R-7 attend, là où je l’ai laissé.', '(Les commandes se rendent depuis le sac.)']), 1200);
+    return;
   }
   g.counters.r7temp = 20;
   g.warp('r7Ville', 30, 14, 'down');
@@ -524,6 +579,7 @@ export function startR7(g: Game) {
             'Oskar (radio) : « Il en restait un qui marche ! Son matricule : R-7. Il répond ? »',
             'Iris (radio) : « Attention à la chaleur : il n’a pas été entretenu depuis onze ans. Longe les bâtiments : leur ombre le protège. Au milieu des rues, en plein soleil, il va griller. »',
             'Betti (radio) : « Retrouve-le. Je t’en prie. »',
+            '(Pour rendre les commandes et revenir sur Azura : « Commandes de R-7 », dans le sac.)',
           ],
           () => {
             g.api.clue('r7l1');
@@ -543,4 +599,11 @@ export function restoreBag(g: Game) {
     g.items.add(f.slice(6));
     g.flags.delete(f);
   }
+}
+
+/** Le vieux corps de Pixel, dans le hangar. */
+export function r7Body(g: Game, fx: number, fy: number): boolean {
+  if (g.map.id !== 'r7Hangar' || !g.flags.has('pixelBody') || fx !== g.counters.r7bx || fy !== g.counters.r7by) return false;
+  say(['Le vieux corps de Pixel, au pied de l’ordinateur. Éteint, comme le jour où je l’ai trouvé.', 'Il est parti. Pas lui : juste son corps.']);
+  return true;
 }

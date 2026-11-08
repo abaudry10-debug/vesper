@@ -110,6 +110,7 @@ export const ITEMS_AZ: Record<string, ItemDef> = {
   canne: { name: 'Canne à pêche', text: 'La canne de Joss, avec son moulinet et un bouchon rouge et blanc. Joss pêche toujours depuis son ponton.', usable: true },
   pince: { name: 'Pince de Tom', text: 'Une pince d’électricien, aux poignées rouges. Tom ne la quitte jamais.' },
   cable: { name: 'Câble neuf', text: 'Un câble électrique neuf, de l’atelier de Betti. De quoi rebrancher la sirène.', usable: true },
+  liaison: { name: 'Commandes de R-7', text: 'Les commandes du robot de patrouille, depuis la console du centre des pilotes. On peut les rendre à tout moment : R-7 restera où il est.', usable: true },
   bs1Vide: { name: 'BS-1 (vide)', text: 'La batterie de Pixel, retirée de ma capsule. Le voyant est éteint. À recharger au soleil, sur la plaque de la place des Missions.', usable: true },
   battery: { name: 'BS-1 (chargée)', text: 'La batterie de Pixel, pleine. Il faut la brancher sur son dos.', usable: true },
   cleCabane: { name: 'Clé de la cabane', text: 'Une clé de cuivre, repêchée devant la cabane de Joss. Un petit médaillon gravé « J ».', usable: true },

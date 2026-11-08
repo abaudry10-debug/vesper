@@ -16,7 +16,7 @@ import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, usePump } 
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
 import { atJetty, drawFishing, startFishing, updateFishing } from './peche.js';
 import { bettiNight, lostLines, rechargeBetti, sendPixel, wakePixel2 } from './nuit.js';
-import { R7_MAPS, drawR7Robot, drawR7Under, isR7, r7Blocked, r7Interact, r7PixelGrowl, r7UseItem, renderR7, startR7, updateR7 } from './r7.js';
+import { R7_MAPS, drawR7Robot, drawR7Under, isR7, quitR7, r7Blocked, r7Body, r7Interact, r7PixelGrowl, r7UseItem, renderR7, startR7, updateR7 } from './r7.js';
 Object.assign(MAPS_AZ, R7_MAPS);
 import { boatBlocked, confession, dock, drawBoatOver, drawBoatUnder, drawJour4, jossIlot, plans, useBoat, useCable } from './jour4.js';
 let cabinPainted = false;
@@ -1201,6 +1201,10 @@ export const azura: Chapter = {
     },
     blocked: (g, x, y) => r7Blocked(g, x, y) ?? boatBlocked(g, x, y),
     useItem(g, id) {
+      if (id === 'liaison') {
+        quitR7(g);
+        return true;
+      }
       if (r7UseItem(g, id)) return true;
       if (id === 'cable') return useCable(g);
       if (id === 'cleCabane') {
@@ -1231,6 +1235,7 @@ export const azura: Chapter = {
         return true;
       }
       if (r7PixelGrowl(g, fx, fy)) return true;
+      if (r7Body(g, fx, fy)) return true;
       // la nuit de l'oubli
       if (obj && lostLines(g, obj.id)) return true;
       if (obj?.id === 'bettiPlans' && g.flags.has('oubli') && !g.flags.has('bettiJoins')) {
@@ -1248,7 +1253,7 @@ export const azura: Chapter = {
       if (r7Interact(g, obj)) return true;
       // au centre des pilotes : la console de la liaison 47,2
       if (obj?.id === 'console47' && g.flags.has('j4Plan') && !g.flags.has('r7On')) {
-        ui.say(['Iris allume la console. « LIAISON 47,2 — VESPER ». Le cadran s’emballe, puis se stabilise.', 'Sur l’écran, une image tremblée apparaît : une rue ensablée, une lumière orange. Vesper.', 'Oskar me tend les commandes. « À toi. »'], () => startR7(g));
+        ui.say(g.flags.has('r7Started') ? ['La console de la liaison 47,2. Sur l’écran, l’image de R-7, immobile.', 'Je reprends les commandes.'] : ['Iris allume la console. « LIAISON 47,2 — VESPER ». Le cadran s’emballe, puis se stabilise.', 'Sur l’écran, une image tremblée apparaît : une rue ensablée, une lumière orange. Vesper.', 'Oskar me tend les commandes. « À toi. »'], () => startR7(g));
         return true;
       }
       // en barque : accoster

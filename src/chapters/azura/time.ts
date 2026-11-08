@@ -54,11 +54,16 @@ export function postLines(g: Game): string[] {
  * S'asseoir sur un banc : choisir jusqu'à quand attendre. L'attente s'arrête d'elle-même
  * si les eaux se mettent à monter (la première fois qu'on les voit, le jour 2).
  */
+/** L'étape du jour est-elle faite ? Tant qu'elle ne l'est pas, on peut veiller jusqu'à 23 h. */
+const dayDone = (g: Game) => (day(g) === 2 ? g.flags.has('tideWitnessed') : day(g) === 3 ? g.flags.has('pxFound') : true);
+export const NIGHT = 23;
+
 export function benchWait(g: Game, onTide: (h: number) => void) {
   const h = hour(g);
-  if (h >= EVENING) return ui.say(['Le soir est tombé. Il est temps d’aller dormir chez Betti.']);
+  const max = dayDone(g) ? EVENING : NIGHT;
+  if (h >= max) return ui.say(h >= NIGHT ? ['Il est tard. Il faut que j’aille dormir.'] : ['Le soir est tombé. Il est temps d’aller dormir chez Betti.']);
   g.locked = true;
-  waitPicker(h, EVENING, (to) => {
+  waitPicker(h, max, (to) => {
     g.locked = false;
     if (to === null) return;
     // la première montée des eaux qu'on voit de ses yeux interrompt l'attente
@@ -67,7 +72,7 @@ export function benchWait(g: Game, onTide: (h: number) => void) {
     if (watch) for (let t = h + 1; t <= to; t++) if (tideLevel(2, t) > 0.6 && tideLevel(2, t - 1) < tideLevel(2, t)) { stop = t; break; }
     if (stop > 0) to = stop;
     g.locked = true;
-    const caption = to >= EVENING ? 'Assis sur le banc, je regarde la lumière baisser…' : 'Assis sur le banc, je regarde passer les heures…';
+    const caption = to > EVENING ? 'Je veille sur le banc. La nuit tombe, les étoiles s’allument…' : to === EVENING ? 'Assis sur le banc, je regarde la lumière baisser…' : 'Assis sur le banc, je regarde passer les heures…';
     timePass(h, to, caption, () => {
       g.locked = false;
       g.save();
@@ -113,7 +118,7 @@ function waitPicker(from: number, max: number, done: (to: number | null) => void
     const bw = Math.floor(84 / n), x0 = Math.round((96 - bw * n) / 2);
     for (let i = 0; i < n; i++) {
       const hh = from + 1 + i, x = x0 + i * bw, on = hh <= v;
-      const col = hh >= 19 ? '#8a6ad8' : hh >= 17 ? '#ff9a6a' : '#5ff0e0';
+      const col = hh > 19 ? '#4a3a9a' : hh === 19 ? '#8a6ad8' : hh >= 17 ? '#ff9a6a' : '#5ff0e0';
       c.fillStyle = '#14101c'; c.fillRect(x, 28, bw - 1, 8);
       c.fillStyle = on ? col : '#2a2436'; c.fillRect(x + 1, 29, bw - 3, 6);
       if (on) { c.fillStyle = 'rgba(255,255,255,0.45)'; c.fillRect(x + 1, 29, bw - 3, 1); }
@@ -121,10 +126,11 @@ function waitPicker(from: number, max: number, done: (to: number | null) => void
     // un petit soleil (ou une lune, le soir) au-dessus du bloc choisi
     const sx = x0 + (v - from - 1) * bw + Math.floor(bw / 2) - 2;
     c.fillStyle = v >= 19 ? '#f4f4ff' : '#ffd45e';
+    if (v > 19) c.fillStyle = '#c8c0ff';
     c.fillRect(sx, 22, 4, 4); c.fillRect(sx + 1, 21, 2, 6); c.fillRect(sx - 1, 23, 6, 2);
     c.fillStyle = '#8a8296';
     c.fillRect(x0, 38, 1, 3); c.fillRect(x0 + bw * n - 2, 38, 1, 3);
-    sub.textContent = v >= max ? 'Jusqu’au soir' : `Dans ${v - from} heure${v - from > 1 ? 's' : ''}`;
+    sub.textContent = v === EVENING ? 'Jusqu’au soir' : v > EVENING ? `La nuit — dans ${v - from} heure${v - from > 1 ? 's' : ''}` : `Dans ${v - from} heure${v - from > 1 ? 's' : ''}`;
   };
   const set = (k: number) => {
     v = Math.max(from + 1, Math.min(max, k));

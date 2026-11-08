@@ -6,7 +6,7 @@
 // robot, jusqu'à reconnaître la voix du héros dans le haut-parleur.
 import type { Game } from '../../engine/game.js';
 import { sfx } from '../../engine/audio.js';
-import { P, T, dogSprite } from '../../engine/sprites.js';
+import { P, T, dogSprite, paintFallenRobot } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
 import { SOLID, type GameMap, type MapObject } from '../../engine/world.js';
 import { MAPS as V_MAPS } from '../vesper/maps.js';
@@ -253,17 +253,32 @@ export function drawR7Robot(g: Game, c: CanvasRenderingContext2D, ox: number, oy
   c.beginPath();
   c.ellipse(x + 8, y + 15, 6, 1.8, 0, 0, Math.PI * 2);
   c.fill();
-  // couché, il se relève : la même carcasse, qui pivote sur sa base
+  // couché, il garde exactement le dessin du chapitre 1 ; en se relevant, il pivote sur sa base
   let angle = 0;
+  const fallen = (jitter = 0) => {
+    const cv = fallenCanvas();
+    c.drawImage(cv, x + jitter, y);
+  };
   if (!g.flags.has('r7Up')) {
-    // couché ; s'il vient de s'effondrer, il bascule
+    // s'il vient de s'effondrer, il bascule d'abord, puis reste couché
     const f = fallAt.get(g);
     const k = f === undefined ? 1 : Math.min(1, (g.time - f) / 0.35);
+    if (k >= 1) {
+      fallen();
+      drawPuffs(c, list, ox, oy);
+      return;
+    }
     angle = (Math.PI / 2) * k * k;
-  }
-  else {
+  } else {
     if (!standAt.has(g)) standAt.set(g, g.time);
-    const k = Math.min(1, (g.time - standAt.get(g)!) / 0.9);
+    const t = g.time - standAt.get(g)!;
+    if (t < 0.3) {
+      // il tressaute, encore couché, le temps que les moteurs répondent
+      fallen(Math.floor(t * 30) % 2 ? 1 : 0);
+      drawPuffs(c, list, ox, oy);
+      return;
+    }
+    const k = Math.min(1, (t - 0.3) / 0.8);
     if (k < 1) {
       // il se redresse d'un coup de reins, dépasse un peu, puis se stabilise
       const e = k < 0.7 ? 1 - (k / 0.7) ** 2 : -0.12 * Math.sin(((k - 0.7) / 0.3) * Math.PI);
@@ -282,6 +297,19 @@ export function drawR7Robot(g: Game, c: CanvasRenderingContext2D, ox: number, oy
   c.fillStyle = P.metalDark;
   c.fillRect(3, -17, 1, 2);
   c.restore();
+  drawPuffs(c, list, ox, oy);
+}
+
+let fallenCv: HTMLCanvasElement | null = null;
+function fallenCanvas() {
+  if (!fallenCv) {
+    fallenCv = document.createElement('canvas');
+    fallenCv.width = fallenCv.height = 16;
+    paintFallenRobot(fallenCv.getContext('2d')!);
+  }
+  return fallenCv;
+}
+function drawPuffs(c: CanvasRenderingContext2D, list: { x: number; y: number; life: number; max: number; smoke?: boolean }[], ox: number, oy: number) {
   for (const p of list) {
     const a = 1 - p.life / p.max;
     c.fillStyle = p.smoke ? `rgba(60,56,64,${0.5 * a})` : `rgba(214,170,120,${0.6 * a})`;

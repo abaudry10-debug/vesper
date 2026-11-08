@@ -242,12 +242,26 @@ const bunkerDoor = (open: boolean): Painter => (c) => {
   }
 };
 
+/** Le robot de patrouille renversé, sans fond : le même dessin dans la rue du chapitre 1 et sur Vesper, au chapitre 2. */
+export function paintFallenRobot(c: Ctx) {
+  r(c, 1, 13, 14, 2, 'rgba(0,0,0,0.3)');
+  // ses roues, en l'air, côté gauche
+  r(c, 0, 8, 2, 3, P.metalDark); r(c, 0, 9, 1, 1, P.metalLight);
+  r(c, 0, 12, 2, 2, P.metalDark);
+  // le corps, couché sur le flanc
+  r(c, 2, 8, 10, 6, P.metal); r(c, 2, 8, 10, 1, P.metalLight); r(c, 2, 13, 10, 1, P.metalDark);
+  r(c, 4, 10, 3, 2, P.metalDark); r(c, 8, 11, 2, 2, P.rust);
+  r(c, 4, 6, 3, 2, P.metalDark); // un bras replié
+  // la tête, tombée sur le côté, son œil rouge à peine allumé
+  r(c, 9, 4, 6, 5, P.metal); r(c, 9, 4, 6, 1, P.metalLight);
+  r(c, 10, 6, 4, 1, '#2a1a1e'); r(c, 11, 6, 2, 1, P.red);
+  r(c, 14, 7, 1, 1, P.rust);
+  // l'antenne, tordue
+  r(c, 15, 2, 1, 2, P.metalDark); r(c, 14, 1, 1, 1, '#6a2a2a');
+}
 const robot: Painter = (c, v) => {
   dust(c, v);
-  r(c, 2, 13, 12, 2, 'rgba(0,0,0,0.3)');
-  r(c, 3, 8, 9, 6, P.metal); r(c, 3, 8, 9, 1, P.metalLight); r(c, 5, 10, 3, 2, P.metalDark);
-  r(c, 9, 4, 5, 5, P.metal); r(c, 9, 4, 5, 1, P.metalLight); r(c, 11, 6, 2, 1, P.red); // tête tombée
-  r(c, 1, 11, 2, 1, P.metalDark); r(c, 0, 12, 2, 1, P.metalDark); r(c, 12, 12, 3, 1, P.rust);
+  paintFallenRobot(c);
 };
 
 const sign: Painter = (c, v) => {

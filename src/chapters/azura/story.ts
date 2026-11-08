@@ -575,7 +575,6 @@ export const SCRIPTS_AZ: Record<string, Script> = {
         '« Et ici, le centre de clonage nous avait préparé des corps neufs. Un pour chacun. »',
         '« Et que dit-on, à la fin ? »',
         '« On n’oublie jamais d’où l’on vient ! » répondent les enfants en chœur.',
-        'Tout ce qu’elle dit, je l’ai vu sur Vesper. C’est exactement ça.',
       ],
       () => {
         api.set('lesson1Heard');

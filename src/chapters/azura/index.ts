@@ -4,6 +4,7 @@ import type { Chapter } from '../../engine/chapter.js';
 import { view, type Game } from '../../engine/game.js';
 import { T, hash } from '../../engine/sprites.js';
 import { person, registerTiles, tile } from '../../engine/sprites.js';
+import { readLegacy } from '../../engine/legacy.js';
 import type { PersonLook } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
 import { MAPS_AZ, SOLID_AZ, START_AZ } from './maps.js';
@@ -14,7 +15,7 @@ import { openBulletin } from './bulletin.js';
 import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, usePump } from './centre.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
 import { atJetty, drawFishing, startFishing, updateFishing } from './peche.js';
-import { boatBlocked, dock, drawBoatOver, drawBoatUnder, drawJour4, jossIlot, useBoat, useCable } from './jour4.js';
+import { boatBlocked, confession, dock, drawBoatOver, drawBoatUnder, drawJour4, jossIlot, plans, useBoat, useCable } from './jour4.js';
 let cabinPainted = false;
 import { EVENING, benchWait, clockLines, day, highTides, hour, levelNow, postLines, renderDaylight, renderTide, setHour } from './time.js';
 
@@ -966,6 +967,12 @@ function night(g: Game) {
         g.api.clue('azl7');
         g.save();
       });
+    } else if (next === 5) {
+      ui.say(['Avant l’aube, Betti me secoue doucement.', '« Debout. La liaison va s’ouvrir. Pixel nous attend. »'], () => {
+        g.flags.add('sliceDone');
+        g.save();
+        ui.say(['— Fin de la démo d’Azura —', 'La suite, le jour 5 (le retour sur Vesper avec le robot R-7), arrive bientôt. Merci d’avoir joué.']);
+      });
     } else if (next === 4) {
       ui.say(['« Debout ! »', 'Betti, à la fenêtre, une tasse à la main.', '« Joss est parti pêcher sur son île à l’aube, de l’autre côté du lac, avec sa barque. Il avait retrouvé son carnet, il était tout content. »', '« Il dit que le bulletin annonce une journée calme. Tant mieux. »', '« Tu as vu le ciel, ce matin ? Les deux lunes sont presque l’une sur l’autre. »'], () => {
         g.api.clue('azl12');
@@ -1053,7 +1060,7 @@ export const azura: Chapter = {
   switches: { labels: [], order: [] },
   intro: [],
   features: { heatWaves: false, movement: 'grid' },
-  music: (map) => (['atelier', 'cabane', 'ecole', 'centre', 'culture', 'pompes', 'serveurs'].includes(map.id) || eveningNow ? 'home' : 'azura'),
+  music: (map) => (['atelier', 'cabane', 'pilotes', 'ecole', 'centre', 'culture', 'pompes', 'serveurs'].includes(map.id) || eveningNow ? 'home' : 'azura'),
   dialogStyle: 'azura',
   cutTargets: {},
   solid: SOLID_AZ,
@@ -1201,6 +1208,11 @@ export const azura: Chapter = {
     beforeInteract(g, obj, fx, fy) {
       // en barque : accoster
       if (!obj && dock(g, fx, fy)) return true;
+      // le jour 4, l'après-midi : les plans de la mère de Betti
+      if (obj?.id === 'bettiPlans' && !g.flags.has('j4Plans')) {
+        plans(g, ((readLegacy().vesper?.data?.memos as number[] | undefined) ?? []).includes(6));
+        return true;
+      }
       // le jour 4 : rendre sa pince à Tom ; la barque ; Joss sur l'îlot
       if (obj?.id === 'tom' && g.flags.has('sireneOn') && g.items.has('pince')) {
         g.items.delete('pince');
@@ -1340,7 +1352,11 @@ export const azura: Chapter = {
           ui.say(['Pas encore sommeil. Le carnet de Joss est toujours enfermé dans sa cabane, au bord de la rivière.']);
           return true;
         }
-        if (day(g) >= 4) {
+        if (day(g) === 4 && !g.flags.has('j4Plan')) {
+          ui.say(['Pas maintenant.']);
+          return true;
+        }
+        if (day(g) >= 5) {
           ui.say(['Pas maintenant.']);
           return true;
         }
@@ -1442,6 +1458,7 @@ export const azura: Chapter = {
       return true;
     },
     onEnterMap(g, mapId) {
+      if (mapId === 'pilotes' && g.flags.has('j4Oskar') && !g.flags.has('j4Confession')) confession(g);
       // jour 4 : en sortant, le ciel met sur la piste des lunes
       if (mapId === 'ville' && day(g) === 4 && !g.flags.has('j4Moons') && !g.flags.has('j4Sky')) {
         g.flags.add('j4Sky');

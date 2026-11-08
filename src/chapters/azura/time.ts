@@ -8,7 +8,7 @@ import { T } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
 import { drawDigits, timePass } from './timepass.js';
 
-export const day = (g: Game) => (g.flags.has('jour4') ? 4 : g.flags.has('jour3') ? 3 : g.flags.has('jour2') ? 2 : 1);
+export const day = (g: Game) => (g.flags.has('jour5') ? 5 : g.flags.has('jour4') ? 4 : g.flags.has('jour3') ? 3 : g.flags.has('jour2') ? 2 : 1);
 export const hour = (g: Game) => g.counters.heure ?? 9;
 export const setHour = (g: Game, h: number) => {
   g.counters.heure = h;

@@ -302,14 +302,14 @@ function ville(): GameMap {
     obj('enseigneEcole', 29, 6, 'pathSign', 'enseigneEcole'),
     obj('maison3', 6, 12, 'aurDoorClosed', 'etiquette'),
     obj('maison4', 27, 12, 'aurDoorClosed', 'maison'),
-    obj('portePilotes', 28, 21, 'aurDoorClosed', 'pilotes'),
+    { id: 'portePilotes', x: 28, y: 21, sprite: 'aurDoorClosed', spriteWhen: ['j4Oskar', 'aurDoor'], script: 'pilotes', door: { to: 'pilotes', x: 5, y: 7, dir: 'up', needs: 'j4Oskar' } },
     { id: 'porteAtelier', x: 6, y: 21, sprite: 'aurDoor', door: { to: 'atelier', x: 5, y: 7, dir: 'up', needs: 'bettiMet' }, script: 'atelierFerme' },
     obj('repere2', 9, 24, 'waterPost', 'repere'),
     obj('repere3', 25, 24, 'waterPost', 'repere'),
     npc('bettiPlace', 17, 4, 'betti', 'up', 'bettiAccueil', { hideWhen: 'bettiMet' }),
     npc('ilda', 14, 13, 'ilda', 'left', 'ilda'),
     npc('oskar', 20, 14, 'oskar', 'left', 'oskar', { showWhen: 'jour3', hideWhen: 'oskarDeal' }),
-    npc('iris', 27, 17, 'iris', 'down', 'iris', { showWhen: 'jour3' }),
+    npc('iris', 27, 17, 'iris', 'down', 'iris', { showWhen: 'jour3', hideWhen: 'j4Oskar' }),
     npc('bettiLac', 17, 23, 'betti', 'down', 'bettiLac', { showWhen: 'lakeScene', hideWhen: 'bettiHome' }),
     npc('tom', 21, 10, 'tom', 'up', 'tom'),
     npc('nora', 13, 9, 'nora', 'right', 'nora'),
@@ -324,7 +324,7 @@ function ville(): GameMap {
     obj('barqueIle', 14, 31, 'barqueWater', 'barqueIle', { showWhen: 'jour4', hideWhen: 'vague' }),
     obj('barqueQuai', 16, 25, 'barqueWater', 'barque', { showWhen: 'barqueOk', hideWhen: 'barqueOut' }),
     npc('jossQuai', 15, 23, 'joss', 'right', 'jossQuai', { showWhen: 'jossSaved' }),
-    npc('bettiVague', 16, 17, 'betti', 'down', 'bettiVague', { showWhen: 'vague' }),
+    npc('bettiVague', 16, 17, 'betti', 'down', 'bettiVague', { showWhen: 'vague', hideWhen: 'j4Oskar' }),
   ];
   // la ville est ceinte : des montagnes au nord, la barrière de la colonie sur les côtés
   for (let x = 0; x < W; x++) if (x !== 17) b.set(x, 0, 'M').set(x, 1, 'M');
@@ -355,8 +355,34 @@ function atelier(): GameMap {
     obj('pieces', 2, 5, 'robotParts', 'pieces'),
     obj('lit', 8, 5, 'bedAz', 'lit'),
     npc('betti', 6, 3, 'betti', 'down', 'betti', { hideWhen: 'vague' }),
+    // le jour 4 : Betti et les plans de sa mère, puis Oskar et la commandante, le soir
+    npc('bettiPlans', 3, 4, 'betti', 'up', 'bettiPlans', { showWhen: 'j4Confession' }),
+    npc('irisAtelier', 6, 5, 'iris', 'left', 'irisAtelier', { showWhen: 'j4Soir' }),
+    npc('oskarAtelier', 7, 4, 'oskar', 'left', 'oskarAtelier', { showWhen: 'j4Soir' }),
   ];
   return { id: 'atelier', name: 'L’atelier de Betti', outdoor: false, width: 11, height: 9, rows: b.rows, objects };
+}
+
+// ---------- le centre des pilotes ----------
+function pilotes(): GameMap {
+  const b = new Builder(11, 9, 'w');
+  b.rect(0, 0, 11, 2, 'Z').rect(0, 0, 1, 9, 'Z').rect(10, 0, 1, 9, 'Z').rect(0, 8, 11, 1, 'Z');
+  b.set(5, 8, 'w');
+  const objects: MapObject[] = [
+    exit('sortie', 5, 8, { to: 'ville', x: 28, y: 22, dir: 'down' }),
+    obj('ecranPilotes', 4, 1, 'wallScreen', 'ecranPilotes'),
+    obj('ecranPilotes2', 5, 1, 'wallScreen', 'ecranPilotes'),
+    obj('ecranPilotes3', 6, 1, 'wallScreen', 'ecranPilotes'),
+    obj('console47', 8, 2, 'serverTerm', 'console47'),
+    obj('tablePilotes', 4, 4, 'labDesk', 'tablePilotes'),
+    obj('tablePilotes2', 5, 4, 'labDesk', 'tablePilotes'),
+    obj('tablePilotes3', 6, 4, 'labDesk', 'tablePilotes'),
+    obj('casiers', 1, 1, 'shelfAz', 'casiers'),
+    npc('irisPilotes', 5, 2, 'iris', 'up', 'irisPilotes', { hideWhen: 'j4Soir' }),
+    npc('oskarPilotes', 3, 6, 'oskar', 'up', 'oskarPilotes', { hideWhen: 'j4Soir' }),
+    npc('bettiPilotes', 7, 6, 'betti', 'up', 'bettiPilotes', { hideWhen: 'j4Confession' }),
+  ];
+  return { id: 'pilotes', name: 'Le centre des pilotes', outdoor: false, width: 11, height: 9, rows: b.rows, objects };
 }
 
 // ---------- la cabane de Joss ----------
@@ -495,5 +521,5 @@ function serveurs(): GameMap {
   };
 }
 
-export const MAPS_AZ: Record<string, GameMap> = { cuves: cuves(), chemin: chemin(), ville: ville(), atelier: atelier(), ecole: ecole(), centre: centre(), culture: culture(), pompes: pompes(), serveurs: serveurs(), cabane: cabane() };
+export const MAPS_AZ: Record<string, GameMap> = { cuves: cuves(), chemin: chemin(), ville: ville(), atelier: atelier(), ecole: ecole(), centre: centre(), culture: culture(), pompes: pompes(), serveurs: serveurs(), cabane: cabane(), pilotes: pilotes() };
 export const START_AZ = { map: 'cuves', x: 4, y: 7, dir: 'up' as Dir };

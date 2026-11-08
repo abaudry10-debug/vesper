@@ -201,13 +201,15 @@ export function dock(g: Game, fx: number, fy: number): boolean {
         'Joss pose le pied sur la passerelle. Betti le serre dans ses bras.',
         'Nora, toute pâle : « J’ai recopié. Chaque matin, j’ai recopié les heures du premier jour. Je ne m’en rendais même pas compte. »',
         '« Sans la sirène… » Tom ne finit pas sa phrase.',
-        'Plus loin, sur les marches du centre des pilotes, la commandante regarde le lac, sans un mot.',
+        'Plus loin, sur les marches du centre des pilotes, la commandante regarde le lac, sans un mot. Puis elle rentre.',
+        'Oskar me rejoint, à voix basse : « Tu as vu son visage ? Elle savait. Il est temps qu’elle parle. »',
+        '« Au centre des pilotes. Betti, viens aussi. »',
       ],
       () => {
         g.api.clue('azJoss4');
-        g.flags.add('sliceDone4');
+        g.flags.add('j4Oskar');
+        g.api.clue('azl16');
         g.save();
-        ui.say(['— Fin de la démo d’Azura —', 'La suite du jour 4 (la vérité sur PX-07) arrive bientôt. Merci d’avoir joué.']);
       },
     );
   }, 1300);
@@ -244,4 +246,88 @@ export function drawBoatOver(g: Game, c: CanvasRenderingContext2D, ox: number, o
     c.fillRect(x + 2, y + 15, 3, 1);
     c.fillRect(x + 19, y + 15, 3, 1);
   }
+}
+
+// ---------- le jour 4, l'après-midi : la vérité sur PX-07 ----------
+
+/** Au centre des pilotes : Oskar met la commandante face à « AU-01 ». */
+export function confession(g: Game) {
+  g.locked = true;
+  window.setTimeout(() => {
+    g.locked = false;
+    ui.say(
+      [
+        'Le centre des pilotes. Une grande table, une console, un écran qui montre Azura vue du ciel.',
+        'La commandante est là, debout. Elle ne se retourne pas.',
+        'Oskar : « AU-01, Iris. Ton code. Sur le serveur du centre de clonage. »',
+        'Un long silence.',
+        '« …Ferme la porte, Oskar. »',
+        '« L’an 3. La grande marée a noyé la salle des serveurs. La copie de nos souvenirs était perdue. Le second chargement, impossible. »',
+        '« Il restait la copie d’origine, sur Vesper. J’ai demandé le transfert, par la liaison 47,2. »',
+        '« Le dossier était vide. Une seule ligne : transfert intégral vers l’appareil PX-07. Je n’ai jamais su ce que c’était. »',
+        '« Si j’avais dit que nos souvenirs étaient perdus, peut-être pour toujours… La colonie avait trois ans. Elle se serait effondrée. »',
+        '« Alors j’ai mis en place des habitudes. La leçon du matin. Le bulletin. La sirène. Pour que les gestes tiennent, quand les souvenirs partiraient. »',
+        'Elle se retourne enfin.',
+        '« Ce matin, mes habitudes ont failli coûter la vie à Joss. »',
+        'Derrière nous, Betti a tout entendu.',
+        '« PX-07… »',
+        '« Maman donnait des numéros à ses prototypes. Ses plans sont à l’atelier ! »',
+        'Elle sort en courant.',
+      ],
+      () => {
+        g.flags.add('j4Confession');
+        g.api.clue('azAveu');
+        g.api.clue('azl17');
+        g.save();
+      },
+    );
+  }, 700);
+}
+
+/** À l'atelier : les plans de la mère de Betti. Puis le soir, et le plan pour Vesper. */
+export function plans(g: Game, sawMemo6: boolean) {
+  ui.say(
+    [
+      'Betti a étalé de vieux plans sur l’établi. Des feuilles jaunies, venues de Vesper.',
+      '« COMPAGNON ROBOTIQUE — PROTOTYPE PX-07 »',
+      '« Batterie : BS-1. Port de maintenance compatible archives. Mémoire : non effaçable. »',
+      'Dans un coin, un croquis : un chien robot, à l’œil bleu.',
+      '« Avant que je lui donne un nom, Maman l’appelait comme ça. PX-07. »',
+      '« C’est Pixel. »',
+      ...(sawMemo6
+        ? ['Le dossier vide du spatioport. Pixel, branché sur l’ordinateur pour se recharger…', 'Il a tout aspiré. Les souvenirs de tout le monde.']
+        : ['Pixel. Le chien que j’ai laissé là-bas, endormi sur Vesper.', 'C’est lui qui a emporté les souvenirs de tout le monde.']),
+      '« Une mémoire de machine ne s’efface pas », dit Betti. « Si Pixel les a… ils sont intacts. »',
+      '« Il faut aller le chercher. »',
+    ],
+    () => {
+      g.flags.add('j4Plans');
+      g.api.clue('azPlans');
+      g.save();
+      g.locked = true;
+      timePass(Math.max(hour(g), 14), 19, 'Le reste de l’après-midi, Betti ne lâche plus les plans. Le soir tombe sur l’atelier.', () => {
+        g.locked = false;
+        g.flags.add('j4Soir');
+        window.setTimeout(() => {
+          ui.say(
+            [
+              'On frappe. Oskar, et la commandante.',
+              'Iris : « Le centre des pilotes a une antenne. La liaison 47,2 marche dans les deux sens. »',
+              'Oskar : « Au spatioport de Vesper, il reste un robot de maintenance. R-7. On peut le piloter d’ici, à distance. »',
+              'Iris : « Demain, à l’aube. C’est là que la liaison sera la meilleure. »',
+              'Betti regarde les pièces éparpillées sur son établi. La tête ronde, les pattes, l’œil éteint.',
+              '« Toutes ces pièces… C’était pour lui. Je ne le savais pas encore. »',
+              '« Moi, je finis son nouveau corps. Toi, demain, tu vas le chercher. »',
+            ],
+            () => {
+              g.flags.add('j4Plan');
+              g.api.clue('azR7');
+              g.api.clue('azl18');
+              g.save();
+            },
+          );
+        }, 500);
+      }, () => setHour(g, 19));
+    },
+  );
 }

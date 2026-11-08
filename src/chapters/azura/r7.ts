@@ -56,7 +56,6 @@ export const r7Blocked = (g: Game, x: number, y: number): boolean | undefined =>
 
 // ---------- la chaleur ----------
 const shadeAt = (g: Game, x: number, y: number) => g.map.id !== 'r7Ville' || g.map.rows[y - 1]?.[x] === '#';
-const lastShade = new WeakMap<Game, [string, number, number]>();
 const CHARGE_TIME = 14;
 let overheating = false;
 
@@ -66,10 +65,18 @@ export function updateR7(g: Game, dt: number) {
     return;
   }
   g.heroAlpha = 0; // on ne voit pas le héros : on voit R-7
+  // (parties commencées avant) le sac du héros reste sur Azura
+  for (const id of [...g.items]) if (id !== 'bs1Vide' && id !== 'battery') {
+    g.flags.add(`stash:${id}`);
+    g.items.delete(id);
+  }
   if (ui.dialogOpen() || g.locked) return; // le temps ne compte pas pendant qu'on lit
   const temp = g.counters.r7temp ?? 20;
   const shade = shadeAt(g, g.x, g.y);
-  if (shade && g.map.id === 'r7Ville') lastShade.set(g, [g.map.id, g.x, g.y]);
+  if (!shade && temp > 45 && !g.flags.has('r7SunHint')) {
+    g.flags.add('r7SunHint');
+    ui.say(['Iris (radio) : « Tu chauffes ! Rapproche-toi des bâtiments : la bande d’ombre à leur pied. »']);
+  }
   const next = Math.max(15, Math.min(100, temp + (shade ? -22 : 9) * dt));
   g.counters.r7temp = next;
   if (next >= 100 && !overheating) overheat(g);
@@ -84,21 +91,31 @@ export function updateR7(g: Game, dt: number) {
   }
 }
 
+/** Surchauffe : le robot s'effondre sur place, refroidit au sol, puis se relève au même endroit. */
+const fallAt = new WeakMap<Game, number>();
 function overheat(g: Game) {
   overheating = true;
   g.locked = true;
+  g.moving = null;
+  g.flags.delete('r7Up');
+  g.flags.add('r7Down');
+  fallAt.set(g, g.time);
+  standAt.delete(g);
   sfx.zap();
   window.setTimeout(() => {
-    const ls = lastShade.get(g);
-    const [x, y] = ls && ls[0] === g.map.id ? [ls[1], ls[2]] : [7, 6]; // sinon : devant le laboratoire, à l'ombre
-    g.x = x;
-    g.y = y;
-    g.moving = null;
-    g.counters.r7temp = 40;
-    g.locked = false;
-    overheating = false;
-    ui.say(['SURCHAUFFE. R-7 s’est coupé.', 'L’image revient, plus tard : le robot a redémarré à l’ombre du dernier mur.', 'Iris (radio) : « Reste à l’ombre des murs, et ne traverse le soleil qu’en ligne droite. »']);
-  }, 1400);
+    g.flags.delete('r7Down');
+    g.flags.add('r7Up'); // il se relève (même animation qu'au début)
+    sfx.clank();
+    g.counters.r7temp = 60;
+    window.setTimeout(() => {
+      g.locked = false;
+      overheating = false;
+      if (!g.flags.has('r7HeatTalk')) {
+        g.flags.add('r7HeatTalk');
+        ui.say(['Iris (radio) : « Il a disjoncté. Laisse-le refroidir… Voilà, il se relève. »', '« Longe les bâtiments, cette fois. Leur ombre le protège. »']);
+      }
+    }, 1000);
+  }, 3500);
 }
 
 // ---------- le dessin : R-7, la plaque, Pixel qui grogne, l'image de la caméra ----------
@@ -183,13 +200,25 @@ let lastStep = '';
 export function drawR7Under(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
   if (!isR7(g)) return;
   if (g.map.id === 'r7Ville') {
+    // la bande d'ombre au pied des bâtiments : là où le robot refroidit
+    const x0 = Math.max(0, Math.floor(ox / T)), x1 = Math.min(g.map.width - 1, x0 + 30);
+    const y0 = Math.max(1, Math.floor(oy / T)), y1 = Math.min(g.map.height - 1, y0 + 30);
+    for (let y = y0; y <= y1; y++) {
+      for (let x = x0; x <= x1; x++) {
+        if (!shadeAt(g, x, y) || g.map.rows[y][x] === '#') continue;
+        c.fillStyle = 'rgba(30,14,40,0.32)';
+        c.fillRect(x * T - ox, y * T - oy, T, T);
+        c.fillStyle = 'rgba(30,14,40,0.18)';
+        c.fillRect(x * T - ox, (y + 1) * T - oy, T, 3);
+      }
+    }
     const sx = 22 * T - ox, sy = 18 * T - oy;
     c.fillStyle = '#2a2236'; c.fillRect(sx - 1, sy + 2, T + 2, 12);
     c.fillStyle = '#3a4a8a'; c.fillRect(sx, sy + 3, T, 10);
     c.fillStyle = '#5a7ad0';
     for (let i = 0; i < 4; i++) c.fillRect(sx + 1 + i * 4, sy + 4, 3, 8);
     c.fillStyle = 'rgba(255,255,255,0.35)'; c.fillRect(sx + 1, sy + 4, 14, 1);
-    if (g.flags.has('bs1OnPlate')) {
+    if (g.flags.has('bs1OnPlate') && !g.flags.has('bs1PickedUp')) {
       const full = g.flags.has('bs1Charged'), k = Math.min(1, (g.counters.r7charge ?? 0) / CHARGE_TIME);
       c.fillStyle = '#14101c'; c.fillRect(sx + 4, sy + 5, 8, 6);
       c.fillStyle = full ? '#5ff0e0' : Math.floor(g.time * 3) % 2 ? '#ffd45e' : '#a88a2e';
@@ -229,7 +258,12 @@ export function drawR7Robot(g: Game, c: CanvasRenderingContext2D, ox: number, oy
   c.fill();
   // couché, il se relève : la même carcasse, qui pivote sur sa base
   let angle = 0;
-  if (!g.flags.has('r7Up')) angle = Math.PI / 2;
+  if (!g.flags.has('r7Up')) {
+    // couché ; s'il vient de s'effondrer, il bascule
+    const f = fallAt.get(g);
+    const k = f === undefined ? 1 : Math.min(1, (g.time - f) / 0.35);
+    angle = (Math.PI / 2) * k * k;
+  }
   else {
     if (!standAt.has(g)) standAt.set(g, g.time);
     const k = Math.min(1, (g.time - standAt.get(g)!) / 0.9);
@@ -290,6 +324,13 @@ export function renderR7(g: Game, c: CanvasRenderingContext2D, w: number, h: num
   c.fillRect(bx, by, Math.round(40 * (temp / 100)), 4);
   c.fillStyle = '#bff3f6';
   c.fillText('TEMP', bx - 24, 5);
+  if (g.flags.has('r7Down')) {
+    c.fillStyle = 'rgba(0,0,0,0.35)';
+    c.fillRect(0, 0, w, h);
+    c.font = '9px monospace';
+    c.fillStyle = Math.floor(g.time * 3) % 2 ? '#ff5a5a' : '#ffd45e';
+    c.fillText('SURCHAUFFE — REFROIDISSEMENT…', Math.round(w / 2 - 70), Math.round(h * 0.3));
+  }
   if (temp > 80) {
     c.fillStyle = `rgba(255,60,40,${0.12 + 0.08 * Math.sin(g.time * 10)})`;
     c.fillRect(0, 0, w, h);
@@ -350,8 +391,9 @@ export function r7Interact(g: Game, obj: MapObject | undefined): boolean {
       say(['Une capsule givrée. Une forme immobile, sous le givre.', 'Quelqu’un, sur Azura, a son esprit. Et a perdu ses souvenirs.']);
       return true;
     case 'r7Plaque':
-      if (g.flags.has('bs1Charged') && !g.items.has('battery') && !g.flags.has('pixelWake')) {
+      if (g.flags.has('bs1Charged') && !g.flags.has('bs1PickedUp')) {
         say(['La BS-1 brille d’un bleu franc. Pleine.', 'Je la reprends.'], () => {
+          g.flags.add('bs1PickedUp');
           g.items.add('battery');
           sfx.item();
           g.api.clue('r7l3');
@@ -436,6 +478,11 @@ export function r7UseItem(g: Game, id: string): boolean {
 /** À la console du centre des pilotes : on prend les commandes de R-7. */
 export function startR7(g: Game) {
   g.flags.add('r7On');
+  // le sac du héros reste sur Azura : on ne garde que ce que porte le robot
+  for (const id of [...g.items]) {
+    g.flags.add(`stash:${id}`);
+    g.items.delete(id);
+  }
   g.counters.r7temp = 20;
   g.warp('r7Ville', 30, 14, 'down');
   window.setTimeout(() => {
@@ -453,7 +500,7 @@ export function startR7(g: Game) {
           [
             'L’image bascule… et se redresse. Le robot se relève.',
             'Oskar (radio) : « Il en restait un qui marche ! Son matricule : R-7. Il répond ? »',
-            'Iris (radio) : « Attention à la chaleur. Il n’a pas été entretenu depuis onze ans. En plein soleil, il surchauffe vite. Reste à l’ombre des murs. »',
+            'Iris (radio) : « Attention à la chaleur : il n’a pas été entretenu depuis onze ans. Longe les bâtiments : leur ombre le protège. Au milieu des rues, en plein soleil, il va griller. »',
             'Betti (radio) : « Pixel… Il doit être au laboratoire Lazare, en haut à gauche de la ville. Près de ta capsule. »',
           ],
           () => {
@@ -464,4 +511,13 @@ export function startR7(g: Game) {
       },
     );
   }, 1200);
+}
+
+/** En revenant sur Azura : le héros retrouve son sac. */
+export function restoreBag(g: Game) {
+  for (const f of [...g.flags]) {
+    if (!f.startsWith('stash:')) continue;
+    g.items.add(f.slice(6));
+    g.flags.delete(f);
+  }
 }

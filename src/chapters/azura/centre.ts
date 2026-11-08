@@ -235,7 +235,9 @@ export function oskarJoins(g: Game) {
         '« J’ai entendu le disjoncteur. Personne n’est venu, ne t’en fais pas. »',
         'Il lit l’écran, longtemps.',
         '« PX-07… Ce n’est pas un code d’Aurore. Les nôtres commencent tous par AU. »',
-        '« PX… Ça vient de Vesper. Quelqu’un, ou quelque chose, a emporté toute notre mémoire. »',
+        '« Mais AU-01… C’est le code de la commandante. Elle savait. Depuis l’an 3. »',
+        '« PX… Ça vient de Vesper. La seule copie des souvenirs de tout le monde est partie là-dedans. »',
+        '« Avec elle, on pourrait refaire le chargement. Correctement, cette fois. »',
         '« Pas un mot à la commandante. Pas encore. Il faut d’abord savoir ce qu’est ce PX-07. »',
       ],
       () => {

@@ -42,12 +42,12 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azCarnet', thread: 'eaux', title: 'Le carnet de Joss', text: 'Des années de marées, jamais aux mêmes heures d’un jour à l’autre. « Tous les trente jours, les deux lunes s’alignent : grande marée. Ne jamais rester au bord ce jour-là. » Puis l’écriture se défait : « Pourquoi je note ça, déjà ? », « Demander à Nora. Nora sait. » Le bulletin, lui, annonce les mêmes heures depuis deux jours.' },
   { id: 'azOskar', thread: 'arrivee', title: 'Oskar', text: 'Un vieux pilote d’Aurore, sur un banc de la place. Ce matin, l’eau est montée deux heures après l’heure du bulletin. « Il se passe quelque chose, comme avant l’accident de l’an 3. » Il veut voir les relevés du centre de clonage, discrètement : rendez-vous devant la porte, près des cuves.' },
   { id: 'azCulture', thread: 'arrivee', title: 'La salle de culture', text: 'Les données biologiques apportées par Aurore, la culture des corps, le chargement de l’esprit reçu du spatioport de Vesper, le réveil dans le champ des cuves. Un mur de 4 212 noms, dont « Moreau, Betti ».' },
-  { id: 'azMedecin', thread: 'arrivee', title: 'Le carnet du médecin', text: '« Transfert réussi : 4 212 sur 4 212. » Puis : « Anomalies mineures de mémoire chez certains sujets. À surveiller. » Le carnet s’arrête à l’an 3.' },
+  { id: 'azMedecin', thread: 'arrivee', title: 'Le carnet du médecin', text: '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. » Puis : « Anomalies de mémoire chez certains sujets. Prévoir un second chargement depuis la copie locale, pour fixer les souvenirs. » Le carnet s’arrête à l’an 3.' },
   { id: 'az07', thread: 'arrivee', title: 'Sujet 07', text: 'Dans la salle de culture, une cuve à part : « SUJET 07 — Signal non reçu. Cuve maintenue en attente. » Moi. Voilà pourquoi je me suis réveillé onze ans après les autres.' },
   { id: 'azJet', thread: 'arrivee', title: 'Le tuyau éclaté', text: 'L’eau de la rivière entrait encore dans la salle des serveurs, par le tuyau de refroidissement. En suivant les tuyaux, la vanne du bas était la bonne.' },
   { id: 'azIris', thread: 'arrivee', title: 'La commandante', text: 'Iris Aurel, commandante de la mission Aurore : « Le centre de clonage ? Fermé depuis l’accident de l’an 3. Il n’y a plus rien à voir. » Elle a détourné les yeux.' },
   { id: 'azVidange', thread: 'arrivee', title: 'La salle vidée', text: 'L’arrivée d’eau coupée, la pompe a vidé la salle des serveurs vers la rivière, à marée basse.' },
-  { id: 'azPX07', thread: 'arrivee', title: 'PX-07', text: 'Le serveur du centre : copie locale perdue dans l’inondation de l’an 3. Copie de sauvegarde : aucune. Source : spatioport de Vesper. Dernière opération : transfert intégral vers l’appareil PX-07. Oskar : « Ce n’est pas un code d’Aurore. Ça vient de Vesper. »' },
+  { id: 'azPX07', thread: 'arrivee', title: 'PX-07', text: 'Le serveur du centre : copie locale des souvenirs perdue dans l’inondation de l’an 3, second chargement annulé. Récupération demandée à la source, sur Vesper, par AU-01 : dossier vide, tout est parti vers l’appareil PX-07. Oskar : « AU-01, c’est la commandante. Elle savait. » Avec cette copie, on pourrait refaire le chargement, correctement.' },
   { id: 'azLecon3', thread: 'ecole', title: 'La leçon du jour 3', text: '« Nos ancêtres ont voyagé deux ans pour arriver ici. » Deux ans ? Le voyage d’Aurore a duré deux cent douze ans.' },
   { id: 'azl1', thread: 'leads', title: 'Où sont les autres ?', text: 'Le sentier part vers le sud, au-delà des cuves.', doneWhen: 'bettiMet' },
   { id: 'azl2', thread: 'leads', title: 'L’atelier de Betti', text: 'En bas, près du lac. Passer d’abord voir le bulletin des eaux, sur la place.', doneWhen: 'drawingSeen' },
@@ -66,7 +66,7 @@ export const CLUES_AZ: Clue[] = [
 export const QUESTIONS_AZ: Question[] = [
   {
     id: 'q-px07', thread: 'arrivee', opensWith: ['azPX07'], answeredBy: 'azPlans',
-    ask: 'Qui est l’appareil PX-07 ?', answer: 'Pixel. Le chien robot de Betti porte la seule copie intacte des archives.',
+    ask: 'Qui est l’appareil PX-07 ?', answer: 'Pixel. Le chien robot de Betti porte la seule copie intacte des souvenirs des 4 211 colons.',
   },
   {
     id: 'q-sommeil', thread: 'arrivee', opensWith: ['az1'], answeredBy: 'az2',
@@ -387,12 +387,14 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       [
         'Le serveur qui a survécu, sur son estrade. Son écran s’allume.',
         '« SAUVEGARDE DES TRANSFERTS — MISSION AURORE »',
-        '« Copie locale : PERDUE (inondation, an 3). »',
-        '« Copie de sauvegarde : AUCUNE. »',
-        '« Source d’origine : spatioport de Vesper. »',
-        '« Dernière opération connue : transfert intégral vers l’appareil PX-07. »',
-        'PX-07… Un appareil ? Une machine ?',
-        'Tout ce qui faisait nos souvenirs est parti… dans un « PX-07 ».',
+        '« Copie locale des souvenirs : PERDUE (inondation, an 3). »',
+        '« Second chargement prévu an 3 : ANNULÉ (copie perdue). »',
+        '« Récupération depuis la source, spatioport de Vesper — an 3. Demandée par : AU-01. »',
+        '« Résultat : dossier VIDE. Dernière opération à la source : transfert intégral vers l’appareil PX-07. »',
+        ...((readLegacy().vesper?.data?.memos as number[] | undefined) ?? []).includes(6)
+          ? ['Transfert intégral… Comme le dossier vide du spatioport. Pixel s’était branché là-bas.', 'PX… Pixel ?']
+          : ['PX-07… Un appareil ? Une machine ?'],
+        'Les souvenirs de tout le monde… partis dans un « PX-07 ».',
       ],
       () => api.set('serverRead'),
     ),
@@ -413,8 +415,9 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     api.say(
       [
         'Le carnet de bord du médecin de la mission.',
-        '« Transfert réussi : 4 212 sur 4 212. Tous les sujets réveillés. »',
-        '« Anomalies mineures de mémoire chez certains sujets : un mot, un nom. À surveiller. »',
+        '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. »',
+        '« Anomalies de mémoire chez certains sujets : un mot, un nom. Les souvenirs se fixent mal. »',
+        '« Prévoir un second chargement depuis la copie locale, pour les fixer. »',
         'La dernière page date de l’an 3. Ensuite, plus rien.',
       ],
       () => api.clue('azMedecin'),

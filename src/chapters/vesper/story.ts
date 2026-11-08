@@ -62,7 +62,7 @@ export const CLUES: Clue[] = [
   { id: 'cap12', thread: 'capsules', title: 'Les caisses d’Aurore', text: '« AURORE — matériel de culture — 4 212 unités. » Les caisses sont parties avec la mission. Il ne reste ici que les cuves d’essai.' },
   { id: 'cap13', thread: 'capsules', title: 'La lettre de Nina', text: '« Maman, on part demain avec le programme. Tu crois que j’aurai encore mes taches de rousseur, là-bas ? »' },
   { id: 'mis10', thread: 'missions', title: 'Les archives du spatioport', text: 'Les dossiers des missions : Héliade a trouvé un monde de roche fondue, Kairos s’est perdue dans une tempête, Ondine n’a trouvé que de la glace.' },
-  { id: 'mis11', thread: 'missions', title: 'Le dossier Azura', text: 'Le dossier de la mission Aurore est vide. Dernière opération, bien après le grand départ : un transfert intégral vers un appareil inconnu, branché sur le port de maintenance.' },
+  { id: 'mis11', thread: 'missions', title: 'Le dossier Azura', text: 'Le dossier de la mission Aurore est vide. Dernière opération, bien après le grand départ : un transfert intégral vers un appareil inconnu, « PX-07 », branché sur le port de maintenance.' },
   { id: 'lead7', thread: 'leads', doneWhen: 'archUnlock_plans', title: 'Le post-it du télescope', text: '« Dossier LAZARE, ordinateur du spatioport. Code d’accès : la période de l’étoile errante, en années. »' },
   { id: 'leadBoite', thread: 'leads', doneWhen: 'memo2Found', title: 'Le dessin du coffre à jouets', text: 'Un dessin de Betti, au fond de son coffre à jouets : Pixel qui creuse à côté de la boîte aux lettres, avec un trésor qui brille. Il faudrait creuser au pied de la boîte aux lettres de la maison Moreau.' },
   { id: 'memo1', thread: 'pixel', title: 'Souvenir 1 — Le premier allumage', text: 'L’atelier. La maman de Betti penchée sur Pixel. Son œil s’allume pour la première fois. « Bonjour, toi. Je vais t’appeler… Pixel ! »' },
@@ -220,7 +220,7 @@ export const ARCHIVES: ArchiveFolder[] = [
     id: 'azura', name: 'MISSION_AURORE', locked: true,
     lines: [
       'DOSSIER VIDE.',
-      'Dernière opération : TRANSFERT INTÉGRAL vers un appareil inconnu (port de maintenance).',
+      'Dernière opération : TRANSFERT INTÉGRAL vers un appareil inconnu (port de maintenance). Identifiant : PX-07.',
       'Date : bien après le grand départ. Alimentation tirée pendant le transfert : 100 %.',
       'Il ne reste rien à lire ici.',
     ],

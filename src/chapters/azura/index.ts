@@ -1176,7 +1176,7 @@ export const azura: Chapter = {
         if (!g.flags.has('carnetRead')) {
           ui.say(['« Mon carnet ! J’y notais toutes les marées, depuis des années. »', '« Je l’ai posé quelque part près de l’eau, ce matin… ou hier ? Je ne sais plus. »'], () => g.api.clue('azl7'));
         } else {
-          ui.say(['« Tu l’as trouvé ! Et lu ? »', 'Il feuillette les pages, longtemps.', '« Une heure de plus chaque jour… Bien sûr. Comment j’ai pu oublier ça ? »']);
+          ui.say(['« Tu l’as trouvé ! »', 'Il tourne les dernières pages, longtemps. Il s’arrête sur « Pourquoi je note ça, déjà ? ».', '« C’est mon écriture… Je ne me souviens pas d’avoir écrit ça. »']);
         }
         return true;
       }
@@ -1332,6 +1332,17 @@ export const azura: Chapter = {
       return true;
     },
     onEnterMap(g, mapId) {
+      // jour 3 : en ressortant du centre avec Oskar, la journée s'achève
+      if (mapId === 'cuves' && day(g) === 3 && g.flags.has('pxFound') && hour(g) < EVENING) {
+        g.locked = true;
+        window.setTimeout(() => {
+          timePass(hour(g), EVENING, 'Oskar me raccompagne jusqu’au chemin. Nous ne disons rien. Le jour décline.', () => {
+            g.locked = false;
+            g.save();
+            ui.say(['Le soir est tombé. Je devrais rentrer dormir chez Betti.']);
+          }, () => setHour(g, EVENING));
+        }, 400);
+      }
       if (mapId === 'centre' && !g.flags.has('centreIn')) {
         g.flags.add('centreIn');
         window.setTimeout(() => ui.say(['Le hall du centre de clonage. Désert. Un silence humide.', 'Au fond, derrière une grande baie, la salle des serveurs… à moitié sous l’eau. Et l’eau tombe encore du plafond.'], () => g.api.clue('azl9')), 500);

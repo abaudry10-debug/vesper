@@ -39,7 +39,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azLecon1', thread: 'ecole', title: 'La leçon du jour 1', text: '« Vesper se mourait. La mission Aurore est partie la première, avec douze pilotes, pour préparer Azura. Le jour du grand départ, les capsules ont envoyé nos esprits jusqu’ici, et le centre de clonage nous avait préparé des corps neufs. On n’oublie jamais d’où l’on vient. »' },
   { id: 'azLecon2', thread: 'ecole', title: 'La leçon du jour 2', text: '« Vesper se mourait. La mission Hélios est partie la première, avec douze pilotes… » Hélios ? Hier, elle disait Aurore.' },
   { id: 'azMina', thread: 'ecole', title: 'Mina', text: 'Une élève, née sur Azura, a corrigé la maîtresse : « C’était Aurore ! » La maîtresse ne l’a pas crue. Hélios, c’était la centrale, sur Vesper.' },
-  { id: 'azCarnet', thread: 'eaux', title: 'Le carnet de Joss', text: '« Une heure de plus chaque jour. La grande lune ne ment jamais. » Et : « Tous les trente jours, les deux lunes s’alignent : grande marée. Ne jamais rester au bord ce jour-là. » Le bulletin, lui, annonce les mêmes heures depuis deux jours.' },
+  { id: 'azCarnet', thread: 'eaux', title: 'Le carnet de Joss', text: 'Des années de marées, jamais aux mêmes heures d’un jour à l’autre. « Tous les trente jours, les deux lunes s’alignent : grande marée. Ne jamais rester au bord ce jour-là. » Puis l’écriture se défait : « Pourquoi je note ça, déjà ? », « Demander à Nora. Nora sait. » Le bulletin, lui, annonce les mêmes heures depuis deux jours.' },
   { id: 'azOskar', thread: 'arrivee', title: 'Oskar', text: 'Un vieux pilote d’Aurore, sur un banc de la place. Ce matin, l’eau est montée deux heures après l’heure du bulletin. « Il se passe quelque chose, comme avant l’accident de l’an 3. » Il veut voir les relevés du centre de clonage, discrètement : rendez-vous devant la porte, près des cuves.' },
   { id: 'azCulture', thread: 'arrivee', title: 'La salle de culture', text: 'Les données biologiques apportées par Aurore, la culture des corps, le chargement de l’esprit reçu du spatioport de Vesper, le réveil dans le champ des cuves. Un mur de 4 212 noms, dont « Moreau, Betti ».' },
   { id: 'azMedecin', thread: 'arrivee', title: 'Le carnet du médecin', text: '« Transfert réussi : 4 212 sur 4 212. » Puis : « Anomalies mineures de mémoire chez certains sujets. À surveiller. » Le carnet s’arrête à l’an 3.' },
@@ -316,12 +316,13 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     api.say(
       [
         'Dans les roseaux, un petit carnet de cuir. Celui de Joss.',
-        'Des années de marées, notées d’une écriture serrée.',
-        '« An 9, jour 40 : 3 h et 15 h. Jour 41 : 4 h et 16 h. Jour 42 : 5 h et 17 h. »',
-        '« Une heure de plus chaque jour. La grande lune ne ment jamais. »',
+        'Des années de marées, notées d’une écriture serrée. Chaque jour, des heures différentes.',
+        '« An 9, jour 40 : 3 h 10 et 15 h 40. Jour 41 : 4 h 05 et 16 h 30. Jour 42 : 4 h 55 et 17 h 20. »',
         '« Tous les trente jours, les deux lunes s’alignent : grande marée. Ne jamais rester au bord ce jour-là. »',
-        'Les dernières pages sont de plus en plus brouillonnes. Des heures barrées, réécrites, barrées encore.',
-        'Une heure de plus chaque jour… Et le bulletin annonce les mêmes heures depuis deux jours.',
+        'Plus loin, l’écriture change. Les notes s’espacent. Des heures barrées, réécrites, barrées encore.',
+        'En travers d’une page : « Pourquoi je note ça, déjà ? »',
+        'Et sur la dernière : « Demander à Nora. Nora sait. »',
+        'Les heures changent chaque jour… Et le bulletin annonce les mêmes depuis deux jours.',
       ],
       () => {
         api.set('carnetRead');
@@ -337,7 +338,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
         '« Oskar. Pilote. Enfin… je l’étais. »',
         '« Ce matin, j’étais au bord du lac à 6 h, comme le dit le bulletin. Rien. »',
         '« L’eau n’est montée que deux heures plus tard. Ça fait trois jours que ça cloche. »',
-        ...(api.has('carnetRead') ? ['Je lui parle du carnet de Joss : une heure de plus chaque jour.', '« Une heure par jour… Alors le bulletin ne bouge plus. Et personne ne le voit. »'] : []),
+        ...(api.has('carnetRead') ? ['Je lui parle du carnet de Joss : des heures qui changent tous les jours, jamais les mêmes.', '« Jamais les mêmes… Et le bulletin, lui, ne bouge plus. Personne ne le voit. »'] : []),
         '« Il se passe quelque chose. Comme avant l’accident de l’an 3. Et la commandante ne veut rien entendre. »',
         '« Je veux voir les relevés du centre de clonage. Mais elle me surveille. Toi, personne ne te connaît encore… »',
         '« Retrouve-moi devant le centre, près des cuves. Discrètement. »',

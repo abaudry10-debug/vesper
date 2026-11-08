@@ -1821,7 +1821,8 @@ export class Game {
       this.animateDecal(d.kind, left, top, img.width, img.height);
     }
 
-    // indicateur au-dessus de l'objet regardé
+    // indicateur au-dessus de l'objet regardé (dessiné après les personnages : toujours au premier plan)
+    const drawIndicator = () => {
     if (!this.busy && !this.moving) {
       const [fx, fy] = this.facing();
       const obj = this.objAt(fx, fy);
@@ -1838,6 +1839,7 @@ export class Game {
         c.fillRect(px + 1, py + 4, 2, 1);
       }
     }
+    };
 
     let frame = 0;
     if (this.moving && this.moving.t < 0.75) frame = this.steps % 2 ? 1 : 2;
@@ -1932,6 +1934,7 @@ export class Game {
       }
     } else drawHero();
     for (const o of npcs) if (o.y * T > hy + 1) drawNpc(o);
+    drawIndicator();
     this.renderFx(ox, oy);
     this.renderZap(ox, oy);
     this.renderPop(hx - ox, hy - oy);

@@ -141,6 +141,10 @@ export function drawBoat(c: CanvasRenderingContext2D, x: number, y: number) {
 
 /** La barque, au ponton : on ne part qu'à l'étale. */
 export function useBoat(g: Game) {
+  if (g.flags.has('jossSaved')) {
+    ui.say(['La barque de Joss, bien amarrée au ponton.', 'Joss est en sécurité. Pas besoin de repartir sur le lac.']);
+    return;
+  }
   if (hour(g) < ETALE) {
     ui.say(['La barque de Joss, amarrée au ponton.', 'Mais le courant tire encore très fort vers le large. Je n’arriverais jamais jusqu’à l’île.', 'Il faut attendre que l’eau s’arrête de bouger. L’étale.'], () => g.api.clue('azl15'));
     return;
@@ -172,6 +176,7 @@ export function jossIlot(g: Game) {
     ],
     () => {
       g.flags.add('jossAboard');
+      g.flags.add('jossLeft');
       g.save();
     },
   );
@@ -192,8 +197,11 @@ export function dock(g: Game, fx: number, fy: number): boolean {
   }
   g.flags.delete('enBarque');
   g.flags.delete('barqueOut');
+  g.flags.delete('jossAboard'); // Joss descend : il n'est plus dans la barque
+  const first = !g.flags.has('jossSaved');
   g.flags.add('jossSaved');
   g.warp('ville', fx, fy, 'up');
+  if (!first) return true;
   window.setTimeout(() => {
     ui.say(
       [

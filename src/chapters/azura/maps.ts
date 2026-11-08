@@ -320,7 +320,7 @@ function ville(): GameMap {
     npc('passant3b', 20, 21, 'pass3', 'down', 'passant3', { showWhen: 'mareeHaute' }),
     npc('passant4', 26, 7, 'pass4', 'left', 'passant4', { npc: { look: 'pass4', dir: 'left', wander: 3 } }),
     // le jour 4 : Joss sur l'îlot, sa barque, Betti après la vague
-    npc('jossIlot', 14, 39, 'joss', 'down', 'jossIlot', { showWhen: 'jour4', hideWhen: 'jossAboard' }),
+    npc('jossIlot', 14, 39, 'joss', 'down', 'jossIlot', { showWhen: 'jour4', hideWhen: 'jossLeft' }),
     obj('barqueIle', 14, 31, 'barqueWater', 'barqueIle', { showWhen: 'jour4', hideWhen: 'vague' }),
     obj('barqueQuai', 16, 25, 'barqueWater', 'barque', { showWhen: 'barqueOk', hideWhen: 'barqueOut' }),
     npc('jossQuai', 15, 23, 'joss', 'right', 'jossQuai', { showWhen: 'jossSaved' }),

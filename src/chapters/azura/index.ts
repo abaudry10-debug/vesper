@@ -1169,6 +1169,11 @@ export const azura: Chapter = {
       updateFish(g, dt);
       updateWalk(g, dt);
       updateFishing(g, dt);
+      // (sauvegardes d'avant la correction) Joss est sauvé : il n'est plus sur l'île, ni dans la barque
+      if (g.flags.has('jossSaved')) {
+        g.flags.add('jossLeft');
+        if (!g.flags.has('enBarque')) g.flags.delete('jossAboard');
+      }
       // le jour 4, quand la sirène sonne, ceux qui étaient au bord du lac sont montés
       if (day(g) === 4 && g.map.id === 'ville') for (const o of g.map.objects) if (['enfant', 'passant3', 'passant3b'].includes(o.id)) o.hideWhen = 'sireneOn';
       if (g.flags.has('cabaneOpen') !== cabinPainted) paintCabinDoor((cabinPainted = g.flags.has('cabaneOpen')));

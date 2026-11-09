@@ -45,9 +45,9 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azSchema', thread: 'arrivee', title: 'Le schéma du transfert', text: 'Dans la salle des serveurs : la navette et les 12 pilotes emportent les données biologiques ; sur Azura, ils cultivent les clones et construisent les cuves ; le jour du grand départ, chacun entre dans sa capsule sur Vesper et l’antenne envoie les mémoires sur 47,2 ; le serveur du centre les reçoit et les charge dans les corps.' },
   { id: 'azMedecin', thread: 'arrivee', title: 'Le carnet du médecin', text: '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. » Puis : « Anomalies de mémoire chez certains sujets. Prévoir un second chargement depuis la copie locale, pour fixer les souvenirs. » Et, sous un croquis à la main : « Courbe d’effacement : lente une dizaine d’années, puis brutale. » Le carnet s’arrête à l’an 3.' },
   { id: 'az07', thread: 'arrivee', title: 'Sujet 07', text: 'Dans la salle de culture, une cuve à part : « SUJET 07 — Signal non reçu. Cuve maintenue en attente. » Moi. Voilà pourquoi je me suis réveillé onze ans après les autres.' },
-  { id: 'azJet', thread: 'arrivee', title: 'Le tuyau éclaté', text: 'L’eau de la rivière entrait encore dans la salle des serveurs, par le tuyau de refroidissement. En suivant les tuyaux, la vanne du bas était la bonne.' },
+  { id: 'azJet', thread: 'arrivee', title: 'Le tuyau éclaté', text: 'Deux tuyaux alimentaient la salle des serveurs : le refroidissement et la dérivation de secours. Il a fallu fermer les deux vannes, sans jamais couper la culture.' },
   { id: 'azIris', thread: 'arrivee', title: 'La commandante', text: 'Iris Aurel, commandante de la mission Aurore : « Le centre de clonage ? Fermé depuis l’accident de l’an 3. Il n’y a plus rien à voir. » Elle a détourné les yeux.' },
-  { id: 'azVidange', thread: 'arrivee', title: 'La salle vidée', text: 'L’arrivée d’eau coupée, la pompe a vidé la salle des serveurs vers la rivière, à marée basse.' },
+  { id: 'azVidange', thread: 'arrivee', title: 'La salle vidée', text: 'L’arrivée d’eau coupée, la manivelle en place, la pompe a vidé la salle des serveurs vers la rivière, une fois la marée redescendue.' },
   { id: 'azPX07', thread: 'arrivee', title: 'PX-07', text: 'Le serveur du centre : copie locale des souvenirs perdue dans l’inondation de l’an 3, second chargement annulé. Récupération demandée à la source, sur Vesper, par AU-01 : dossier vide, tout est parti vers l’appareil PX-07. Oskar : « AU-01, c’est la commandante. Elle savait. » Avec cette copie, on pourrait refaire le chargement, correctement.' },
   { id: 'azGrande', thread: 'eaux', title: 'La grande marée', text: 'Jour 4 : sur la tour, les deux lunes sont alignées. Le carnet de Joss : « Tous les trente jours, les deux lunes s’alignent : grande marée. » Et les heures avancent d’une heure par jour : aujourd’hui, vers 9 h. Le bulletin annonce 6 h et une journée calme.' },
   { id: 'azSirene', thread: 'eaux', title: 'La sirène', text: 'J’ai rebranché la sirène avec la pince de Tom et un câble de Betti. En l’entendant, les colons ont retrouvé le vieux réflexe : évacuer les zones à risque.' },
@@ -86,7 +86,9 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl20', thread: 'leads', title: 'Le second chargement', text: 'Dans la salle de culture du centre, le fauteuil de chargement. Betti d’abord, avec son dessin.', doneWhen: 'bettiRestored' },
   { id: 'azlCabane', thread: 'leads', title: 'La cabane verrouillée', text: 'La cabane de Joss est fermée à clé. Joss pêchait sur son ponton quand il l’a perdue… Elle est peut-être tombée à l’eau.', doneWhen: 'cabaneOpen' },
   { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Oskar m’attend devant la porte du centre, près des cuves.', doneWhen: 'centreIn' },
-  { id: 'azl9', thread: 'leads', title: 'L’eau entre encore', text: 'L’eau entre toujours dans la salle des serveurs. La salle des pompes doit commander l’arrivée d’eau : suivre les tuyaux.', doneWhen: 'inflowCut' },
+  { id: 'azlCode', thread: 'leads', title: 'Le code du centre', text: 'Le badge d’Oskar ne suffit pas : la porte demande un code à quatre chiffres. Oskar l’avait choisi pour ne jamais l’oublier : « le nombre de ceux qu’on a ramenés ».', doneWhen: 'centreOpen' },
+  { id: 'azl9', thread: 'leads', title: 'L’eau entre encore', text: 'L’eau entre toujours dans la salle des serveurs. La salle des pompes doit commander l’arrivée d’eau : suivre les tuyaux. Le plan du hall peut aider.', doneWhen: 'inflowCut' },
+  { id: 'azlManivelle', thread: 'leads', title: 'La manivelle', text: 'La pompe de vidange n’a plus de levier. Sa manivelle est rangée dans l’armoire de secours, dans la salle de culture.', doneWhen: 'crankOn' },
   { id: 'azl10', thread: 'leads', title: 'Vider la salle', text: 'La pompe de vidange renvoie l’eau à la rivière… si la rivière n’est pas trop haute.', doneWhen: 'drained' },
   { id: 'azl11', thread: 'leads', title: 'Le serveur', text: 'Lire ce qui reste dans la salle des serveurs. Il faudra peut-être du courant.', doneWhen: 'pxFound' },
   { id: 'azl5', thread: 'leads', title: 'La leçon du matin', text: 'Retourner à l’école, comme chaque matin.', doneWhen: 'lesson2Heard' },
@@ -108,13 +110,14 @@ export const QUESTIONS_AZ: Question[] = [
 ];
 
 export const ITEMS_AZ: Record<string, ItemDef> = {
-  fruit: { name: 'Fruit d’Azura', text: 'Orange, sucré, avec un goût de miel. Mme Ilda me l’a offert.' },
   canne: { name: 'Canne à pêche', text: 'La canne de Joss, avec son moulinet et un bouchon rouge et blanc. Joss pêche toujours depuis son ponton.', usable: true },
   pince: { name: 'Pince de Tom', text: 'Une pince d’électricien, aux poignées rouges. Tom ne la quitte jamais.' },
   cable: { name: 'Câble neuf', text: 'Un câble électrique neuf, de l’atelier de Betti. De quoi rebrancher la sirène.', usable: true },
   liaison: { name: 'Commandes de R-7', text: 'Les commandes du robot de patrouille, depuis la console du centre des pilotes. On peut les rendre à tout moment : R-7 restera où il est.', usable: true },
   bs1Vide: { name: 'BS-1 (vide)', text: 'La batterie de Pixel, retirée de ma capsule. Le voyant est éteint. À recharger au soleil, sur la plaque de la place des Missions.', usable: true },
   battery: { name: 'BS-1 (chargée)', text: 'La batterie de Pixel, pleine. Il faut la brancher sur son dos.', usable: true },
+  badge: { name: 'Badge d’Oskar', text: 'Le badge de pilote d’Oskar : « AU-04 ». À passer devant la porte du centre de clonage. Il faut aussi le code : « le nombre de ceux qu’on a ramenés ».', usable: true },
+  manivelle: { name: 'Manivelle', text: 'Une grosse manivelle d’acier, étiquetée « VIDANGE ». Pour la pompe de la salle des pompes.', usable: true },
   cleCabane: { name: 'Clé de la cabane', text: 'Une clé de cuivre, repêchée devant la cabane de Joss. Un petit médaillon gravé « J ».', usable: true },
 };
 
@@ -135,7 +138,9 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     ),
   centreClonage: (api) =>
     api.say(
-      ['Une porte blanche, plus large que les autres : « CENTRE DE CLONAGE — MISSION AURORE ».', '« Accès réservé aux pilotes. »', 'Verrouillée. Il faudrait un badge de pilote.'],
+      api.hasItem('badge')
+        ? ['La porte du centre. Un lecteur de badge, et un clavier à chiffres.', '(Le badge d’Oskar est dans mon sac.)']
+        : ['Une porte blanche, plus large que les autres : « CENTRE DE CLONAGE — MISSION AURORE ».', '« Accès réservé aux pilotes. »', 'Verrouillée. Il faudrait un badge de pilote.'],
       () => api.clue('azCentre'),
     ),
   serveurs: (api) =>
@@ -455,7 +460,27 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   },
   oskarGuet: (api) => {
     if (api.has('centreOpen')) return api.say(['« Vas-y. Je fais le guet. Si quelqu’un vient, je siffle. »']);
-    api.say(['« Personne ne nous a suivis ? Bien. »', 'Il passe son badge devant la porte. Un déclic.', '« Vas-y. Je fais le guet. Si quelqu’un vient, je siffle. »'], () => api.set('centreOpen'));
+    if (api.has('badgeGiven')) {
+      return api.say(
+        api.has('codeHint')
+          ? ['« Ceux qu’on a ramenés… Tous. Une cuve pour chacun. »', '« Le registre, près des cuves, les compte. »']
+          : ['« Le nombre de ceux qu’on a ramenés… Je sais au moins ça. »'],
+      );
+    }
+    api.say(
+      [
+        '« Personne ne nous a suivis ? Bien. »',
+        '« Tiens. Mon badge de pilote. Passe-le devant le lecteur, moi je fais le guet. »',
+        '« Attention : la porte demande aussi un code. Quatre chiffres. »',
+        '« Je le tape depuis des années… Et ce matin, plus rien. Parti. »',
+        '« Je l’avais choisi pour ne jamais l’oublier : le nombre de ceux qu’on a ramenés. »',
+      ],
+      () => {
+        api.set('badgeGiven');
+        api.item('badge');
+        api.clue('azlCode');
+      },
+    );
   },
   oskarIn: (api) => api.say(['« PX-07… Il faut savoir ce que c’est. »']),
   iris: (api) =>
@@ -478,7 +503,20 @@ export const SCRIPTS_AZ: Record<string, Script> = {
           : ['Derrière la baie, la salle des serveurs, à moitié sous l’eau.', 'Au plafond, un tuyau a éclaté : un jet d’eau tombe, sans arrêt. La salle se remplit encore.'],
       () => api.clue('azl9'),
     ),
-  planCentre: (api) => api.say(['Un plan lumineux du centre : « Hall — Salle de culture — Salle des serveurs — Salle des pompes ».', 'Sous « Salle des pompes » : « Prise d’eau de la rivière, refroidissement, culture, fontaines ».']),
+  planCentre: (api) =>
+    api.say([
+      'Un plan du centre, gravé sur une plaque : « Hall — Salle de culture — Salle des serveurs — Salle des pompes ».',
+      'Sous « Salle des pompes » : « Prise d’eau de la rivière. Quatre départs : culture, fontaines, refroidissement des serveurs… et une dérivation de secours, qui double le refroidissement. »',
+      'En rouge : « NE JAMAIS COUPER LA CULTURE. »',
+    ]),
+  sortieSecours: (api) => api.say(['Une plaque : « DÉRIVATION DE SECOURS → REFROIDISSEMENT ».', 'Elle rejoint, elle aussi, la salle des serveurs.']),
+  armoireSecours: (api) => {
+    if (api.has('crankTaken')) return api.say(['L’armoire de secours. Une trousse, une lampe. La place de la manivelle est vide.']);
+    api.say(['Une armoire rouge : « SECOURS ».', 'Dedans : une trousse, une lampe… et une grosse manivelle, étiquetée « VIDANGE ».', 'Je la prends.'], () => {
+      api.set('crankTaken');
+      api.item('manivelle');
+    });
+  },
   porteServeurs: (api) => api.say(['La porte vitrée ne s’ouvre pas : l’eau pousse de l’autre côté.']),
   rack: (api) => api.say(['Une armoire de serveurs, noircie par l’eau. Une ligne sèche marque la hauteur de la crue.']),
   ecranMural: (api) => api.say(api.has('powerOn') ? ['L’écran mural fait défiler des journaux de transfert, des milliers de lignes.'] : ['Un grand écran mural, éteint.']),

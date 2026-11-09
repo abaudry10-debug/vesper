@@ -9,6 +9,7 @@ import * as ui from '../../engine/ui.js';
 import { PIPES } from './maps.js';
 import { CORE, CORE_IMG } from './tiles.js';
 import { levelNow } from './time.js';
+import { openBreaker } from './panneaux.js';
 
 const state = new WeakMap<Game, { cutAt?: number; drainAt?: number; powerAt?: number }>();
 const st = (g: Game) => {
@@ -37,6 +38,7 @@ function serverWater(g: Game) {
   const s = st(g);
   let jet = 1, level = 0.58;
   if (g.flags.has('inflowCut')) jet = s.cutAt === undefined ? 0 : Math.max(0, 1 - (g.time - s.cutAt) / 2.4);
+  else if (g.flags.has('vanneCFermee') || g.flags.has('vanneDFermee')) jet = 0.45; // un seul des deux tuyaux coupé
   if (g.flags.has('drained')) level = 0;
   else if (s.drainAt !== undefined) level = 0.58 * Math.max(0, 1 - (g.time - s.drainAt) / 4.5);
   return { jet, level };
@@ -175,20 +177,44 @@ function renderServerRoom(g: Game, c: CanvasRenderingContext2D, w: number, h: nu
 }
 
 // ---------- les actions ----------
-const VALVES: Record<string, string> = { vanneA: 'la vanne du haut', vanneB: 'la vanne du milieu', vanneC: 'la vanne du bas' };
+// Quatre vannes : culture (A), fontaines (B), refroidissement (C) et la dérivation de secours (D),
+// qui double le refroidissement. Il faut fermer C et D, sans jamais couper la culture.
+const OTHER: Record<string, string> = { vanneC: 'vanneDFermee', vanneD: 'vanneCFermee' };
 
 export function turnValve(g: Game, id: string) {
-  if (g.flags.has('inflowCut')) return ui.say([id === 'vanneC' ? 'La vanne du bas est fermée. Le jet ne coule plus.' : 'Mieux vaut ne plus toucher aux autres vannes.']);
-  if (id !== 'vanneC') {
+  if (g.flags.has('inflowCut')) {
+    return ui.say([id === 'vanneC' || id === 'vanneD' ? 'Cette vanne est fermée. Le jet ne coule plus.' : 'Mieux vaut ne plus toucher aux autres vannes.']);
+  }
+  if (id === 'vanneA') {
     sfx.bump();
     return ui.say([
-      `Je ferme ${VALVES[id]}. Un long grincement.`,
-      'Derrière la petite vitre, le jet continue de tomber dans la salle des serveurs.',
-      id === 'vanneB' ? 'Ce n’est pas la bonne. Quelque part en ville, les fontaines ont dû s’arrêter un instant… Je la rouvre.' : 'Ce n’est pas la bonne. Je la rouvre.',
+      'Je ferme la vanne. Un long grincement.',
+      'Une alarme hurle : « CUVES DE CULTURE — CIRCULATION COUPÉE ».',
+      'Je la rouvre en vitesse. L’alarme se tait.',
     ]);
   }
+  if (id === 'vanneB') {
+    sfx.bump();
+    return ui.say([
+      'Je ferme la vanne. Un long grincement.',
+      'Derrière la petite vitre, le jet continue de tomber dans la salle des serveurs.',
+      'Ce n’est pas la bonne. Quelque part en ville, les fontaines ont dû s’arrêter un instant… Je la rouvre.',
+    ]);
+  }
+  const mine = id === 'vanneC' ? 'vanneCFermee' : 'vanneDFermee';
+  if (g.flags.has(mine)) {
+    g.flags.delete(mine);
+    sfx.select();
+    return ui.say(['Je rouvre la vanne. Derrière la petite vitre, le jet reprend de plus belle.']);
+  }
+  g.flags.add(mine);
   sfx.select();
-  ui.say(['Je ferme la vanne du bas. Le tuyau tremble, puis se tait.'], () => {
+  if (!g.flags.has(OTHER[id])) {
+    return ui.say(['Je ferme la vanne. Le tuyau tremble, puis se tait.'], () => {
+      window.setTimeout(() => ui.say(['Derrière la petite vitre, le jet faiblit… mais continue de couler.', 'Un autre tuyau l’alimente encore.']), 900);
+    });
+  }
+  ui.say(['Je ferme la vanne. Le deuxième tuyau tremble, puis se tait.'], () => {
     g.flags.add('inflowCut');
     st(g).cutAt = g.time;
     window.setTimeout(() => {
@@ -203,15 +229,27 @@ export function turnValve(g: Game, id: string) {
 
 export function usePump(g: Game) {
   if (g.flags.has('drained')) return ui.say(['La pompe est arrêtée. La salle des serveurs est vide.']);
-  if (!g.flags.has('inflowCut')) return ui.say(['Une grosse pompe, avec un levier : « VIDANGE — SALLE DES SERVEURS → RIVIÈRE ».', 'Inutile de pomper tant que l’eau entre encore.']);
+  if (!g.flags.has('crankOn')) {
+    if (g.items.has('manivelle')) return ui.say(['Il manque le levier de la pompe.', '(La manivelle est dans mon sac.)']);
+    return ui.say(
+      ['Une grosse pompe : « VIDANGE — SALLE DES SERVEURS → RIVIÈRE ».', 'Le levier a été retiré. Il ne reste qu’un axe carré.', 'Une étiquette, dessous : « MANIVELLE : ARMOIRE DE SECOURS — SALLE DE CULTURE ».'],
+      () => g.api.clue('azlManivelle'),
+    );
+  }
+  if (!g.flags.has('inflowCut')) return ui.say(['La manivelle est en place.', 'Inutile de pomper tant que l’eau entre encore.']);
   if (levelNow(g) > 0.35) {
     sfx.bump();
-    return ui.say(['J’abaisse le levier. La pompe force, le cadran grimpe dans le rouge.', 'La sortie vers la rivière est sous l’eau : la marée est haute. Il faudrait attendre la marée basse.']);
+    return ui.say([
+      'Je tourne la manivelle. La pompe force, le cadran grimpe dans le rouge.',
+      'Un cadran « RIVIÈRE » est au maximum : la sortie est sous l’eau, la marée est haute. L’eau revient aussitôt.',
+      'Il faudrait attendre que la marée redescende.',
+      '(Le banc du hall permet d’attendre.)',
+    ]);
   }
   sfx.select();
   g.locked = true;
   st(g).drainAt = g.time;
-  ui.say(['J’abaisse le levier. La pompe se met à ronronner.', 'Derrière la petite vitre, le niveau baisse…'], () => {
+  ui.say(['Je tourne la manivelle. La pompe se met à ronronner.', 'Derrière la petite vitre, le niveau baisse…'], () => {
     window.setTimeout(() => {
       g.flags.add('drained');
       g.locked = false;
@@ -224,12 +262,30 @@ export function usePump(g: Game) {
   });
 }
 
+/** Fixer la manivelle sur la pompe, depuis le sac. */
+export function useCrank(g: Game): boolean {
+  const [fx, fy] = g.facing();
+  if (g.map.id !== 'pompes' || fx !== 10 || fy !== 8) {
+    ui.say(['La manivelle de vidange. Elle va sur la pompe, dans la salle des pompes.']);
+    return true;
+  }
+  g.items.delete('manivelle');
+  g.flags.add('crankOn');
+  sfx.select();
+  ui.say(['J’emboîte la manivelle sur l’axe de la pompe. Clac.'], () => usePump(g));
+  return true;
+}
+
 export function useBreaker(g: Game) {
   if (g.flags.has('powerOn')) return ui.say(['Le disjoncteur est enclenché. Le courant passe.']);
-  sfx.select();
-  g.flags.add('powerOn');
-  st(g).powerAt = g.time;
-  ui.say(['Je relève la manette. Clac.', 'Les néons s’allument un à un. L’écran mural grésille.', 'Au centre, le cœur de mémoire s’éclaire… À peine. Quelques lumières, sur des milliers.'], () => g.save());
+  g.locked = true;
+  openBreaker((ok) => {
+    g.locked = false;
+    if (!ok) return;
+    g.flags.add('powerOn');
+    st(g).powerAt = g.time;
+    ui.say(['Les néons s’allument un à un. L’écran mural grésille.', 'Au centre, le cœur de mémoire s’éclaire… À peine. Quelques lumières, sur des milliers.'], () => g.save());
+  });
 }
 
 /** Après la lecture du serveur : Oskar entre, ils lisent ensemble. */

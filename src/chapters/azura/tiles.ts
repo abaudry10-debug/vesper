@@ -1239,13 +1239,33 @@ const loadChair: Painter = (c) => {
   r(c, 4, 13, 2, 2, AZ.metalDeep); r(c, 10, 13, 2, 2, AZ.metalDeep);
   r(c, 13, 2, 1, 6, AZ.tealDark); r(c, 14, 1, 1, 3, AZ.tealDark);
 };
+/** L'armoire de secours de la salle de culture : rouge, une croix blanche. */
+const secoursBox: Painter = (c, v) => {
+  metalFloor(c, v);
+  r(c, 2, 0, 12, 15, AZ.ink); r(c, 3, 1, 10, 13, AZ.red); r(c, 3, 1, 10, 1, '#ff9a9a');
+  r(c, 7, 3, 2, 6, AZ.white); r(c, 5, 5, 6, 2, AZ.white);
+  r(c, 11, 8, 1, 3, AZ.metalLight); r(c, 3, 13, 10, 1, '#7a1a1a');
+};
 registerTiles({
+  secoursBox,
   loadChair,
   barqueWater,
   cabinDoor: cabinDoor(false), cabinDoorOpen: cabinDoor(true), canneWall, woodJetty, woodFloor, woodWallTop, woodWallFront,
   netWall, tackleShelf, cabinTableBook: table(true), cabinTable: table(false), barrel,
 });
 registerIcons({
+  badge: (c) => {
+    r(c, 3, 2, 10, 13, AZ.ink); r(c, 4, 3, 8, 11, AZ.white); r(c, 4, 3, 8, 3, AZ.tealDark);
+    r(c, 7, 0, 2, 3, AZ.metalDark); // l'attache
+    r(c, 6, 7, 4, 4, AZ.metal); r(c, 7, 8, 2, 2, '#e8d8c0'); // la photo
+    r(c, 5, 12, 6, 1, AZ.metalDark);
+  },
+  manivelle: (c) => {
+    r(c, 2, 6, 4, 4, AZ.ink); r(c, 3, 7, 2, 2, AZ.metalLight); // l'embout carré
+    r(c, 5, 7, 8, 2, AZ.metal); r(c, 5, 7, 8, 1, AZ.metalLight);
+    r(c, 11, 2, 2, 6, AZ.metal); r(c, 11, 2, 1, 6, AZ.metalLight);
+    r(c, 10, 0, 4, 3, AZ.red); // la poignée
+  },
   liaison: (c) => {
     r(c, 2, 7, 12, 6, AZ.metalDark); r(c, 2, 7, 12, 1, AZ.metalLight); r(c, 3, 12, 10, 1, AZ.metalDeep);
     r(c, 4, 9, 2, 2, AZ.red); r(c, 10, 9, 2, 2, AZ.glow);

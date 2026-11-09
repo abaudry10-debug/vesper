@@ -13,7 +13,8 @@ import { MASK, TOWER, paintCabinDoor, withFringe } from './tiles.js';
 import { clockText, drawDigits, timePass } from './timepass.js';
 import { openBulletin } from './bulletin.js';
 import { openCloneSchema, openCurveHand } from './schemas.js';
-import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, usePump } from './centre.js';
+import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, useCrank, usePump } from './centre.js';
+import { openKeypad } from './panneaux.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
 import { atJetty, drawFishing, startFishing, updateFishing } from './peche.js';
 import { bettiNight, bettiTalk, drawFollower, followerAt, lostLines, rechargeBetti, sendPixel, serverWaiting, updateFollower, wakePixel2 } from './nuit.js';
@@ -1239,6 +1240,33 @@ export const azura: Chapter = {
       }
       if (r7UseItem(g, id)) return true;
       if (id === 'cable') return useCable(g);
+      if (id === 'manivelle') return useCrank(g);
+      if (id === 'badge') {
+        const [fx, fy] = g.facing();
+        if (g.map.id !== 'cuves' || fx !== 27 || fy !== 8) {
+          ui.say(['Le badge d’Oskar. Il faudrait être devant la porte du centre de clonage.']);
+          return true;
+        }
+        g.locked = true;
+        sfx.select();
+        openKeypad(
+          (code) => code === '4212',
+          (ok, fails) => {
+            g.locked = false;
+            g.counters.codeFails = (g.counters.codeFails ?? 0) + fails;
+            if (ok) {
+              g.items.delete('badge');
+              g.flags.add('centreOpen');
+              sfx.door();
+              ui.say(['Un déclic. La porte du centre s’entrouvre.', 'Je rends son badge à Oskar. « 4 212… Bien sûr. Comment j’ai pu oublier ça ? »'], () => g.save());
+              return;
+            }
+            if (g.counters.codeFails >= 2) g.flags.add('codeHint');
+            if (fails) ui.say(['Le lecteur clignote en rouge.', g.flags.has('codeHint') ? 'Oskar, tout bas : « Ceux qu’on a ramenés… Une cuve pour chacun. Le registre, près des cuves, les compte. »' : 'Oskar, tout bas : « Le nombre de ceux qu’on a ramenés… »']);
+          },
+        );
+        return true;
+      }
       if (id === 'cleCabane') {
         const [fx, fy] = g.facing();
         if (g.map.id !== 'chemin' || fx !== 3 || fy !== 17) {
@@ -1593,6 +1621,10 @@ export const azura: Chapter = {
         window.setTimeout(() => ui.say(['Dans le ciel pâle, les deux lunes se touchent presque.', 'Le carnet de Joss parlait des lunes… La tour de l’horloge, sur la place, a un cadran des lunes.']), 900);
       }
       // jour 3 : en ressortant du centre avec Oskar, la journée s'achève
+      if (mapId === 'cuves' && day(g) === 3 && g.flags.has('pxFound') && hour(g) >= EVENING && !g.flags.has('d3Nuit')) {
+        g.flags.add('d3Nuit');
+        window.setTimeout(() => ui.say(['Oskar me raccompagne jusqu’au chemin, sans un mot. Il fait nuit noire.', g.flags.has('carnetRead') ? 'Je devrais rentrer dormir chez Betti.' : 'Il reste le carnet de Joss, enfermé dans sa cabane, au bord de la rivière.']), 500);
+      }
       if (mapId === 'cuves' && day(g) === 3 && g.flags.has('pxFound') && hour(g) < EVENING) {
         g.locked = true;
         window.setTimeout(() => {
@@ -1605,7 +1637,21 @@ export const azura: Chapter = {
       }
       if (mapId === 'centre' && !g.flags.has('centreIn')) {
         g.flags.add('centreIn');
-        window.setTimeout(() => ui.say(['Le hall du centre de clonage. Désert. Un silence humide.', 'Au fond, derrière une grande baie, la salle des serveurs… à moitié sous l’eau. Et l’eau tombe encore du plafond.'], () => g.api.clue('azl9')), 500);
+        const hall = () =>
+          ui.say(['Le hall du centre de clonage. Désert. Un silence humide.', 'Au fond, derrière une grande baie, la salle des serveurs… à moitié sous l’eau. Et l’eau tombe encore du plafond.'], () => g.api.clue('azl9'));
+        // on n'entre qu'à la nuit tombée, quand la commandante est rentrée : c'est la marée haute (20 h, le jour 3)
+        const h0 = hour(g), target = highTides(day(g))[1];
+        if (day(g) === 3 && h0 < target) {
+          g.locked = true;
+          window.setTimeout(() => {
+            timePass(h0, target, 'Oskar me fait signe d’attendre. Cachés près des cuves, nous guettons la place jusqu’à ce que la commandante rentre. La nuit tombe.', () => {
+              g.locked = false;
+              g.save();
+              ui.showPlace(`Le centre de clonage — ${target} h`);
+              window.setTimeout(hall, 400);
+            }, () => setHour(g, target));
+          }, 300);
+        } else window.setTimeout(hall, 500);
       }
       // en sortant, le soir est tombé : on comprend qu'il est temps d'aller dormir
       eveningNow = isEvening(g);

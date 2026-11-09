@@ -463,12 +463,13 @@ function culture(): GameMap {
     ...[2, 4, 8].map((x) => obj(`berceauB${x}`, x, 5, 'growTank', 'berceau')),
     obj('cuve07b', 10, 5, 'growTank07', 'berceau07'),
     obj('fauteuil', 6, 4, 'loadChair', 'fauteuil'),
+    obj('armoireSecours', 11, 2, 'secoursBox', 'armoireSecours'),
     npc('bettiCult', 7, 5, 'betti', 'left', 'bettiCult', { showWhen: 'bettiRestored' }),
   ];
   return { id: 'culture', name: 'La salle de culture', outdoor: false, width: 13, height: 8, rows: b.rows, objects };
 }
 
-// La salle des pompes : la prise d'eau de la rivière, trois tuyaux qui se croisent jusqu'à leurs sorties,
+// La salle des pompes : la prise d'eau de la rivière, quatre tuyaux qui se croisent jusqu'à leurs sorties,
 // une vanne au départ de chacun (étiquettes effacées), la pompe de vidange, une petite vitre sur les serveurs.
 export const PIPE_PATHS: [number, number][][] = [
   // A : vanne du haut → Culture
@@ -477,6 +478,8 @@ export const PIPE_PATHS: [number, number][][] = [
   [[2, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 5], [7, 4], [7, 3], [8, 3], [9, 3], [10, 3], [11, 3]],
   // C : vanne du bas → Refroidissement des serveurs
   [[2, 7], [3, 7], [3, 6], [3, 5], [3, 4], [3, 3], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 2], [8, 3], [8, 4], [8, 5], [9, 5], [10, 5], [11, 5]],
+  // D : vanne tout en bas → Dérivation de secours (double le refroidissement des serveurs)
+  [[2, 8], [3, 8], [4, 8], [5, 8], [6, 8], [7, 8], [8, 8], [8, 7], [8, 6], [9, 6], [10, 6], [11, 6]],
 ];
 /** Pour chaque case de tuyau : ses branchements (1 haut, 2 droite, 4 bas, 8 gauche), ou 'X' pour un croisement. */
 export const PIPES = new Map<string, number | 'X'>();
@@ -497,10 +500,11 @@ function pompes(): GameMap {
   b.set(6, 9, 'm');
   const objects: MapObject[] = [
     exit('sortie', 6, 9, { to: 'centre', x: 11, y: 2, dir: 'down' }),
-    obj('vanneA', 1, 3, 'pipeValve', 'vanne'), obj('vanneB', 1, 5, 'pipeValve', 'vanne'), obj('vanneC', 1, 7, 'pipeValve', 'vanne'),
+    obj('vanneA', 1, 3, 'pipeValve', 'vanne'), obj('vanneB', 1, 5, 'pipeValve', 'vanne'), obj('vanneC', 1, 7, 'pipeValve', 'vanne'), obj('vanneD', 1, 8, 'pipeValve', 'vanne'),
     obj('sortieCulture', 12, 7, 'pipeOut', 'sortieCulture'),
     obj('sortieFontaines', 12, 3, 'pipeOut', 'sortieFontaines'),
     obj('sortieServeurs', 12, 5, 'pipeOut', 'sortieServeurs'),
+    obj('sortieSecours', 12, 6, 'pipeOut', 'sortieSecours'),
     obj('priseEau', 0, 5, 'pipeIntake', 'priseEau'),
     obj('petiteVitre', 10, 1, 'glassPane', 'petiteVitre'),
     obj('pompe', 10, 8, 'pumpLever', 'pompe'),

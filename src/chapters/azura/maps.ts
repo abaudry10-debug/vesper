@@ -300,7 +300,8 @@ function ville(): GameMap {
     obj('maison1', 6, 5, 'aurDoorClosed', 'maison'),
     { id: 'porteEcole', x: 27, y: 5, sprite: 'aurDoor', door: { to: 'ecole', x: 5, y: 7, dir: 'up' } },
     obj('enseigneEcole', 29, 6, 'pathSign', 'enseigneEcole'),
-    obj('maison3', 6, 12, 'aurDoorClosed', 'etiquette'),
+    // la maison d'Oskar : une étiquette « PORTE » sur sa propre porte ; on n'y entre qu'une fois que Joss en a parlé
+    { id: 'maison3', x: 6, y: 12, sprite: 'aurDoorClosed', spriteWhen: ['oskarLead', 'aurDoor'], script: 'etiquette', door: { to: 'oskar', x: 4, y: 5, dir: 'up', needs: 'oskarLead' } },
     obj('maison4', 27, 12, 'aurDoorClosed', 'maison'),
     { id: 'portePilotes', x: 28, y: 21, sprite: 'aurDoorClosed', spriteWhen: ['j4Oskar', 'aurDoor'], script: 'pilotes', door: { to: 'pilotes', x: 5, y: 7, dir: 'up', needs: 'j4Oskar' } },
     { id: 'porteAtelier', x: 6, y: 21, sprite: 'aurDoor', door: { to: 'atelier', x: 5, y: 7, dir: 'up', needs: 'bettiMet' }, script: 'atelierFerme' },
@@ -308,7 +309,6 @@ function ville(): GameMap {
     obj('repere3', 25, 24, 'waterPost', 'repere'),
     npc('bettiPlace', 17, 4, 'betti', 'up', 'bettiAccueil', { hideWhen: 'bettiMet' }),
     npc('ilda', 14, 13, 'ilda', 'left', 'ilda', { hideWhen: 'j4Quai' }),
-    npc('oskar', 20, 14, 'oskar', 'left', 'oskar', { showWhen: 'jour3', hideWhen: 'oskarDeal' }),
     npc('iris', 27, 17, 'iris', 'down', 'iris', { showWhen: 'jour3', hideWhen: 'j4Oskar' }),
     npc('bettiLac', 17, 23, 'betti', 'down', 'bettiLac', { showWhen: 'lakeScene', hideWhen: 'bettiHome' }),
     npc('tom', 21, 10, 'tom', 'up', 'tom', { hideWhen: 'j4Quai' }),
@@ -405,6 +405,27 @@ function cabane(): GameMap {
     obj('tonneau', 5, 3, 'barrel', 'tonneau'),
   ];
   return { id: 'cabane', name: 'La cabane de Joss', outdoor: false, width: 7, height: 6, rows: b.rows, objects };
+}
+
+// ---------- la maison d'Oskar ----------
+// Une pièce en désordre : des étiquettes sur tous les meubles, des papiers partout, et le mur du fond
+// couvert de liège, de fiches et de fils rouges.
+function oskar(): GameMap {
+  const b = new Builder(9, 7, 'w');
+  b.rect(0, 0, 9, 2, 'Z').rect(0, 0, 1, 7, 'Z').rect(8, 0, 1, 7, 'Z').rect(0, 6, 9, 1, 'Z');
+  b.set(4, 6, 'w');
+  const objects: MapObject[] = [
+    exit('sortie', 4, 6, { to: 'ville', x: 6, y: 13, dir: 'down' }),
+    obj('etagereOskar', 7, 1, 'shelfAz', 'etagereOskar'),
+    obj('tableOskar', 1, 3, 'workbench', 'tableOskar'),
+    obj('tableOskar2', 2, 3, 'workbench', 'tableOskar'),
+    obj('litOskar', 7, 4, 'bedAz', 'litOskar'),
+    npc('oskarMaison', 5, 3, 'oskar', 'down', 'oskar', { showWhen: 'oskarLead', hideWhen: 'centreIn' }),
+  ];
+  return {
+    id: 'oskar', name: 'Chez Oskar', outdoor: false, width: 9, height: 7, rows: b.rows, objects,
+    decals: [{ x: 2, y: 1, w: 5, h: 1, kind: 'murOskar' }],
+  };
 }
 
 // ---------- l'école ----------
@@ -535,5 +556,5 @@ function serveurs(): GameMap {
   };
 }
 
-export const MAPS_AZ: Record<string, GameMap> = { cuves: cuves(), chemin: chemin(), ville: ville(), atelier: atelier(), ecole: ecole(), centre: centre(), culture: culture(), pompes: pompes(), serveurs: serveurs(), cabane: cabane(), pilotes: pilotes() };
+export const MAPS_AZ: Record<string, GameMap> = { cuves: cuves(), chemin: chemin(), ville: ville(), atelier: atelier(), ecole: ecole(), centre: centre(), culture: culture(), pompes: pompes(), serveurs: serveurs(), cabane: cabane(), pilotes: pilotes(), oskar: oskar() };
 export const START_AZ = { map: 'cuves', x: 4, y: 7, dir: 'up' as Dir };

@@ -1134,6 +1134,40 @@ function cabinJoss(): HTMLCanvasElement {
 }
 const CABIN = cabinJoss();
 registerDecal('cabinJoss', CABIN);
+
+/** Le mur d'Oskar, vu dans la pièce : un grand liège, des fiches, des photos et des fils rouges. */
+function murOskar(): HTMLCanvasElement {
+  const cv = document.createElement('canvas');
+  cv.width = 80;
+  cv.height = 26;
+  const c = cv.getContext('2d')!;
+  r(c, 0, 0, 80, 26, AZ.ink); r(c, 1, 1, 78, 24, '#9a6a3a'); r(c, 1, 1, 78, 1, '#c08a52');
+  for (let i = 0; i < 40; i++) r(c, 2 + ((i * 37) % 76), 2 + ((i * 17) % 22), 1, 1, '#7a5230');
+  const cards: [number, number, number, number, string][] = [
+    [4, 4, 9, 7, '#f2e9dc'], [6, 6, 9, 7, '#f2e9dc'], [20, 3, 8, 9, '#c8ccd4'], [34, 9, 12, 8, '#fff0a0'],
+    [52, 3, 8, 10, '#e8d8c0'], [64, 12, 10, 7, '#f2e9dc'], [22, 16, 9, 6, '#ffb0c8'], [48, 17, 8, 6, '#9ad0ff'], [68, 3, 7, 6, '#fff0a0'],
+  ];
+  const pins: [number, number][] = [];
+  for (const [x, y, w, h, col] of cards) {
+    r(c, x + 1, y + 1, w, h, 'rgba(0,0,0,0.25)');
+    r(c, x, y, w, h, col);
+    for (let k = 2; k < h - 1; k += 2) r(c, x + 1, y + k, w - 3 - (k % 3), 1, '#6a6070');
+    r(c, x + Math.floor(w / 2), y, 1, 1, AZ.red);
+    pins.push([x + Math.floor(w / 2), y]);
+  }
+  // une photo, entourée de rouge
+  r(c, 53, 5, 6, 6, '#3a3448'); r(c, 55, 6, 2, 2, '#e8c8a0'); r(c, 54, 8, 4, 2, '#5a6a9a');
+  // les fils rouges
+  c.fillStyle = '#e83a3a';
+  const link = (a: number, b: number) => {
+    const [x0, y0] = pins[a], [x1, y1] = pins[b];
+    const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+    for (let i = 0; i <= n; i++) c.fillRect(Math.round(x0 + ((x1 - x0) * i) / n), Math.round(y0 + ((y1 - y0) * i) / n + Math.sin((i / n) * Math.PI) * 2), 1, 1);
+  };
+  [[0, 3], [2, 3], [3, 4], [3, 5], [4, 7], [6, 3], [5, 8], [1, 6]].forEach(([a, b]) => link(a, b));
+  return cv;
+}
+registerDecal('murOskar', murOskar());
 /** La porte fait partie du grand décor (dessiné par-dessus les objets) : on la repeint quand elle s'ouvre. */
 export function paintCabinDoor(open: boolean) {
   const c = CABIN.getContext('2d')!;

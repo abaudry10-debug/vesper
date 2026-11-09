@@ -22,7 +22,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azNavette', thread: 'arrivee', title: 'La navette d’Aurore', text: 'Une navette blanche posée près des cuves : « AURORE — 1 ». Celle des douze pilotes. 212 ans de voyage.' },
   { id: 'az3', thread: 'ville', title: 'Nouvelle-Vesper', text: 'La ville des colons porte le nom de notre planète. Fondée en l’an 0.' },
   { id: 'azEnfant', thread: 'ville', title: 'Né sur Azura', text: 'Un enfant de la ville est né ici. Il n’a jamais vu Vesper.' },
-  { id: 'azEtiquette', thread: 'ville', title: 'Une étiquette', text: 'Sur une porte, une étiquette : « PORTE ». Quelqu’un a de l’humour.' },
+  { id: 'azEtiquette', thread: 'ville', title: 'Une étiquette', text: 'Sur une porte, une étiquette : « PORTE ». Quelqu’un a de l’humour… ou peur d’oublier.' },
   { id: 'azIlda', thread: 'ville', title: 'Mme Ilda', text: 'La marchande de fruits m’a souhaité la bienvenue. Deux fois.' },
   { id: 'azJoss', thread: 'eaux', title: 'La règle de la sirène', text: 'Joss, au bord de la rivière : « Quand la sirène sonne, on évacue les zones à risque. Toujours. »' },
   { id: 'azRepere', thread: 'eaux', title: 'Les repères', text: 'Des poteaux rayés de rouge plantés dans l’eau. La marque la plus haute est au-dessus de ma tête.' },
@@ -43,6 +43,8 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azOskar', thread: 'arrivee', title: 'Oskar', text: 'Un vieux pilote d’Aurore, sur un banc de la place. Ce matin, l’eau est montée deux heures après l’heure du bulletin. « Il se passe quelque chose, comme avant l’accident de l’an 3. » Il veut voir les relevés du centre de clonage, discrètement : rendez-vous devant la porte, près des cuves.' },
   { id: 'azCulture', thread: 'arrivee', title: 'La salle de culture', text: 'Les données biologiques apportées par Aurore, la culture des corps, le chargement de l’esprit reçu du spatioport de Vesper, le réveil dans le champ des cuves. Un mur de 4 212 noms, dont « Moreau, Betti ».' },
   { id: 'azSchema', thread: 'arrivee', title: 'Le schéma du transfert', text: 'Dans la salle des serveurs : la navette et les 12 pilotes emportent les données biologiques ; sur Azura, ils cultivent les clones et construisent les cuves ; le jour du grand départ, chacun entre dans sa capsule sur Vesper et l’antenne envoie les mémoires sur 47,2 ; le serveur du centre les reçoit et les charge dans les corps.' },
+  { id: 'azMurOskar', thread: 'arrivee', title: 'Le mur d’Oskar', text: 'Chez Oskar, un mur de liège : les bulletins tous à 6 h, ses relevés qui ne collent pas, l’an 3, le centre fermé, un « second chargement ?? », une photo de la commandante (« ELLE SAIT »), Nora qui a oublié le nom de sa sœur.' },
+  { id: 'azOskarPeur', thread: 'arrivee', title: 'Oskar a peur', text: 'Au-dessus de son lit : « Tu es Oskar. Pilote d’Aurore. Tu n’oublies pas. » Les pilotes ne perdent pas la mémoire… mais il a peur que ça le prenne aussi. D’où les étiquettes partout, jusque sur sa porte.' },
   { id: 'azMedecin', thread: 'arrivee', title: 'Le carnet du médecin', text: '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. » Puis : « Anomalies de mémoire chez certains sujets. Prévoir un second chargement depuis la copie locale, pour fixer les souvenirs. » Et, sous un croquis à la main : « Courbe d’effacement : lente une dizaine d’années, puis brutale. » Le carnet s’arrête à l’an 3.' },
   { id: 'az07', thread: 'arrivee', title: 'Sujet 07', text: 'Dans la salle de culture, une cuve à part : « SUJET 07 — Signal non reçu. Cuve maintenue en attente. » Moi. Voilà pourquoi je me suis réveillé onze ans après les autres.' },
   { id: 'azJet', thread: 'arrivee', title: 'Le tuyau éclaté', text: 'Deux tuyaux alimentaient la salle des serveurs : le refroidissement et la dérivation de secours. Il a fallu fermer les deux vannes, sans jamais couper la culture.' },
@@ -86,6 +88,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl20', thread: 'leads', title: 'Le second chargement', text: 'Dans la salle de culture du centre, le fauteuil de chargement. Betti d’abord, avec son dessin.', doneWhen: 'bettiRestored' },
   { id: 'azlCabane', thread: 'leads', title: 'La cabane verrouillée', text: 'La cabane de Joss est fermée à clé. Joss pêchait sur son ponton quand il l’a perdue… Elle est peut-être tombée à l’eau.', doneWhen: 'cabaneOpen' },
   { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Oskar m’attend devant la porte du centre, près des cuves.', doneWhen: 'centreIn' },
+  { id: 'azlOskar', thread: 'leads', title: 'Oskar', text: 'Dans le carnet de Joss, une note de sa main : « Dire au petit nouveau : Oskar veut le voir. La maison à l’étiquette. » Une étiquette… La porte marquée « PORTE », dans la ville ?', doneWhen: 'oskarDeal' },
   { id: 'azlCode', thread: 'leads', title: 'Le code du centre', text: 'Le badge d’Oskar ne suffit pas : la porte demande un code à quatre chiffres. Oskar l’avait choisi pour ne jamais l’oublier : « le nombre de ceux qu’on a ramenés ».', doneWhen: 'centreOpen' },
   { id: 'azl9', thread: 'leads', title: 'L’eau entre encore', text: 'L’eau entre toujours dans la salle des serveurs. La salle des pompes doit commander l’arrivée d’eau : suivre les tuyaux. Le plan du hall peut aider.', doneWhen: 'inflowCut' },
   { id: 'azlManivelle', thread: 'leads', title: 'La manivelle', text: 'La pompe de vidange n’a plus de levier. Sa manivelle est rangée dans l’armoire de secours, dans la salle de culture.', doneWhen: 'crankOn' },
@@ -439,6 +442,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       },
     ),
   oskar: (api) => {
+    if (api.has('oskarDeal')) return api.say(['« Devant le centre, près des cuves. Discrètement. »', 'Il retourne à ses fiches.']);
     api.say(
       [
         '« Hm ? Le dormeur de la cuve 07… »',
@@ -463,8 +467,8 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     if (api.has('badgeGiven')) {
       return api.say(
         api.has('codeHint')
-          ? ['« Ceux qu’on a ramenés… Tous. Une cuve pour chacun. »', '« Le registre, près des cuves, les compte. »']
-          : ['« Le nombre de ceux qu’on a ramenés… Je sais au moins ça. »'],
+          ? ['« Ceux qu’on a ramenés… Une cuve pour chacun. »', '« Le registre, près des cuves, les compte. »']
+          : ['« Le nombre de ceux qu’on a ramenés. Ceux qui se sont réveillés… ou tous ? »'],
       );
     }
     api.say(
@@ -472,8 +476,8 @@ export const SCRIPTS_AZ: Record<string, Script> = {
         '« Personne ne nous a suivis ? Bien. »',
         '« Tiens. Mon badge de pilote. Passe-le devant le lecteur, moi je fais le guet. »',
         '« Attention : la porte demande aussi un code. Quatre chiffres. »',
-        '« Je le tape depuis des années… Et ce matin, plus rien. Parti. »',
-        '« Je l’avais choisi pour ne jamais l’oublier : le nombre de ceux qu’on a ramenés. »',
+        '« La commandante l’a changé après l’accident. Elle nous a seulement dit : “Le nombre de ceux qu’on a ramenés. Personne ne devrait l’oublier.” »',
+        '« Je n’ai jamais su lequel elle voulait dire. Ceux qui se sont réveillés… ou tous. »',
       ],
       () => {
         api.set('badgeGiven');
@@ -509,6 +513,12 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       'Sous « Salle des pompes » : « Prise d’eau de la rivière. Quatre départs : culture, fontaines, refroidissement des serveurs… et une dérivation de secours, qui double le refroidissement. »',
       'En rouge : « NE JAMAIS COUPER LA CULTURE. »',
     ]),
+  etagereOskar: (api) =>
+    api.say(['Une étagère. Une étiquette sur chaque objet : « TASSE », « LAMPE », « RADIO ».', 'Sur la plus haute, une petite boîte : « SI JE COMMENCE À OUBLIER, LIRE CECI ».', 'Elle est vide.']),
+  tableOskar: (api) =>
+    api.say(['Une table ensevelie sous les papiers. Des bulletins des eaux, des dizaines. Tous identiques.', 'Des heures notées au crayon, barrées, réécrites. Des plans du centre de clonage.', 'Une tasse froide. Étiquette : « TASSE ».']),
+  litOskar: (api) =>
+    api.say(['Un lit défait. Au-dessus, punaisée au mur : « LIT. Tu es Oskar. Pilote d’Aurore. Tu n’oublies pas. »', 'Il s’écrit ça… pour être sûr.'], () => api.clue('azOskarPeur')),
   sortieSecours: (api) => api.say(['Une plaque : « DÉRIVATION DE SECOURS → REFROIDISSEMENT ».', 'Elle rejoint, elle aussi, la salle des serveurs.']),
   armoireSecours: (api) => {
     if (api.has('crankTaken')) return api.say(['L’armoire de secours. Une trousse, une lampe. La place de la manivelle est vide.']);

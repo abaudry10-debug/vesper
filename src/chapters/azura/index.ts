@@ -12,7 +12,7 @@ import { CLUES_AZ, ITEMS_AZ, QUESTIONS_AZ, SCRIPTS_AZ, THREADS_AZ } from './stor
 import { MASK, TOWER, paintCabinDoor, withFringe } from './tiles.js';
 import { clockText, drawDigits, timePass } from './timepass.js';
 import { openBulletin } from './bulletin.js';
-import { openCloneSchema, openCurveHand } from './schemas.js';
+import { openCloneSchema, openCurveHand, openOskarWall } from './schemas.js';
 import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, useCrank, usePump } from './centre.js';
 import { openKeypad } from './panneaux.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
@@ -278,6 +278,32 @@ function renderVoid(g: Game, c: CanvasRenderingContext2D, x: number, y: number, 
 }
 
 /** Les cimes de la forêt du décor débordent sur le bord de la carte : pas de ligne droite. */
+/** Chez Oskar : des papiers par terre, et des étiquettes sur les meubles. */
+function drawOskarMess(c: CanvasRenderingContext2D, ox: number, oy: number) {
+  const papers: [number, number, string][] = [
+    [26, 70, '#f2e9dc'], [34, 74, '#e8d8c0'], [60, 88, '#f2e9dc'], [92, 66, '#fff0a0'], [100, 86, '#f2e9dc'],
+    [44, 56, '#e8d8c0'], [120, 74, '#f2e9dc'], [76, 92, '#fff0a0'], [18, 90, '#f2e9dc'], [128, 92, '#e8d8c0'],
+  ];
+  for (const [x, y, col] of papers) {
+    c.fillStyle = 'rgba(0,0,0,0.18)';
+    c.fillRect(x + 1 - ox, y + 1 - oy, 7, 5);
+    c.fillStyle = col;
+    c.fillRect(x - ox, y - oy, 7, 5);
+    c.fillStyle = '#8a8296';
+    c.fillRect(x + 1 - ox, y + 1 - oy, 5, 1);
+    c.fillRect(x + 1 - ox, y + 3 - oy, 4, 1);
+  }
+  // les étiquettes : sur la table, l'étagère, le lit
+  for (const [x, y] of [[21, 50], [117, 22], [118, 68], [8, 48]] as [number, number][]) {
+    c.fillStyle = '#14101c';
+    c.fillRect(x - 1 - ox, y - 1 - oy, 9, 5);
+    c.fillStyle = '#fffdf4';
+    c.fillRect(x - ox, y - oy, 7, 3);
+    c.fillStyle = '#3a3448';
+    c.fillRect(x + 1 - ox, y + 1 - oy, 5, 1);
+  }
+}
+
 function renderOverlay(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number, x0: number, y0: number) {
   if (isR7(g)) {
     drawR7Under(g, c, ox, oy);
@@ -285,6 +311,7 @@ function renderOverlay(g: Game, c: CanvasRenderingContext2D, ox: number, oy: num
     return;
   }
   drawFollower(g, c, ox, oy, PEOPLE.betti);
+  if (g.map.id === 'oskar') drawOskarMess(c, ox, oy);
   if (!g.map.outdoor) return;
   drawBoatUnder(g, c, ox, oy, (x, y) => c.drawImage(person(PEOPLE.joss, 'right', 0), x, y));
   const W = g.map.width, H = g.map.height;
@@ -1380,6 +1407,17 @@ export const azura: Chapter = {
         useBreaker(g);
         return true;
       }
+      // chez Oskar : le mur de liège
+      if (!obj && g.map.id === 'oskar' && fy === 1 && fx >= 2 && fx <= 6) {
+        g.locked = true;
+        ui.say(['Le mur entier est couvert de liège. Des fiches, des photos, des fils rouges tendus dans tous les sens.'], () =>
+          openOskarWall(() => {
+            g.locked = false;
+            g.api.clue('azMurOskar');
+          }),
+        );
+        return true;
+      }
       if (obj?.id === 'schemaClonage') {
         if (!g.flags.has('powerOn')) {
           ui.say(['Un grand écran, éteint. Sans courant, rien à lire.']);
@@ -1438,11 +1476,23 @@ export const azura: Chapter = {
             () => g.api.clue('azl7'),
           );
         } else {
+          // dans le carnet, une note de sa main qu'il ne se rappelle pas avoir écrite : Oskar veut nous voir
+          const note = [
+            'Sur la dernière page, il s’arrête. « Tiens… “Dire au petit nouveau : Oskar veut le voir. La maison à l’étiquette.” »',
+            '« Oskar, le vieux pilote. Je l’ai croisé… quand, déjà ? Bah. C’est écrit, c’est que c’est vrai. »',
+          ];
           ui.say(
             g.flags.has('carnetGiven')
-              ? ['Joss feuillette son carnet, les sourcils froncés.', '« Merci encore, petit. Hm… C’est toi qui me l’as rapporté, hein ? »']
-              : ['« Tu l’as trouvé ! »', 'Il tourne les dernières pages, longtemps. Il s’arrête sur « Pourquoi je note ça, déjà ? ».', '« C’est mon écriture… Je ne me souviens pas d’avoir écrit ça. »'],
-            () => g.flags.add('carnetGiven'),
+              ? ['Joss feuillette son carnet, les sourcils froncés.', '« Merci encore, petit. Hm… C’est toi qui me l’as rapporté, hein ? »', ...(g.flags.has('oskarLead') ? [] : note)]
+              : ['« Tu l’as trouvé ! »', 'Il tourne les dernières pages, longtemps. Il s’arrête sur « Pourquoi je note ça, déjà ? ».', '« C’est mon écriture… Je ne me souviens pas d’avoir écrit ça. »', ...note],
+            () => {
+              g.flags.add('carnetGiven');
+              if (!g.flags.has('oskarLead')) {
+                g.flags.add('oskarLead');
+                g.api.clue('azlOskar');
+                g.save();
+              }
+            },
           );
         }
         return true;
@@ -1500,7 +1550,13 @@ export const azura: Chapter = {
           return true;
         }
         if (day(g) === 3 && !g.flags.has('pxFound')) {
-          ui.say(g.flags.has('carnetRead') ? ['Pas encore sommeil. Le centre de clonage, près des cuves… Je veux comprendre ce qui s’y cache.'] : ['Pas encore sommeil. Le carnet de Joss, le centre de clonage… Je veux comprendre.']);
+          ui.say(
+            !g.flags.has('carnetGiven')
+              ? [g.flags.has('carnetRead') ? 'Pas encore sommeil. Je dois d’abord rendre son carnet à Joss, près du pont.' : 'Pas encore sommeil. Le carnet de Joss est toujours enfermé dans sa cabane, au bord de la rivière.']
+              : !g.flags.has('oskarDeal')
+                ? ['Pas encore sommeil. Oskar voulait me voir : la maison à l’étiquette, en ville.']
+                : ['Pas encore sommeil. Oskar m’attend devant le centre de clonage, près des cuves.'],
+          );
           return true;
         }
         if (day(g) === 3 && !g.flags.has('carnetRead')) {
@@ -1634,6 +1690,10 @@ export const azura: Chapter = {
             ui.say(g.flags.has('carnetRead') ? ['Le soir est tombé. Je devrais rentrer dormir chez Betti.'] : ['Le soir est tombé. Il reste le carnet de Joss, enfermé dans sa cabane, au bord de la rivière.']);
           }, () => setHour(g, EVENING));
         }, 400);
+      }
+      if (mapId === 'oskar' && !g.flags.has('oskarSeen')) {
+        g.flags.add('oskarSeen');
+        window.setTimeout(() => ui.say(['Une petite pièce en désordre. Des papiers partout, des tasses, des cartes.', 'Une étiquette sur chaque meuble : « TABLE », « CHAISE », « LIT ».', 'Et au fond, tout un mur couvert de fils rouges.']), 500);
       }
       if (mapId === 'centre' && !g.flags.has('centreIn')) {
         g.flags.add('centreIn');

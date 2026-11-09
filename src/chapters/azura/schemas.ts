@@ -297,3 +297,103 @@ export function openCurveHand(done: () => void) {
   c.fillText("d'un coup", X(6.4), Y(0.3) + 15);
   seg(X(8.8), Y(0.3) - 4, X(9.7), Y(0.38), 1.2);
 }
+
+// ---------- le mur d'Oskar ----------
+/** Le liège d'Oskar : ce qu'il a remarqué, relié par des fils rouges. Il voit que tout le monde oublie… sans comprendre pourquoi. */
+export function openOskarWall(done: () => void) {
+  const W = 360, H = 250;
+  const c = popup('az-mur', `<h3>LE MUR D’OSKAR</h3><canvas></canvas>`, { w: W, h: H, pixel: false }, done);
+  const HAND = '"Snell Roundhand","Bradley Hand","Segoe Script","Comic Sans MS",cursive';
+  let seed = 3;
+  const rnd = () => {
+    const v = Math.sin(seed++ * 78.233) * 43758.5453;
+    return v - Math.floor(v);
+  };
+  // le liège
+  c.fillStyle = '#a8743f';
+  c.fillRect(0, 0, W, H);
+  for (let i = 0; i < 900; i++) {
+    c.fillStyle = rnd() < 0.5 ? 'rgba(90,55,25,0.35)' : 'rgba(210,160,100,0.3)';
+    c.fillRect(rnd() * W, rnd() * H, 1 + rnd() * 2, 1 + rnd());
+  }
+  c.strokeStyle = '#4a3020';
+  c.lineWidth = 6;
+  c.strokeRect(3, 3, W - 6, H - 6);
+
+  interface Card { x: number; y: number; w: number; h: number; col: string; rot: number; draw: () => void }
+  const cards: Card[] = [];
+  const write = (lines: string[], x: number, y: number, size: number, col = '#24264a', font = HAND, lh = 1.15) => {
+    c.fillStyle = col;
+    c.font = `${font === HAND ? 'italic ' : ''}${size}px ${font}`;
+    lines.forEach((l, i) => c.fillText(l, x, y + i * size * lh));
+  };
+  const card = (x: number, y: number, w: number, h: number, col: string, draw: () => void) => {
+    cards.push({ x, y, w, h, col, rot: (rnd() - 0.5) * 0.09, draw });
+  };
+  // 0 — les bulletins, tous pareils
+  card(16, 18, 96, 66, '#f2e9dc', () => {
+    write(['BULLETIN', 'Pleine eau :', '6 h · 18 h'], 6, 20, 9, '#3a5a6a', 'monospace', 1.35);
+    c.strokeStyle = '#d02a2a'; c.lineWidth = 2;
+    c.beginPath(); c.ellipse(32, 41, 28, 8, -0.1, 0, Math.PI * 2); c.stroke();
+    write(['Depuis quand ??'], 6, 62, 11, '#d02a2a');
+  });
+  // 1 — ses propres relevés
+  card(130, 12, 100, 86, '#fffdf4', () => {
+    write(['Mes relevés :', 'J1 : 6 h', 'J2 : 7 h', 'J3 : 8 h'], 8, 22, 12);
+    write(['ça ne colle pas !'], 8, 78, 12, '#d02a2a');
+    c.fillStyle = '#d02a2a'; c.fillRect(8, 81, 84, 1);
+  });
+  // 2 — an 3
+  card(146, 116, 70, 42, '#fff0a0', () => write(['AN 3'], 10, 34, 22, '#24264a'));
+  // 3 — le centre
+  card(18, 112, 108, 48, '#e8f0f4', () => write(['Centre de clonage :', 'fermé… pourquoi ?'], 6, 24, 11));
+  // 4 — le second chargement
+  card(128, 184, 118, 44, '#f2e9dc', () => write(['Second chargement ??', '(le médecin en parlait)'], 6, 22, 11));
+  // 5 — Iris
+  card(258, 14, 78, 98, '#f8f8f0', () => {
+    c.fillStyle = '#2a2436'; c.fillRect(7, 7, 64, 60);
+    const px = (x: number, y: number, w: number, h: number, col: string) => { c.fillStyle = col; c.fillRect(7 + x * 4, 7 + y * 4, w * 4, h * 4); };
+    px(0, 0, 16, 15, '#6a7aa0');
+    px(5, 3, 6, 2, '#d8d0c8'); px(5, 5, 6, 5, '#e8c8a0'); px(6, 7, 1, 1, '#24264a'); px(9, 7, 1, 1, '#24264a');
+    px(7, 9, 2, 1, '#a86a5a'); px(3, 10, 10, 5, '#3a4a7a'); px(7, 11, 2, 1, '#ffd45e');
+    write(['ELLE SAIT.'], 12, 88, 14, '#d02a2a');
+  });
+  // 6 — Nora
+  card(250, 128, 98, 58, '#e0f0e0', () => write(['Nora a oublié', 'le nom de', 'sa sœur.'], 8, 22, 12));
+  // 7 — Mme Ilda (un post-it)
+  card(16, 174, 104, 64, '#fff07a', () => write(['Mme Ilda m’a dit', 'bonjour 3 fois.', 'Comme si j’étais', 'nouveau.'], 6, 21, 11));
+  // 8 — le post-it à moitié arraché
+  card(258, 194, 88, 48, '#ffd0e0', () => write(['Lac, 6 h : RIEN.', 'Eau à 8 h.', 'NOTER TOUT.'], 6, 20, 10));
+
+  // les fils rouges, tendus d'une punaise à l'autre (dessous les fiches)
+  const pin = (k: number): [number, number] => [cards[k].x + cards[k].w / 2, cards[k].y + 4];
+  c.strokeStyle = '#d82020';
+  c.lineWidth = 1.6;
+  for (const [a, b] of [[0, 1], [0, 2], [1, 2], [2, 3], [2, 4], [5, 2], [5, 3], [6, 7], [6, 0], [8, 1], [7, 2]]) {
+    const [x0, y0] = pin(a), [x1, y1] = pin(b);
+    c.beginPath();
+    c.moveTo(x0, y0);
+    c.quadraticCurveTo((x0 + x1) / 2, (y0 + y1) / 2 + 10, x1, y1);
+    c.stroke();
+  }
+  // les fiches, un peu de travers
+  for (const k of cards) {
+    c.save();
+    c.translate(k.x + k.w / 2, k.y + k.h / 2);
+    c.rotate(k.rot);
+    c.translate(-k.w / 2, -k.h / 2);
+    c.fillStyle = 'rgba(0,0,0,0.3)';
+    c.fillRect(3, 3, k.w, k.h);
+    c.fillStyle = k.col;
+    c.fillRect(0, 0, k.w, k.h);
+    k.draw();
+    c.restore();
+  }
+  // les punaises, par-dessus tout
+  for (let k = 0; k < cards.length; k++) {
+    const [x, y] = pin(k);
+    c.fillStyle = '#7a0a0a'; c.beginPath(); c.arc(x + 1, y + 1, 3.5, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#e83a3a'; c.beginPath(); c.arc(x, y, 3.5, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#ffb0b0'; c.fillRect(x - 1.5, y - 1.5, 1.5, 1.5);
+  }
+}

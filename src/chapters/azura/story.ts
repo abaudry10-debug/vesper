@@ -29,7 +29,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azPoisson', thread: 'eaux', title: 'Le gardien du lac', text: 'Une créature immense vit dans le lac. Elle ne montre jamais qu’un bout d’elle : un dos hérissé d’épines, une queue en croissant bordée de lumière, ou une tête cuirassée aux quatre yeux d’ambre. Betti dit qu’il ne faut pas en avoir peur.' },
   { id: 'azMaree', thread: 'eaux', title: 'En retard sur le bulletin', text: 'Jour 2 : le bulletin annonçait la pleine eau à 18 h. À 18 h, l’eau commençait à peine à monter ; elle était pleine vers 19 h. La sirène n’a pas sonné.' },
   { id: 'azJossOubli', thread: 'eaux', title: 'Joss a oublié', text: 'Joss a été surpris par la montée des eaux : « J’avais oublié qu’elle montait à cette heure-ci. » Avant, il notait tout dans un carnet : les heures, les poissons, tous les jours.' },
-  { id: 'azLunes', thread: 'eaux', title: 'Les deux lunes', text: 'L’horloge de la place a un cadran des lunes. Quand l’eau était pleine, la grande lune passait juste au-dessus de la petite.' },
+  { id: 'azLunes', thread: 'eaux', title: 'Les deux lunes', text: 'L’horloge de la place a un cadran des lunes. Chaque jour, les deux lunes y sont un peu plus proches l’une de l’autre.' },
   { id: 'az4', thread: 'eaux', title: 'Le bulletin des eaux', text: 'Sur la place, le bulletin du Bureau des eaux : la courbe du jour, les heures de pleine eau, la hauteur, l’alerte. « Quand la sirène sonne, évacuez les zones à risque. » Recalculé chaque matin.' },
   { id: 'az5', thread: 'eaux', title: 'La sirène débranchée', text: 'Tom a débranché la sirène : « Elle sonnait en pleine nuit, pour rien. Le bulletin, mis à jour chaque matin, est bien plus fiable. »' },
   { id: 'az7', thread: 'eaux', title: 'Le Bureau des eaux', text: 'Nora Vey, hydrologue, recalcule les marées chaque matin et met à jour le bulletin de la place. Depuis « l’accident de l’an 3 », on ne laisse plus rien au hasard.' },
@@ -42,7 +42,8 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azCarnet', thread: 'eaux', title: 'Le carnet de Joss', text: 'Des années de marées, jamais aux mêmes heures d’un jour à l’autre. « Tous les trente jours, les deux lunes s’alignent : grande marée. Ne jamais rester au bord ce jour-là. » Puis l’écriture se défait : « Pourquoi je note ça, déjà ? », « Demander à Nora. Nora sait. » Le bulletin, lui, annonce les mêmes heures depuis deux jours.' },
   { id: 'azOskar', thread: 'arrivee', title: 'Oskar', text: 'Un vieux pilote d’Aurore, sur un banc de la place. Ce matin, l’eau est montée deux heures après l’heure du bulletin. « Il se passe quelque chose, comme avant l’accident de l’an 3. » Il veut voir les relevés du centre de clonage, discrètement : rendez-vous devant la porte, près des cuves.' },
   { id: 'azCulture', thread: 'arrivee', title: 'La salle de culture', text: 'Les données biologiques apportées par Aurore, la culture des corps, le chargement de l’esprit reçu du spatioport de Vesper, le réveil dans le champ des cuves. Un mur de 4 212 noms, dont « Moreau, Betti ».' },
-  { id: 'azMedecin', thread: 'arrivee', title: 'Le carnet du médecin', text: '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. » Puis : « Anomalies de mémoire chez certains sujets. Prévoir un second chargement depuis la copie locale, pour fixer les souvenirs. » Et : « Courbe d’effacement : lente une dizaine d’années, puis brutale. » Le carnet s’arrête à l’an 3.' },
+  { id: 'azSchema', thread: 'arrivee', title: 'Le schéma du transfert', text: 'Dans la salle des serveurs : la navette et les 12 pilotes emportent les données biologiques ; sur Azura, ils cultivent les clones et construisent les cuves ; le jour du grand départ, chacun entre dans sa capsule sur Vesper et l’antenne envoie les mémoires sur 47,2 ; le serveur du centre les reçoit et les charge dans les corps.' },
+  { id: 'azMedecin', thread: 'arrivee', title: 'Le carnet du médecin', text: '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. » Puis : « Anomalies de mémoire chez certains sujets. Prévoir un second chargement depuis la copie locale, pour fixer les souvenirs. » Et, sous un croquis à la main : « Courbe d’effacement : lente une dizaine d’années, puis brutale. » Le carnet s’arrête à l’an 3.' },
   { id: 'az07', thread: 'arrivee', title: 'Sujet 07', text: 'Dans la salle de culture, une cuve à part : « SUJET 07 — Signal non reçu. Cuve maintenue en attente. » Moi. Voilà pourquoi je me suis réveillé onze ans après les autres.' },
   { id: 'azJet', thread: 'arrivee', title: 'Le tuyau éclaté', text: 'L’eau de la rivière entrait encore dans la salle des serveurs, par le tuyau de refroidissement. En suivant les tuyaux, la vanne du bas était la bonne.' },
   { id: 'azIris', thread: 'arrivee', title: 'La commandante', text: 'Iris Aurel, commandante de la mission Aurore : « Le centre de clonage ? Fermé depuis l’accident de l’an 3. Il n’y a plus rien à voir. » Elle a détourné les yeux.' },
@@ -71,7 +72,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl7', thread: 'leads', title: 'Le carnet de Joss', text: 'Le carnet de Joss est enfermé dans sa cabane de pêche, sur la rive sud de la rivière, au chemin des crêtes. Joss a perdu la clé : il pêchait devant la cabane.', doneWhen: 'carnetRead' },
   { id: 'azl12', thread: 'leads', title: 'Une journée calme ?', text: 'Joss est parti pêcher sur son île, de l’autre côté du lac. Le bulletin annonce une journée calme. Mais le carnet de Joss parlait d’une grande marée, tous les trente jours… Regarder les lunes, sur la tour de l’horloge.', doneWhen: 'j4Moons' },
   { id: 'azl13', thread: 'leads', title: 'Prévenir la ville', text: 'Grande marée vers 9 h, et personne ne me croit. La sirène ferait évacuer tout le monde : Tom l’a débranchée, ses fils sont grillés. Il faudrait une pince (Tom en a toujours une) et un câble neuf (l’atelier de Betti ?).', doneWhen: 'sireneOn' },
-  { id: 'azl14', thread: 'leads', title: 'La barque de Joss', text: 'Joss est bloqué sur son île, de l’autre côté du lac. La vague a arraché sa barque : elle a dérivé jusque devant le ponton de la ville. Avec la canne, depuis le bout du ponton, je pourrais accrocher l’amarre qui traîne.', doneWhen: 'barqueOk' },
+  { id: 'azl14', thread: 'leads', title: 'La barque de Joss', text: 'Joss est bloqué sur son île, de l’autre côté du lac. La vague a arraché sa barque : elle a dérivé jusque devant le ponton de la ville. Elle flotte hors de portée de main. Il faut trouver un moyen de l’attraper.', doneWhen: 'barqueOk' },
   { id: 'azl15', thread: 'leads', title: 'L’étale', text: 'La barque est au ponton, mais le courant tire vers le large. Attendre que l’eau s’arrête de bouger (l’étale, vers 10 h), puis ramer jusqu’à Joss, au sud de l’île, et le ramener au ponton.', doneWhen: 'jossSaved' },
   { id: 'azl16', thread: 'leads', title: 'La commandante', text: 'Oskar veut mettre la commandante face à « AU-01 ». Rendez-vous au centre des pilotes, en bas à droite de la ville.', doneWhen: 'j4Confession' },
   { id: 'azl17', thread: 'leads', title: 'Les plans de la mère de Betti', text: 'En entendant « PX-07 », Betti est partie en courant vers son atelier : sa mère numérotait ses prototypes.', doneWhen: 'j4Plans' },
@@ -247,12 +248,9 @@ export const SCRIPTS_AZ: Record<string, Script> = {
         [
           '« Oh, un nouveau visage ! Bienvenue à Nouvelle-Vesper, mon grand ! »',
           'Une vieille dame te sourit derrière son étal de fruits.',
-          '« Tiens, goûte-moi ça. Ça vient des vergers de la vallée. »',
+          '« Tout vient des vergers de la vallée. Repasse quand tu veux ! »',
         ],
-        () => {
-          api.set('ildaTalk');
-          api.item('fruit');
-        },
+        () => api.set('ildaTalk'),
       );
     }
     if (api.has('tideRead') && !api.has('ildaTwice')) {
@@ -260,8 +258,8 @@ export const SCRIPTS_AZ: Record<string, Script> = {
         [
           '« Oh, un nouveau visage ! Bienvenue à Nouvelle-Vesper, mon grand ! »',
           'Mme Ilda te regarde avec un grand sourire.',
-          '« Tu as faim ? Prends un fruit. »',
-          '« Tu en as déjà un ? Ah… Tant mieux. »',
+          '« Tout vient des vergers de la vallée. Repasse quand tu veux ! »',
+          'Elle t’a dit exactement la même chose tout à l’heure. Mot pour mot.',
         ],
         () => {
           api.set('ildaTwice');
@@ -294,7 +292,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     );
   },
   enfant: (api) => {
-    if (api.has('enfantTalk')) return api.say(['« Maman dit que là-bas, sur Vesper, le ciel était orange. C’est vrai ? »']);
+    if (api.has('enfantTalk')) return api.say([api.has('jour4') ? '« Maman dit que là-bas, sur Vesper, le ciel était violet. C’est vrai ? »' : '« Maman dit que là-bas, sur Vesper, le ciel était orange. C’est vrai ? »']);
     api.say(['« Tu sais quoi ? Moi, je suis né ici ! Sur Azura ! »', 'Un petit garçon fait voguer un bateau d’écorce entre les fleurs.'], () => {
       api.set('enfantTalk');
       api.clue('azEnfant');
@@ -341,7 +339,12 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   etagere: (api) => api.say(['Des outils, des pièces détachées, une petite batterie.', 'Betti bricole. Comme sa mère.']),
   etabli: (api) => api.say(['Un établi couvert de plans.', 'Des pattes mécaniques, une tête ronde… Elle construit quelque chose.']),
   lit: (api) => api.say(['Un lit fait au carré.']),
-  bettiVague: (api) => api.say(api.has('jossSaved') ? ['« Tu l’as ramené… Merci. »'] : api.has('barqueOk') ? ['« Le courant est encore trop fort. Attends que l’eau s’arrête : regarde les lunes, sur la tour. »'] : ['« La barque est juste devant le ponton ! Avec la canne de Joss, depuis le bout du ponton, tu pourrais attraper la corde. »']),
+  bettiVague: (api) => api.say(api.has('jossSaved') ? ['« Tu l’as ramené… Merci. »'] : api.has('barqueOk') ? ['« Le courant est encore trop fort. Attends que l’eau s’arrête : regarde les lunes, sur la tour. »'] : ['« La barque est juste devant le ponton… mais trop loin pour la main. »']),
+  noraQuai: (api) => api.say(['« Chaque matin, j’ai recopié… Comment j’ai pu ne rien voir ? »']),
+  tomQuai: (api) => api.say(['« La sirène a tenu. Le câble de Betti, ma pince… On a eu de la chance. »']),
+  ildaQuai: (api) => api.say(['« Quelle frayeur, mon grand ! Mes fruits sont partis avec la vague. »', '« Ce n’est rien. Tout le monde est là. »']),
+  oskarQuai: (api) => api.say(['« Au centre des pilotes. Elle nous doit des explications. »']),
+  bettiQuai: (api) => api.say(['« Allons-y. Au centre des pilotes. »']),
   jossQuai: (api) => api.say(['« Je n’oublierai pas. Enfin… j’espère. »', 'Il essaie de sourire.']),
   barqueIle: (api) => api.say(['Au loin, la barque de Joss, amarrée au petit ponton de son île.']),
   bettiLac: (api) => api.say(['« Regarde-le… Il n’a pas peur de nous. »']),
@@ -352,7 +355,17 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       if (api.hasItem('cable') || api.has('sireneOn')) return api.say(['« Vite ! »']);
       return api.say(['Je lui parle des lunes, du carnet de Joss.', '« Une grande marée ? Aujourd’hui ? »', '« Il faut faire sonner la sirène. Tom l’a débranchée… Tiens, prends ce câble neuf. Vite ! »'], () => api.item('cable'));
     }
-    if (api.has('jour3')) return api.say(['« Joss est passé à l’aube, tout retourné. Son carnet est enfermé dans sa cabane, et il ne retrouve plus la clé. »', '« Il pêche toujours près du pont, sur le chemin des crêtes. »']);
+    if (api.has('jour3')) {
+      if (api.has('carnetGiven'))
+        return api.say([
+          '« Joss est repassé, son carnet serré contre lui. Merci de l’avoir retrouvé ! »',
+          '« Il m’a raconté trois fois que le petit nouveau l’avait sorti de sa cabane. »',
+          '« La troisième fois, il m’a demandé si je te connaissais. »',
+          'Elle sourit. Un peu.',
+        ]);
+      if (api.has('carnetRead')) return api.say(['« Tu as son carnet ? Rapporte-le-lui vite : il pêche près du pont, sur le chemin des crêtes. »']);
+      return api.say(['« Joss est passé à l’aube, tout retourné. Son carnet est enfermé dans sa cabane, et il ne retrouve plus la clé. »', '« Il pêche toujours près du pont, sur le chemin des crêtes. »']);
+    }
     if (api.has('jour2')) {
       if (api.has('lesson2Heard')) return api.say(['« Reviens quand tu veux. »']);
       return api.say(['« Tu devrais passer à l’école, si tu veux continuer d’en apprendre plus sur la vie de la colonie. »']);

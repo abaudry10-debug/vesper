@@ -31,19 +31,23 @@ export const levelNow = (g: Game) => tideLevel(day(g), hour(g));
 /** Ce que montre l'horloge de la place : l'heure, et les deux lunes sur leur cadran. */
 export function clockLines(g: Game): string[] {
   const h = hour(g);
-  const near = Math.min(...highTides(day(g)).map((H) => Math.abs(h - H)));
+  const d = day(g);
   const moons =
-    day(g) === 4 && h < 9
-      ? 'Sur le cadran des lunes, les deux lunes sont alignées. Exactement l’une sur l’autre.'
-      : day(g) === 4 && h < 10
+    d === 4 && h < 9
+      ? 'Sur le cadran des lunes, les deux lunes sont l’une sur l’autre. Exactement.'
+      : d === 4 && h < 10
         ? 'Sur le cadran des lunes, la grande lune couvre encore la petite. Elle va bientôt la quitter : l’eau va s’arrêter.'
-        : day(g) === 4 && h === 10
+        : d === 4 && h === 10
           ? 'Sur le cadran des lunes, la grande lune quitte la petite. Le lac ne bouge plus.'
-          : near < 0.6
-      ? 'Sur le cadran des lunes, la grande lune passe juste sur la petite.'
-      : near <= 2
-        ? 'Sur le cadran des lunes, la grande s’approche de la petite.'
-        : 'Sur le cadran des lunes, les deux lunes sont loin l’une de l’autre.';
+          : d === 4
+            ? 'Sur le cadran des lunes, la grande lune s’éloigne lentement de la petite.'
+            : d === 3
+              ? 'Sur le cadran des lunes, les deux lunes se sont rapprochées. Elles ne sont plus très loin l’une de l’autre.'
+              : d === 2
+                ? 'Sur le cadran des lunes, les deux lunes se sont un peu rapprochées.'
+                : d >= 5
+                  ? 'Sur le cadran des lunes, les deux lunes se séparent.'
+                  : 'Sur le cadran des lunes, les deux lunes sont loin l’une de l’autre, de part et d’autre du cadran.';
   return [`La tour de l’horloge. En chiffres de lumière : ${String(h).padStart(2, '0')}:00.`, moons];
 }
 

@@ -307,12 +307,12 @@ function ville(): GameMap {
     obj('repere2', 9, 24, 'waterPost', 'repere'),
     obj('repere3', 25, 24, 'waterPost', 'repere'),
     npc('bettiPlace', 17, 4, 'betti', 'up', 'bettiAccueil', { hideWhen: 'bettiMet' }),
-    npc('ilda', 14, 13, 'ilda', 'left', 'ilda'),
+    npc('ilda', 14, 13, 'ilda', 'left', 'ilda', { hideWhen: 'j4Quai' }),
     npc('oskar', 20, 14, 'oskar', 'left', 'oskar', { showWhen: 'jour3', hideWhen: 'oskarDeal' }),
     npc('iris', 27, 17, 'iris', 'down', 'iris', { showWhen: 'jour3', hideWhen: 'j4Oskar' }),
     npc('bettiLac', 17, 23, 'betti', 'down', 'bettiLac', { showWhen: 'lakeScene', hideWhen: 'bettiHome' }),
-    npc('tom', 21, 10, 'tom', 'up', 'tom'),
-    npc('nora', 13, 9, 'nora', 'right', 'nora'),
+    npc('tom', 21, 10, 'tom', 'up', 'tom', { hideWhen: 'j4Quai' }),
+    npc('nora', 13, 9, 'nora', 'right', 'nora', { hideWhen: 'j4Quai' }),
     npc('enfant', 17, 19, 'enfant', 'down', 'enfant'),
     npc('passant1', 19, 9, 'pass1', 'down', 'passant1', { npc: { look: 'pass1', dir: 'down', wander: 2 } }),
     npc('passant2', 8, 16, 'pass2', 'right', 'passant2', { npc: { look: 'pass2', dir: 'right', wander: 3 } }),
@@ -325,7 +325,13 @@ function ville(): GameMap {
     obj('barqueQuai', 16, 25, 'barqueWater', 'barque', { showWhen: 'barqueOk', hideWhen: 'barqueOut' }),
     npc('jossQuai', 15, 23, 'joss', 'right', 'jossQuai', { showWhen: 'jossSaved' }),
     npc('minaNuit', 16, 13, 'mina', 'down', 'minaNuit', { showWhen: 'oubli', hideWhen: 'aube' }),
-    npc('bettiVague', 16, 17, 'betti', 'down', 'bettiVague', { showWhen: 'vague', hideWhen: 'j4Oskar' }),
+    npc('bettiVague', 16, 17, 'betti', 'down', 'bettiVague', { showWhen: 'vague', hideWhen: 'jossSaved' }),
+    // le retour de Joss : tout le monde l'attend sur la passerelle, jusqu'à l'aveu d'Iris
+    npc('bettiQuai', 16, 22, 'betti', 'down', 'bettiQuai', { showWhen: 'j4Quai' }),
+    npc('noraQuai', 14, 22, 'nora', 'down', 'noraQuai', { showWhen: 'j4Quai' }),
+    npc('ildaQuai', 13, 22, 'ilda', 'down', 'ildaQuai', { showWhen: 'j4Quai' }),
+    npc('tomQuai', 18, 22, 'tom', 'down', 'tomQuai', { showWhen: 'j4Quai' }),
+    npc('oskarQuai', 19, 22, 'oskar', 'down', 'oskarQuai', { showWhen: 'j4Quai' }),
   ];
   // la ville est ceinte : des montagnes au nord, la barrière de la colonie sur les côtés
   for (let x = 0; x < W; x++) if (x !== 17) b.set(x, 0, 'M').set(x, 1, 'M');
@@ -516,6 +522,7 @@ function serveurs(): GameMap {
     ...[3, 4, 6, 7].flatMap((y) => [obj(`rackG${y}`, 2, y, 'serverRackFloor', 'rack'), obj(`rackD${y}`, 12, y, 'serverRackFloor', 'rack')]),
     obj('disjoncteur', 13, 8, 'breaker', 'disjoncteur'),
     obj('serveurPX', 10, 3, 'serverTerm', 'serveurPX'),
+    obj('schemaClonage', 4, 1, 'wallScreen', 'schemaClonage'),
     npc('oskarIn', 7, 7, 'oskar', 'up', 'oskarIn', { showWhen: 'oskarIn' }),
   ];
   return {

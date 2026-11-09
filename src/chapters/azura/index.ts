@@ -12,6 +12,7 @@ import { CLUES_AZ, ITEMS_AZ, QUESTIONS_AZ, SCRIPTS_AZ, THREADS_AZ } from './stor
 import { MASK, TOWER, paintCabinDoor, withFringe } from './tiles.js';
 import { clockText, drawDigits, timePass } from './timepass.js';
 import { openBulletin } from './bulletin.js';
+import { openCloneSchema, openCurveHand } from './schemas.js';
 import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, usePump } from './centre.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
 import { atJetty, drawFishing, startFishing, updateFishing } from './peche.js';
@@ -784,10 +785,25 @@ function drawClock(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number)
   c.fillStyle = 'rgba(95,240,224,0.15)';
   c.fillRect(left + sc.x, top + sc.y, sc.w, sc.h);
   drawDigits(c, clockText(hour(g) + (evening ? 0.5 : 0), g.time % 1 < 0.5), left + sc.x + sc.w / 2, top + sc.y + 2, 1);
-  // les lunes : la petite reste en haut, la grande tourne ; elles se croisent à pleine eau (6 h et 18 h)
+  // les lunes : elles tournent ensemble au fil des heures, et se rapprochent un peu chaque jour,
+  // jusqu'à se couvrir exactement le jour de la grande marée
   const d = TOWER.dial, cx = left + d.x, cy = top + d.y;
-  const H = highTides(day(g)).reduce((a, b) => (Math.abs(hour(g) - b) < Math.abs(hour(g) - a) ? b : a));
-  const ang = ((hour(g) - H) / 12) * Math.PI * 2;
+  const ang = (hour(g) / 12) * Math.PI * 2;
+  const sep = moonGap(g);
+  // le jour 4, tant qu'on n'a pas regardé : le cadran palpite, comme pour attirer l'œil
+  if (day(g) === 4 && !g.flags.has('j4Moons')) {
+    const p = (Math.sin(g.time * 3) + 1) / 2;
+    c.fillStyle = `rgba(244,244,255,${0.12 + p * 0.22})`;
+    for (let yy = -d.r - 1; yy <= d.r + 1; yy++) {
+      const half = Math.floor(Math.sqrt((d.r + 1) ** 2 - yy * yy));
+      c.fillRect(cx - half, cy + yy, half * 2 + 1, 1);
+    }
+    if (g.time % 1.6 < 0.25) {
+      c.fillStyle = '#ffffff';
+      c.fillRect(cx + d.r + 2, cy - d.r - 1, 1, 3);
+      c.fillRect(cx + d.r + 1, cy - d.r, 3, 1);
+    }
+  }
   const moon = (mx: number, my: number, rad: number, col: string) => {
     c.fillStyle = col;
     for (let yy = -rad; yy <= rad; yy++) {
@@ -795,7 +811,7 @@ function drawClock(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number)
       c.fillRect(Math.round(mx - half), Math.round(my + yy), half * 2 + 1, 1);
     }
   };
-  moon(cx, cy - 4, 1, '#b8a8e8');
+  moon(cx + Math.sin(ang - sep) * 4, cy - Math.cos(ang - sep) * 4, 1, '#b8a8e8');
   moon(cx + Math.sin(ang) * 4, cy - Math.cos(ang) * 4, 2, '#f4f4ff');
 }
 
@@ -861,11 +877,9 @@ function lakeScene(g: Game) {
       window.setTimeout(() => {
         g.locked = true;
         // elle devant, lui derrière, le long de la passerelle
-        const betti: [number, number][] = [], hero: [number, number][] = [];
-        for (let x = 8; x <= 17; x++) betti.push([x, 22]);
-        for (let x = 7; x <= 16; x++) hero.push([x, 22]);
-        betti.push([17, 23]);
-        hero.push([16, 23]);
+        // on contourne le banc de la passerelle (12,22) par le bord de l'eau
+        const betti: [number, number][] = [[8, 22], [9, 22], [10, 22], [11, 22], [11, 23], [12, 23], [13, 23], [13, 22], [14, 22], [15, 22], [16, 22], [17, 22], [17, 23]];
+        const hero: [number, number][] = [[7, 22], ...betti.slice(0, -2), [16, 23]];
         walks.set(g, { hero, betti, i: 0, t: 0.2, heroToo: true, done: () => atTheLake(g) });
       }, 700);
     },
@@ -904,8 +918,8 @@ function atTheLake(g: Game) {
               g.locked = false;
               g.api.clue('azl4');
               // elle rentre chez elle, seule, par la passerelle
-              const home: [number, number][] = [[17, 22]];
-              for (let x = 16; x >= 6; x--) home.push([x, 22]);
+              const home: [number, number][] = [[17, 22], [16, 22], [15, 22], [14, 22], [13, 22], [13, 23], [12, 23], [11, 23], [11, 22]];
+              for (let x = 10; x >= 6; x--) home.push([x, 22]);
               walks.set(g, {
                 hero: [], betti: home, i: 0, t: 0.3, heroToo: false,
                 done: () => {
@@ -921,6 +935,16 @@ function atTheLake(g: Game) {
   });
 }
 
+/** L'écart entre les deux lunes sur le cadran : opposées le premier jour, l'une sur l'autre le jour 4. */
+function moonGap(g: Game) {
+  const d = day(g), h = hour(g);
+  if (d <= 1) return Math.PI;
+  if (d === 2) return (Math.PI * 2) / 3;
+  if (d === 3) return Math.PI / 3;
+  if (d === 4) return h < 10 ? 0 : Math.min(0.5, (h - 9) * 0.08);
+  return 0.6;
+}
+
 // ---------- jour 4 : le déclic, devant la tour de l'horloge ----------
 function grandeMaree(g: Game) {
   ui.say(
@@ -931,6 +955,7 @@ function grandeMaree(g: Game) {
       'Et l’eau monte une heure plus tard chaque jour : 6 h, 7 h, 8 h… Aujourd’hui, vers 9 h.',
       'Le bulletin annonce 6 h. Et une journée calme. Tout le monde est au bord du lac.',
       'Joss est sur son île, au bord de l’eau.',
+      'Il faut prévenir tout le monde du danger. Maintenant.',
     ],
     () => {
       g.flags.add('j4Moons');
@@ -942,6 +967,9 @@ function grandeMaree(g: Game) {
 }
 
 // ---------- la nuit chez Betti : un écran noir, puis le matin du jour 2 ----------
+/** L'heure du réveil : les jours 2 et 3, on dort jusqu'à ce que l'eau du matin soit redescendue
+ *  (pleine eau + 3 h), pour avoir envie de la voir monter ; le jour 4, tôt, avant la grande marée. */
+const wakeHour = (d: number) => (d === 2 || d === 3 ? highTides(d)[0] + 3 : 7);
 function night(g: Game) {
   const next = day(g) + 1;
   const screen = document.getElementById('screen')!;
@@ -957,14 +985,14 @@ function night(g: Game) {
     const bt = MAPS_AZ.atelier.objects.find((o) => o.id === 'betti');
     if (bt) { bt.x = 6; bt.y = 3; bt.npc!.dir = 'down'; }
     g.flags.add(`jour${next}`);
-    setHour(g, 7);
+    setHour(g, wakeHour(next));
     g.save();
   }, 2400);
   window.setTimeout(() => (el.style.opacity = '0'), 4200);
   window.setTimeout(() => {
     el.remove();
     g.locked = false;
-    ui.showPlace(`Jour ${next} — 7 h`);
+    ui.showPlace(`Jour ${next} — ${wakeHour(next)} h`);
     sfx.success();
     if (next === 2) {
       ui.say(['« Debout, le dormeur ! »', 'Betti, déjà en salopette, une tasse fumante à la main.', '« Tu devrais passer à l’école ce matin, si tu veux continuer d’en apprendre plus sur la vie de la colonie. »'], () => {
@@ -1324,6 +1352,38 @@ export const azura: Chapter = {
         useBreaker(g);
         return true;
       }
+      if (obj?.id === 'schemaClonage') {
+        if (!g.flags.has('powerOn')) {
+          ui.say(['Un grand écran, éteint. Sans courant, rien à lire.']);
+          return true;
+        }
+        g.locked = true;
+        ui.say(['L’écran s’allume : un schéma, en quatre cases. « MISSION AURORE — LE TRANSFERT ».'], () =>
+          openCloneSchema(() => {
+            g.locked = false;
+            g.api.clue('azSchema');
+          }),
+        );
+        return true;
+      }
+      if (obj?.id === 'carnetMedecin') {
+        g.locked = true;
+        ui.say(
+          [
+            'Le carnet de bord du médecin de la mission.',
+            '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. »',
+            '« Anomalies de mémoire chez certains sujets : un mot, un nom. Les souvenirs se fixent mal. »',
+            '« Prévoir un second chargement depuis la copie locale, pour les fixer. »',
+            'Sur la page suivante, un croquis à main levée.',
+          ],
+          () =>
+            openCurveHand(() => {
+              g.locked = false;
+              ui.say(['Dessous, souligné deux fois : « Courbe d’effacement : lente une dizaine d’années, puis brutale. Sans second chargement, tout partira d’un coup. »', 'La dernière page date de l’an 3. Ensuite, plus rien.'], () => g.api.clue('azMedecin'));
+            }),
+        );
+        return true;
+      }
       if (obj?.id === 'serveurPX') {
         if (!g.flags.has('powerOn')) {
           ui.say(['Le serveur qui a survécu, sur son estrade. Éteint.', 'Il faudrait remettre le courant.']);
@@ -1350,7 +1410,12 @@ export const azura: Chapter = {
             () => g.api.clue('azl7'),
           );
         } else {
-          ui.say(['« Tu l’as trouvé ! »', 'Il tourne les dernières pages, longtemps. Il s’arrête sur « Pourquoi je note ça, déjà ? ».', '« C’est mon écriture… Je ne me souviens pas d’avoir écrit ça. »']);
+          ui.say(
+            g.flags.has('carnetGiven')
+              ? ['Joss feuillette son carnet, les sourcils froncés.', '« Merci encore, petit. Hm… C’est toi qui me l’as rapporté, hein ? »']
+              : ['« Tu l’as trouvé ! »', 'Il tourne les dernières pages, longtemps. Il s’arrête sur « Pourquoi je note ça, déjà ? ».', '« C’est mon écriture… Je ne me souviens pas d’avoir écrit ça. »'],
+            () => g.flags.add('carnetGiven'),
+          );
         }
         return true;
       }
@@ -1363,7 +1428,7 @@ export const azura: Chapter = {
       // la tour de l'horloge
       if (!obj && g.map.id === 'ville' && g.map.rows[fy]?.[fx] === 'N') {
         ui.say(clockLines(g), () => {
-          if (g.flags.has('tideWitnessed') && levelNow(g) > 0.95) g.api.clue('azLunes');
+          if (day(g) >= 2 && day(g) < 4) g.api.clue('azLunes');
           if (day(g) === 4 && !g.flags.has('j4Moons')) grandeMaree(g);
         });
         return true;
@@ -1386,7 +1451,7 @@ export const azura: Chapter = {
       if (obj && day(g) >= 2 && g.map.id === 'ville') {
         if (obj.id === 'horloge') {
           ui.say(clockLines(g), () => {
-            if (g.flags.has('tideWitnessed') && levelNow(g) > 0.95) g.api.clue('azLunes');
+            if (day(g) >= 2 && day(g) < 4) g.api.clue('azLunes');
           if (day(g) === 4 && !g.flags.has('j4Moons')) grandeMaree(g);
           });
           return true;
@@ -1407,7 +1472,7 @@ export const azura: Chapter = {
           return true;
         }
         if (day(g) === 3 && !g.flags.has('pxFound')) {
-          ui.say(['Pas encore sommeil. Le carnet de Joss, le centre de clonage… Je veux comprendre.']);
+          ui.say(g.flags.has('carnetRead') ? ['Pas encore sommeil. Le centre de clonage, près des cuves… Je veux comprendre ce qui s’y cache.'] : ['Pas encore sommeil. Le carnet de Joss, le centre de clonage… Je veux comprendre.']);
           return true;
         }
         if (day(g) === 3 && !g.flags.has('carnetRead')) {

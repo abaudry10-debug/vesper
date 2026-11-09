@@ -7,7 +7,7 @@ import { sfx } from '../../engine/audio.js';
 import { T } from '../../engine/sprites.js';
 import * as ui from '../../engine/ui.js';
 import { PIPES } from './maps.js';
-import { CORE } from './tiles.js';
+import { CORE, CORE_IMG } from './tiles.js';
 import { levelNow } from './time.js';
 
 const state = new WeakMap<Game, { cutAt?: number; drainAt?: number; powerAt?: number }>();
@@ -135,6 +135,10 @@ function renderServerRoom(g: Game, c: CanvasRenderingContext2D, w: number, h: nu
   const power = g.flags.has('powerOn');
   // le cœur de mémoire : 4 212 lumières… presque toutes éteintes
   const cx = 6 * T - ox, cy = 6 * T - CORE.h - oy;
+  // quand on passe derrière la colonne, elle se redessine par-dessus le héros (et Pixel)
+  const [hx, hy] = g.heroPixel();
+  if (hy < 4 * T && hx > 6 * T - 14 && hx < 9 * T - 2) c.drawImage(CORE_IMG, cx, cy);
+  else if (g.pixel && g.pixel.y < 4 && g.pixel.x >= 5 && g.pixel.x <= 9) c.drawImage(CORE_IMG, cx, cy);
   const pw = power ? Math.min(1, (g.time - (st(g).powerAt ?? -9)) / 2) : 0;
   for (let row = 0; row < 18; row++) {
     for (let col = 0; col < 12; col++) {
@@ -152,11 +156,15 @@ function renderServerRoom(g: Game, c: CanvasRenderingContext2D, w: number, h: nu
       c.fillStyle = i === 4 && g.flags.has('pxFound') ? '#ffc14a' : 'rgba(95,240,224,0.8)';
       c.fillRect(6 * T + 3 - ox, T + 5 + i * 2 - oy, Math.min(42, lw), 1);
     }
+    // l'écran du schéma : quatre petites cases allumées
+    for (let k = 0; k < 4; k++) {
+      c.fillStyle = ['#e8743a', '#2a9a7a', '#c8ccd4', '#5ff0e0'][k];
+      c.fillRect(4 * T + 2 + (k % 2) * 6 - ox, T + 4 + Math.floor(k / 2) * 5 - oy, 5, 4);
+    }
     c.fillStyle = 'rgba(95,240,224,0.05)';
     c.fillRect(0, 0, w, h);
   } else {
     // sans courant : il fait noir, seule une faible lueur autour de soi
-    const [hx, hy] = g.heroPixel();
     const gx = hx + 8 - ox, gy = hy + 8 - oy;
     const grad = c.createRadialGradient(gx, gy, 10, gx, gy, 78);
     grad.addColorStop(0, 'rgba(2,4,10,0)');

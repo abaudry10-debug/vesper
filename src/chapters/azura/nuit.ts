@@ -2,6 +2,7 @@
 // centre de clonage. Pendant ce temps, la courbe d'effacement bascule : les colons perdent tout, d'un coup.
 // Betti aussi. On l'emmène au centre avec le nouveau corps : Pixel 2.0 s'éveille, et c'est elle qu'on
 // recharge en premier, son dessin pour ancre, pendant que Pixel projette le jour du départ.
+import { openCurveDigital } from './schemas.js';
 import type { Game } from '../../engine/game.js';
 import { sfx } from '../../engine/audio.js';
 import * as ui from '../../engine/ui.js';
@@ -64,19 +65,28 @@ function backToAzura(g: Game) {
         'Dehors, la nuit est tombée.',
         'Oskar : « C’est passé ? »',
         'Iris, penchée sur la console : « Les données ne sont pas arrivées ici. L’antenne les a envoyées au seul endroit assez grand pour les recevoir : les serveurs du centre de clonage. »',
-        'Elle fait défiler les relevés. Elle s’arrête.',
-        '« Le carnet du médecin… Il l’avait prévu. Le premier chargement était défectueux : les souvenirs ne se sont jamais vraiment fixés. »',
-        '« Pendant une dizaine d’années, ils s’effacent lentement : un mot, un nom, une date. Puis, d’un coup, tout part. »',
-        '« Nous sommes en l’an 11. C’est maintenant. Ce soir, toute la colonie est en train de perdre la mémoire. »',
-        'Oskar : « Écoute. »',
-        'Dehors, une voix. « Qui suis-je ? » Puis une autre. « Où suis-je ? »',
-        'Iris : « C’est en train d’arriver. Ce soir. »',
-        'Oskar : « Le nouveau corps de Pixel. Betti. Vite ! »',
+        'Elle fait défiler les relevés. Elle s’arrête, et tourne l’écran vers nous.',
       ],
       () => {
-        g.api.clue('azChute');
-        g.api.clue('azl19');
-        g.save();
+        g.locked = true;
+        openCurveDigital(() => {
+          g.locked = false;
+          ui.say(
+            [
+              'Iris : « Le carnet du médecin l’avait prévu. Le premier chargement était défectueux : les souvenirs ne se sont jamais vraiment fixés. »',
+              '« Pendant une dizaine d’années, ils s’effacent lentement : un mot, un nom, une date. Puis, d’un coup, tout part. »',
+              '« Nous sommes en l’an 11. C’est maintenant. Ce soir, toute la colonie est en train de perdre la mémoire. »',
+              'Oskar : « Écoute. »',
+              'Dehors, une voix. « Qui suis-je ? » Puis une autre. « Où suis-je ? »',
+              'Oskar : « Le nouveau corps de Pixel. Betti. Vite ! »',
+            ],
+            () => {
+              g.api.clue('azChute');
+              g.api.clue('azl19');
+              g.save();
+            },
+          );
+        });
       },
     );
   }, 1300);
@@ -202,33 +212,41 @@ export function serverWaiting(g: Game) {
 export function wakePixel2(g: Game) {
   const ach = (readLegacy().vesper?.data?.achievements as string[] | undefined) ?? [];
   const f = follow.get(g);
-  const [bx, by] = f && f.map === g.map.id ? [f.x, f.y] : [g.x + 1, g.y];
+  // il s'éveille aux pieds de Betti, sur une case libre à côté d'elle (pas sous elle)
+  const fx = f && f.map === g.map.id ? f.x : g.x, fy = f && f.map === g.map.id ? f.y : g.y;
+  const spots: [number, number][] = [[fx - 1, fy], [fx + 1, fy], [fx, fy + 1], [g.x - 1, g.y], [g.x + 1, g.y], [g.x, g.y + 1]];
+  const [bx, by] = spots.find(([x, y]) => g.pixelFree(x, y) && !(x === fx && y === fy)) ?? [g.x + 1, g.y];
   ui.say(
     [
-      'Sur l’écran : « RÉCEPTION 47,2 : TERMINÉE. 4 211 DOSSIERS. 1 CONSCIENCE : PX-07. »',
-      '« SUPPORT COMPATIBLE DÉTECTÉ. »',
-      'Betti pose le chien de métal par terre, sans savoir pourquoi. Comme si ses mains, elles, se souvenaient.',
+      'Sur l’écran : « RÉCEPTION 47,2 : TERMINÉE. 4 211 DOSSIERS ET 1 CONSCIENCE : PX-07. SUPPORT COMPATIBLE DÉTECTÉ. »',
+      'Betti pose le chien de métal par terre, sans savoir pourquoi.',
       '« TRANSFERT PX-07 → NOUVEAU CORPS. »',
-      'Rien. Puis un ronronnement.',
-      'L’œil s’allume, bleu vif.',
-      'Le chien de métal se lève, chancelle, s’ébroue.',
-      'Il me regarde. Il penche la tête.',
-      ...(ach.includes('nut10') ? ['Il fouille la pièce du museau… et revient avec un écrou, qu’il pose à mes pieds.'] : ['Il vient se coller contre mes jambes. Il remue la queue.']),
-      'Pixel.',
-      'Puis il se tourne vers Betti. Il trottine vers elle, et pose sa tête contre son genou.',
-      'Betti recule d’un pas. « Il… il me connaît ? »',
-      'Des pas dans le hall. Oskar, et la commandante, essoufflés.',
-      'Iris : « Les dossiers sont là. Le second chargement est possible. »',
-      'Oskar regarde Betti. « Elle d’abord. Salle de culture. »',
     ],
     () => {
+      // il s'éveille maintenant, sous nos yeux : le texte suit
       g.flags.add('pixel2');
       g.flags.add('pixelOn');
       g.pixel = { x: bx, y: by, dir: 'left', moving: null };
       sfx.success();
-      g.api.clue('azPixel2');
-      g.api.clue('azl20');
       g.save();
+      g.locked = true;
+      window.setTimeout(() => {
+        g.locked = false;
+        ui.say(
+          [
+            'L’œil s’allume, bleu vif. Le chien de métal se lève et s’ébroue.',
+            ach.includes('nut10') ? 'Il fouille la pièce du museau… et revient poser un écrou à mes pieds. Pixel.' : 'Il vient se coller contre mes jambes en remuant la queue. Pixel.',
+            'Puis il trottine vers Betti et pose sa tête contre son genou. « Il… il me connaît ? »',
+            'Oskar et la commandante arrivent, essoufflés. Iris : « Les dossiers sont là. Le second chargement est possible. »',
+            'Oskar : « Betti d’abord. Salle de culture. »',
+          ],
+          () => {
+            g.api.clue('azPixel2');
+            g.api.clue('azl20');
+            g.save();
+          },
+        );
+      }, 1100);
     },
   );
 }

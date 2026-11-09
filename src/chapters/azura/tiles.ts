@@ -847,7 +847,8 @@ const PAINTERS: Record<string, Painter> = {
 };
 registerDecal('navette', navette());
 registerDecal('clockTower', clockTower());
-registerDecal('memoryCore', memoryCore());
+export const CORE_IMG = memoryCore();
+registerDecal('memoryCore', CORE_IMG);
 registerTiles(PAINTERS, ['azGrass', 'azPath', 'azStone', 'azFloor', 'regolith', 'metalFloor']);
 
 // ---------- lisières : l'herbe déborde, irrégulière, sur le sol voisin ----------

@@ -73,7 +73,7 @@ function startWave(g: Game) {
           '« Tu as vu ça ? Sans la sirène… »',
           '« Joss ! Il était sur l’île, de l’autre côté du lac ! »',
           '« Et sa barque… La vague l’a arrachée de son ponton. Regarde, elle a dérivé jusque devant notre ponton ! »',
-          '« Sans barque, il ne peut plus revenir. Avec la canne de Joss, depuis le bout du ponton, tu pourrais attraper la corde. »',
+          '« Sans barque, il ne peut plus revenir. Et elle est bien trop loin du bord pour l’attraper à la main… »',
         ],
         () => {
           g.api.clue('azVague');
@@ -200,12 +200,13 @@ export function dock(g: Game, fx: number, fy: number): boolean {
   g.flags.delete('jossAboard'); // Joss descend : il n'est plus dans la barque
   const first = !g.flags.has('jossSaved');
   g.flags.add('jossSaved');
+  if (first) g.flags.add('j4Quai'); // tout le monde attend sur la passerelle, jusqu'à l'aveu
   g.warp('ville', fx, fy, 'up');
   if (!first) return true;
   window.setTimeout(() => {
     ui.say(
       [
-        'Sur la passerelle, on nous attend. Betti, Nora, Tom, Mme Ilda.',
+        'Sur la passerelle, on nous attend. Betti, Nora, Tom, Mme Ilda, Oskar.',
         'Joss pose le pied sur la passerelle. Betti le serre dans ses bras.',
         'Nora, toute pâle : « J’ai recopié. Chaque matin, j’ai recopié les heures du premier jour. Je ne m’en rendais même pas compte. »',
         '« Sans la sirène… » Tom ne finit pas sa phrase.',
@@ -260,6 +261,7 @@ export function drawBoatOver(g: Game, c: CanvasRenderingContext2D, ox: number, o
 
 /** Au centre des pilotes : Oskar met la commandante face à « AU-01 ». */
 export function confession(g: Game) {
+  g.flags.delete('j4Quai');
   g.locked = true;
   window.setTimeout(() => {
     g.locked = false;

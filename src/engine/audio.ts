@@ -142,36 +142,36 @@ const HOME_CHORDS = [
 ];
 const HOME_TUNE = [72, -1, 69, 72, 74, -1, 72, -1, 69, -1, 67, 69, 65, -1, -1, -1, 69, -1, 67, 69, 70, -1, 69, -1, 65, -1, 67, -1, 65, -1, -1, -1];
 
-// Azura : lumineux, futuriste, victorieux. Un arpège de synthé qui sautille, une basse qui rebondit,
-// et une mélodie qui monte, comme une arrivée réussie.
+// Azura : calme et mystérieux. Des nappes lentes aux accords suspendus (ré mineur, si bémol lydien,
+// une septième suspendue), une basse grave et tenue, et une mélodie de cloches qui pose des questions
+// et laisse du silence. Aucune attaque sèche ni souffle percussif : rien qui claque.
 const AZ_CHORDS: { bass: number; notes: number[] }[] = [
-  { bass: 38, notes: [62, 66, 69] }, // ré
-  { bass: 37, notes: [61, 64, 69] }, // la / do dièse
-  { bass: 35, notes: [59, 62, 66] }, // si mineur
-  { bass: 43, notes: [59, 62, 67] }, // sol
-  { bass: 43, notes: [59, 62, 67] }, // sol
-  { bass: 45, notes: [61, 64, 69] }, // la
-  { bass: 38, notes: [62, 66, 69] }, // ré
-  { bass: 38, notes: [62, 66, 69] }, // ré
+  { bass: 38, notes: [65, 69, 72, 76] }, // ré mineur 9
+  { bass: 34, notes: [62, 65, 69, 76] }, // si bémol maj7 (#11)
+  { bass: 43, notes: [58, 62, 65, 69] }, // sol mineur 9
+  { bass: 45, notes: [62, 64, 67, 70] }, // la 7 sus4 (b9)
+  { bass: 38, notes: [65, 69, 72, 76] }, // ré mineur 9
+  { bass: 39, notes: [62, 67, 69, 70] }, // mi bémol maj7 (#11)
+  { bass: 34, notes: [62, 65, 69, 76] }, // si bémol maj7 (#11)
+  { bass: 45, notes: [62, 64, 67, 70] }, // la 7 sus4 (b9)
 ];
 const AZ_TUNE = [
-  74, 0, 78, 0, 81, 0, 78, 76, 76, 0, 73, 0, 76, 78, 76, 73, 74, 0, 73, 74, 78, 0, 74, 0, 79, 0, 78, 76, 74, 0, 73, 0,
-  74, 76, 79, 0, 83, 0, 81, 79, 81, 0, 79, 0, 76, 0, 73, 0, 78, 0, 81, 0, 86, 0, 0, 0, 85, 0, 86, 0, 0, 0, 0, 0,
+  74, 0, 0, 77, 0, 0, 76, 0, 0, 0, 69, 0, 0, 0, 0, 0, 70, 0, 0, 72, 0, 0, 74, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  81, 0, 0, 79, 0, 0, 77, 0, 74, 0, 0, 0, 69, 0, 0, 0, 76, 0, 0, 0, 74, 0, 0, 0, 70, 0, 0, 69, 0, 0, 0, 0,
 ];
-const AZ_ARP = [0, 1, 2, 1];
 let echoBus: AudioNode | null = null;
 
-/** Un écho court et clair, qui fait briller l'arpège. */
+/** Un écho lent et sombre, qui prolonge les cloches dans le vide. */
 function echo(): AudioNode {
   if (echoBus || !ac) return echoBus ?? musicBus;
   const input = ac.createGain();
-  const delay = ac.createDelay(1);
-  delay.delayTime.value = 0.375;
+  const delay = ac.createDelay(1.5);
+  delay.delayTime.value = 0.75;
   const fb = ac.createGain();
-  fb.gain.value = 0.3;
+  fb.gain.value = 0.38;
   const lp = ac.createBiquadFilter();
   lp.type = 'lowpass';
-  lp.frequency.value = 3200;
+  lp.frequency.value = 1800;
   input.connect(delay);
   delay.connect(lp);
   lp.connect(fb);
@@ -185,35 +185,26 @@ function echo(): AudioNode {
 function scheduleAzura(t: number) {
   const space = echo();
   const chord = AZ_CHORDS[Math.floor(step / 8) % AZ_CHORDS.length];
-  // la nappe, douce et claire
+  // la nappe : lente à venir, lente à partir, les accords se chevauchent
   if (step % 8 === 0) {
     for (const n of chord.notes) {
-      tone(musicBus, 'triangle', hz(n), t, STEP * 8, 0.02, { attack: 0.4, release: 0.8, detune: 5 });
-      tone(musicBus, 'sine', hz(n + 12), t, STEP * 8, 0.012, { attack: 0.6, release: 0.8, detune: -4 });
+      tone(musicBus, 'triangle', hz(n - 12), t, STEP * 10, 0.022, { attack: 1.8, release: 2.4, detune: 6, filter: 1100 });
+      tone(musicBus, 'sine', hz(n), t, STEP * 10, 0.014, { attack: 2.2, release: 2.4, detune: -5 });
     }
+    // la basse, grave et tenue
+    tone(musicBus, 'sine', hz(chord.bass), t, STEP * 9, 0.09, { attack: 1.2, release: 2 });
+    tone(musicBus, 'sine', hz(chord.bass + 7), t, STEP * 9, 0.025, { attack: 2, release: 2 });
   }
-  // l'arpège : quatre petites notes par temps, qui grimpent et redescendent
-  for (let i = 0; i < 4; i++) {
-    const n = chord.notes[AZ_ARP[(step * 4 + i) % AZ_ARP.length]] + 12;
-    tone(space, 'square', hz(n), t + (i * STEP) / 4, 0.1, 0.008, { release: 0.08, filter: 2600 });
-  }
-  // la basse qui rebondit, fondamentale puis octave
-  if (step % 2 === 0) {
-    tone(musicBus, 'triangle', hz(chord.bass), t, STEP * 0.9, 0.09, { release: 0.2 });
-    tone(musicBus, 'triangle', hz(chord.bass + 12), t + STEP, STEP * 0.5, 0.05, { release: 0.15 });
-  }
-  // un léger battement : un souffle bref sur les temps
-  if (step % 2 === 1) noise(musicBus, t, 0.05, 0.015, 'highpass', 6000);
-  // la mélodie, un cycle sur deux ; l'autre, des clochettes qui scintillent
+  // la mélodie de cloches, un cycle sur deux ; l'autre, quelques notes isolées qui tombent dans l'écho
   if (Math.floor(step / 64) % 2 === 0) {
     const n = AZ_TUNE[step % AZ_TUNE.length];
     if (n) {
-      tone(space, 'triangle', hz(n), t, STEP * 1.6, 0.045, { attack: 0.02, release: 0.5 });
-      tone(musicBus, 'sine', hz(n + 12), t, STEP * 1.2, 0.012, { attack: 0.02, release: 0.4 });
+      tone(space, 'sine', hz(n), t, STEP * 3.5, 0.045, { attack: 0.03, release: 1.6 });
+      tone(space, 'sine', hz(n + 19), t, STEP * 1.5, 0.006, { attack: 0.03, release: 0.7 });
     }
-  } else if (step % 4 === 2) {
-    const n = chord.notes[Math.floor(Math.random() * chord.notes.length)] + 24;
-    tone(space, 'sine', hz(n), t, 0.5, 0.02, { release: 0.45 });
+  } else if (step % 8 === 3 && Math.random() > 0.4) {
+    const n = chord.notes[Math.floor(Math.random() * chord.notes.length)] + 12;
+    tone(space, 'sine', hz(n), t, STEP * 3, 0.028, { attack: 0.04, release: 1.4 });
   }
 }
 

@@ -92,9 +92,11 @@ export function renderJournal(
   clues: Set<string>, fresh: Set<string>, openQ: Set<string>, solvedQ: Set<string>, isDone: (id: string) => boolean,
   achievements: { title: string; text: string; done: boolean; progress: string }[] = [],
   onReplay?: (n: number) => void,
+  fade?: { now: string[]; gone: string[]; keep?: string; hideGone?: boolean },
 ) {
   const body = $('journal-body');
   body.innerHTML = '';
+  body.classList.toggle('fading', !!fade && (fade.now.length > 0 || fade.gone.length > 0));
   const found = ch().clues.filter((c) => clues.has(c.id)).length;
   const news = [...fresh].filter((id) => clues.has(id) || openQ.has(id)).length;
   const pending = ch().questions.filter((q) => openQ.has(q.id) && !solvedQ.has(q.id)).length;
@@ -105,10 +107,25 @@ export function renderJournal(
         (pending ? ` · ${pending} question${pending > 1 ? 's' : ''} en suspens` : '') +
         (news ? ` · ${news} nouveau${news > 1 ? 'x' : ''}` : '');
 
-  const card = (title: string, text: string, cls: string, isNew: boolean) => {
+  const nowSet = new Set(fade?.now ?? []), goneSet = new Set(fade?.gone ?? []);
+  let firstNow: HTMLElement | null = null;
+  const card = (title: string, text: string, cls: string, isNew: boolean, id?: string) => {
     const el = document.createElement('div');
     el.className = 'clue ' + cls + (isNew ? ' fresh' : '');
     el.innerHTML = '<strong></strong><p></p>';
+    if (id && fade?.keep === id) {
+      el.classList.add('keep');
+      // une fois que tout s'est effacé, on revient sur la seule entrée qui reste
+      window.setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), fade.now.length ? 4600 : 300);
+    }
+    if (id && (nowSet.has(id) || goneSet.has(id))) {
+      if (goneSet.has(id) && fade?.hideGone) el.hidden = true;
+      dissolve(el.querySelector('strong')!, title, id, nowSet.has(id), 0.25);
+      dissolve(el.querySelector('p')!, text, id + '#', nowSet.has(id), 0.6);
+      el.classList.add(nowSet.has(id) ? 'fading-now' : 'faded');
+      if (nowSet.has(id) && !firstNow) firstNow = el;
+      return el;
+    }
     el.querySelector('strong')!.textContent = title;
     if (isNew) {
       const tag = document.createElement('span');
@@ -121,7 +138,7 @@ export function renderJournal(
   };
   const qCard = (q: Question) => {
     const solved = solvedQ.has(q.id);
-    return card(solved ? q.ask : `? ${q.ask}`, solved ? q.answer : 'Pas encore de réponse.', solved ? 'answer' : 'question', fresh.has(q.id));
+    return card(solved ? q.ask : `? ${q.ask}`, solved ? q.answer : 'Pas encore de réponse.', solved ? 'answer' : 'question', fresh.has(q.id), q.id);
   };
   // les nouveautés d'abord, puis le reste dans l'ordre de découverte
   const newFirst = <T extends { id: string }>(list: T[]) => [...list.filter((x) => fresh.has(x.id)), ...list.filter((x) => !fresh.has(x.id))];
@@ -138,12 +155,12 @@ export function renderJournal(
     sec.innerHTML = `<h3><span class="icon">${lead.icon}</span><span>${lead.title}</span></h3>`;
     if (!todo.length && !leadQs.length) sec.appendChild(card('Rien en cours', 'Explore, examine, fouille : de nouvelles pistes viendront.', 'unknown', false));
     for (const q of newFirst(leadQs)) sec.appendChild(qCard(q));
-    for (const c of newFirst(todo)) sec.appendChild(card(c.title, c.text, 'lead', fresh.has(c.id)));
+    for (const c of newFirst(todo)) sec.appendChild(card(c.title, c.text, 'lead', fresh.has(c.id), c.id));
     if (done.length) {
       const d = document.createElement('details');
       d.className = 'done-list';
       d.innerHTML = `<summary>Pistes terminées (${done.length})</summary>`;
-      for (const c of done) d.appendChild(card(`✓ ${c.title}`, c.text, 'done', false));
+      for (const c of done) d.appendChild(card(`✓ ${c.title}`, c.text, 'done', false, c.id));
       sec.appendChild(d);
     }
     body.appendChild(sec);
@@ -206,10 +223,20 @@ export function renderJournal(
     }
     d.appendChild(sum);
     for (const q of newFirst(qs)) d.appendChild(qCard(q));
-    for (const c of newFirst(got)) d.appendChild(card(c.title, c.text, '', fresh.has(c.id)));
+    for (const c of newFirst(got)) d.appendChild(card(c.title, c.text, '', fresh.has(c.id), c.id));
     body.appendChild(d);
   }
+  // ce qui s'efface en ce moment : son fil s'ouvre, et on le fait venir sous les yeux
+  if (firstNow) {
+    const el = firstNow as HTMLElement;
+    for (let p = el.parentElement; p && p !== body; p = p.parentElement) if (p instanceof HTMLDetailsElement) p.open = true;
+    window.setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 250);
+  }
+  if (fade?.hideGone) {
+    for (const d of body.querySelectorAll('details')) d.open = true;
+  }
   // 3. Succès
+  if (fade?.hideGone) return;
   if (achievements.length) {
     const d = document.createElement('details');
     d.className = 'thread';
@@ -220,6 +247,45 @@ export function renderJournal(
     d.appendChild(sum);
     for (const x of achievements) d.appendChild(card(x.done ? `🏆 ${x.title}` : `${x.title} (${x.progress})`, x.text, x.done ? 'answer' : 'unknown', false));
     body.appendChild(d);
+  }
+}
+
+/** Un texte qui s'efface lettre à lettre : certaines restent, pâles ; les autres partent en poussière de lumière. */
+function dissolve(el: HTMLElement, text: string, seed: string, now: boolean, keepRatio: number) {
+  let h = 0;
+  for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) | 0;
+  const rnd = () => {
+    h = (h * 1103515245 + 12345) | 0;
+    return ((h >>> 8) & 0xffff) / 0xffff;
+  };
+  el.textContent = '';
+  let i = 0;
+  // les lettres d'un même mot restent ensemble (sinon le retour à la ligne couperait les mots)
+  let word: HTMLElement | null = null;
+  for (const ch of text) {
+    const sp = document.createElement('span');
+    sp.textContent = ch;
+    if (ch === ' ') {
+      word = null;
+      el.appendChild(sp);
+      i++;
+      continue;
+    }
+    if (!word) {
+      word = document.createElement('span');
+      word.style.whiteSpace = 'nowrap';
+      el.appendChild(word);
+    }
+    {
+      const stays = rnd() < keepRatio;
+      sp.className = stays ? 'ghost' : 'lost';
+      if (now) {
+        sp.classList.add('anim');
+        sp.style.animationDelay = `${(0.4 + rnd() * 2.4 + i * 0.012).toFixed(2)}s`;
+      }
+    }
+    word.appendChild(sp);
+    i++;
   }
 }
 

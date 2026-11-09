@@ -45,6 +45,8 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azSchema', thread: 'arrivee', title: 'Le schéma du transfert', text: 'Dans la salle des serveurs : la navette et les 12 pilotes emportent les données biologiques ; sur Azura, ils cultivent les clones et construisent les cuves ; le jour du grand départ, chacun entre dans sa capsule sur Vesper et l’antenne envoie les mémoires sur 47,2 ; le serveur du centre les reçoit et les charge dans les corps.' },
   { id: 'azMurOskar', thread: 'arrivee', title: 'Le mur d’Oskar', text: 'Chez Oskar, un mur de liège : les bulletins tous à 6 h, ses relevés qui ne collent pas, l’an 3, le centre fermé, un « second chargement ?? », une photo de la commandante (« ELLE SAIT »), Nora qui a oublié le nom de sa sœur.' },
   { id: 'azOskarPeur', thread: 'arrivee', title: 'Oskar a peur', text: 'Au-dessus de son lit : « Tu es Oskar. Pilote d’Aurore. Tu n’oublies pas. » Les pilotes ne perdent pas la mémoire… mais il a peur que ça le prenne aussi. D’où les étiquettes partout, jusque sur sa porte.' },
+  { id: 'azLecon5', thread: 'arrivee', title: 'La leçon juste', text: 'Jour 5 : toute la ville à l’école. « D’où venons-nous ? — De Vesper ! » Et Mina qui sourit.' },
+  { id: 'azChargeGlobal', thread: 'arrivee', title: 'Le second chargement', text: 'Après Betti, Iris a chargé toute la colonie par les pylônes, pendant le sommeil. Tous les dossiers ont accroché… sauf cinq.' },
   { id: 'azMedecin', thread: 'arrivee', title: 'Le carnet du médecin', text: '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. » Puis : « Anomalies de mémoire chez certains sujets. Prévoir un second chargement depuis la copie locale, pour fixer les souvenirs. » Et, sous un croquis à la main : « Courbe d’effacement : lente une dizaine d’années, puis brutale. » Le carnet s’arrête à l’an 3.' },
   { id: 'az07', thread: 'arrivee', title: 'Sujet 07', text: 'Dans la salle de culture, une cuve à part : « SUJET 07 — Signal non reçu. Cuve maintenue en attente. » Moi. Voilà pourquoi je me suis réveillé onze ans après les autres.' },
   { id: 'azJet', thread: 'arrivee', title: 'Le tuyau éclaté', text: 'Deux tuyaux alimentaient la salle des serveurs : le refroidissement et la dérivation de secours. Il a fallu fermer les deux vannes, sans jamais couper la culture.' },
@@ -89,6 +91,11 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azlCabane', thread: 'leads', title: 'La cabane verrouillée', text: 'La cabane de Joss est fermée à clé. Joss pêchait sur son ponton quand il l’a perdue… Elle est peut-être tombée à l’eau.', doneWhen: 'cabaneOpen' },
   { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Oskar m’attend devant la porte du centre, près des cuves.', doneWhen: 'centreIn' },
   { id: 'azlOskar', thread: 'leads', title: 'Oskar', text: 'Dans le carnet de Joss, une note de sa main : « Dire au petit nouveau : Oskar veut le voir. La maison à l’étiquette. » Une étiquette… La porte marquée « PORTE », dans la ville ?', doneWhen: 'oskarDeal' },
+  { id: 'azlCinq', thread: 'leads', title: 'Cinq échecs', text: 'Le second chargement est passé par les pylônes, pendant le sommeil. Cinq colons n’ont pas accroché. Oskar sait qui : « Venez chez moi. C’est sur mon mur. »', doneWhen: 'ficheVue' },
+  { id: 'azlAncres', thread: 'leads', title: 'Les cinq ancres', text: 'Le mur d’Oskar : Joss (son carnet), Nora (son premier bulletin), Tom (la sirène), la maîtresse (la navette), Mme Ilda (un fruit). Pixel projette le souvenir, une fois l’ancre rendue.', doneWhen: 'ancresOk' },
+  { id: 'azlDormir', thread: 'leads', title: 'Tous les pylônes brillent', text: 'Les cinq ont retrouvé la mémoire. Rentrer dormir chez Betti.', doneWhen: 'aube' },
+  { id: 'azlAube', thread: 'leads', title: 'La leçon', text: 'Ce matin, toute la ville va à l’école. La maîtresse a une leçon à refaire.', doneWhen: 'lesson5Heard' },
+  { id: 'azDernier', thread: 'leads', title: 'À ne pas oublier', text: 'Tu es le sujet 07. Le chien s’appelle Pixel. Il t’a attendu.' },
   { id: 'azlCode', thread: 'leads', title: 'Le code du centre', text: 'Le badge d’Oskar ne suffit pas : la porte demande un code à quatre chiffres. Oskar l’avait choisi pour ne jamais l’oublier : « le nombre de ceux qu’on a ramenés ».', doneWhen: 'centreOpen' },
   { id: 'azl9', thread: 'leads', title: 'L’eau entre encore', text: 'L’eau entre toujours dans la salle des serveurs. La salle des pompes doit commander l’arrivée d’eau : suivre les tuyaux. Le plan du hall peut aider.', doneWhen: 'inflowCut' },
   { id: 'azlManivelle', thread: 'leads', title: 'La manivelle', text: 'La pompe de vidange n’a plus de levier. Sa manivelle est rangée dans l’armoire de secours, dans la salle de culture.', doneWhen: 'crankOn' },
@@ -119,6 +126,9 @@ export const ITEMS_AZ: Record<string, ItemDef> = {
   liaison: { name: 'Commandes de R-7', text: 'Les commandes du robot de patrouille, depuis la console du centre des pilotes. On peut les rendre à tout moment : R-7 restera où il est.', usable: true },
   bs1Vide: { name: 'BS-1 (vide)', text: 'La batterie de Pixel, retirée de ma capsule. Le voyant est éteint. À recharger au soleil, sur la plaque de la place des Missions.', usable: true },
   battery: { name: 'BS-1 (chargée)', text: 'La batterie de Pixel, pleine. Il faut la brancher sur son dos.', usable: true },
+  carnetJoss: { name: 'Carnet de Joss', text: 'Son carnet de pêche, trempé. Retrouvé au fond de sa barque. L’ancre de Joss.', usable: true },
+  bulletin0: { name: 'Premier bulletin', text: 'Le tout premier bulletin des eaux, jour 1, an 0, signé N. Vey. Le plus vieux de la collection d’Oskar. L’ancre de Nora.', usable: true },
+  fruit: { name: 'Fruit d’Azura', text: 'Un fruit orange, pris sur l’étal de Mme Ilda. Elle accueillait tout le monde avec. L’ancre de Mme Ilda.', usable: true },
   badge: { name: 'Badge d’Oskar', text: 'Le badge de pilote d’Oskar : « AU-04 ». À passer devant la porte du centre de clonage. Il faut aussi le code : « le nombre de ceux qu’on a ramenés ».', usable: true },
   manivelle: { name: 'Manivelle', text: 'Une grosse manivelle d’acier, étiquetée « VIDANGE ». Pour la pompe de la salle des pompes.', usable: true },
   cleCabane: { name: 'Clé de la cabane', text: 'Une clé de cuivre, repêchée devant la cabane de Joss. Un petit médaillon gravé « J ».', usable: true },
@@ -162,7 +172,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     ),
   cuveLog: (api) =>
     api.say(
-      ['Un écran de lumière flotte au-dessus d’une borne : « REGISTRE DES RÉVEILS ».', 'Cuves 0001 à 4212 : réveil en l’an 0.', 'Cuve 07 : réveil en l’an 11.', 'L’an 11… J’ai dormi onze ans de plus que tous les autres.'],
+      ['Un écran de lumière flotte au-dessus d’une borne : « REGISTRE DES RÉVEILS ».', 'Cuves 0001 à 4212 : réveil en l’an 0.', 'Cuve 07 : réveil en l’an 11. Chargement : direct. Copie : aucune.', 'L’an 11… J’ai dormi onze ans de plus que tous les autres.'],
       () => api.clue('az2'),
     ),
 
@@ -513,6 +523,8 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       'Sous « Salle des pompes » : « Prise d’eau de la rivière. Quatre départs : culture, fontaines, refroidissement des serveurs… et une dérivation de secours, qui double le refroidissement. »',
       'En rouge : « NE JAMAIS COUPER LA CULTURE. »',
     ]),
+  oskarNuit: (api) => api.say(['« Regarde le mur. »']),
+  bettiAube: (api) => api.say(['« Allez, à l’école ! Toute la ville y est. »', 'Pixel tourne autour de ses jambes.']),
   etagereOskar: (api) =>
     api.say(['Une étagère. Une étiquette sur chaque objet : « TASSE », « LAMPE », « RADIO ».', 'Sur la plus haute, une petite boîte : « SI JE COMMENCE À OUBLIER, LIRE CECI ».', 'Elle est vide.']),
   tableOskar: (api) =>
@@ -561,7 +573,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   berceau: (api) => api.say(['Un berceau de culture, vide. Un dépôt séché tapisse le fond.']),
   berceau07: (api) =>
     api.say(
-      ['Une cuve à part, avec une étiquette ambre.', '« SUJET 07 — Signal non reçu. Cuve maintenue en attente. »', 'Une date a été ajoutée à la main : « an 11 — signal reçu. Culture lancée en urgence. »', 'C’est moi. Voilà pourquoi je me suis réveillé onze ans après les autres.'],
+      ['Une cuve à part, avec une étiquette ambre.', '« SUJET 07 — Signal non reçu. Cuve maintenue en attente. »', 'Une date a été ajoutée à la main : « an 11 — signal reçu. Culture lancée en urgence. »', 'Et dessous, plus petit : « Chargé en direct, de très loin. Rien n’a été copié. Fixation : non vérifiée. »', 'C’est moi. Voilà pourquoi je me suis réveillé onze ans après les autres.'],
       () => api.clue('az07'),
     ),
   carnetMedecin: (api) =>
@@ -582,6 +594,24 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   tableauClasse: (api) => api.say(['Un grand écran. Une planète orange, une flèche, une planète bleue.', 'Au-dessus : « D’OÙ VENONS-NOUS ? »']),
   pupitre: (api) => api.say(['Un pupitre blanc, avec un petit écran.', 'Quelqu’un a gravé une fusée dans le coin.']),
   lecon: (api) => {
+    if (api.has('jour5')) {
+      if (api.has('lesson5Heard')) return api.say(['« Allez, filez. Et merci. »']);
+      return api.say(
+        [
+          'La classe est pleine. Des enfants aux pupitres, et des adultes debout, tout au fond. Joss. Nora. Tom.',
+          '« Bonjour à tous. D’où venons-nous ? »',
+          '« De Vesper ! » Toute la classe. Et tout le fond de la classe.',
+          '« Le jour du grand départ, nos esprits ont voyagé jusqu’ici. Nos corps sont restés là-bas, endormis. »',
+          '« Pendant onze ans, on a oublié, un peu chaque jour. Cette nuit, on s’est souvenus. »',
+          '« Grâce à un chien de métal. Et au dormeur de la cuve 07. »',
+          'Au premier rang, Mina se retourne vers moi. Elle sourit.',
+        ],
+        () => {
+          api.set('lesson5Heard');
+          api.clue('azLecon5');
+        },
+      );
+    }
     if (api.has('jour4')) {
       if (api.has('lesson4Heard')) return api.say(['« Allez, filez. Et pas près du lac, aujourd’hui ! »', '…Au moins, ça, elle s’en souvient.']);
       return api.say(

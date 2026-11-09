@@ -15,6 +15,7 @@ import { openBulletin } from './bulletin.js';
 import { openCloneSchema, openCurveHand, openOskarWall } from './schemas.js';
 import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, useCrank, usePump } from './centre.js';
 import { openKeypad } from './panneaux.js';
+import { anchorsDone, drawSleepers, finale, journalFade, nightInteract, nightUseItem, updateFinale } from './ancres.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
 import { atJetty, drawFishing, startFishing, updateFishing } from './peche.js';
 import { bettiNight, bettiTalk, drawFollower, followerAt, lostLines, rechargeBetti, sendPixel, serverWaiting, updateFollower, wakePixel2 } from './nuit.js';
@@ -310,7 +311,7 @@ function renderOverlay(g: Game, c: CanvasRenderingContext2D, ox: number, oy: num
     drawR7Robot(g, c, ox, oy);
     return;
   }
-  drawFollower(g, c, ox, oy, PEOPLE.betti);
+  drawFollower(g, c, ox, oy, PEOPLE);
   if (g.map.id === 'oskar') drawOskarMess(c, ox, oy);
   if (!g.map.outdoor) return;
   drawBoatUnder(g, c, ox, oy, (x, y) => c.drawImage(person(PEOPLE.joss, 'right', 0), x, y));
@@ -692,7 +693,7 @@ function renderEvening(g: Game, c: CanvasRenderingContext2D, w: number, h: numbe
     if (sx < -60 || sy < -60 || sx > w + 60 || sy > h + 60) continue;
     if (o.sprite === 'lampAz') glow(sx, sy + 3, 42, '255,196,120', 0.55 * flicker);
     else if (o.sprite === 'aurDoor') glow(sx, sy + 10, 16, '255,210,150', 0.3);
-    else if (o.sprite === 'pylonTop') glow(sx, sy + 2, 10, '255,90,90', 0.25);
+    else if (o.sprite === 'pylonTop') glow(sx, sy + 2, g.flags.has('chargeGlobal') ? 14 : 10, g.flags.has('chargeGlobal') ? '95,240,224' : '255,90,90', g.flags.has('chargeGlobal') ? 0.5 : 0.25);
   }
   // l'eau devient fluorescente : une lueur turquoise, et des points de lumière qui palpitent
   const x0 = Math.max(0, Math.floor(ox / T) - 1), x1 = Math.min(g.map.width - 1, Math.ceil((ox + w) / T) + 1);
@@ -1023,20 +1024,20 @@ function night(g: Game) {
     ui.showPlace(`Jour ${next} — ${wakeHour(next)} h`);
     sfx.success();
     if (next === 2) {
-      ui.say(['« Debout, le dormeur ! »', 'Betti, déjà en salopette, une tasse fumante à la main.', '« Tu devrais passer à l’école ce matin, si tu veux continuer d’en apprendre plus sur la vie de la colonie. »'], () => {
+      ui.say(['« Debout, le dormeur ! »', 'Betti, déjà en salopette, une tasse fumante à la main.', '« Tu devrais passer à l’école ce matin, si tu veux continuer d’en apprendre plus sur la vie de la colonie. »', 'Bizarre. Le robot de patrouille, sur Vesper… Il avait un nom. R-quelque chose. Il m’échappe.'], () => {
         g.api.clue('azl5');
         g.save();
       });
     } else if (next === 3) {
-      ui.say(['« Debout ! »', 'Betti, une tasse à la main, l’air soucieux.', '« Joss est passé à l’aube, tout retourné. Son carnet de pêche est enfermé dans sa cabane, et il ne retrouve plus la clé. »', '« Il pêche toujours près du pont, sur le chemin des crêtes. Tu pourrais l’aider ? »'], () => {
+      ui.say(['« Debout ! »', 'Betti, une tasse à la main, l’air soucieux.', '« Joss est passé à l’aube, tout retourné. Son carnet de pêche est enfermé dans sa cabane, et il ne retrouve plus la clé. »', '« Il pêche toujours près du pont, sur le chemin des crêtes. Tu pourrais l’aider ? »', 'En me levant, une pensée m’arrête. Le hangar, sur Vesper… il était à gauche de la place, ou à droite ? Je le savais, hier.'], () => {
         g.api.clue('azl7');
         g.save();
       });
     } else if (next === 5) {
-      ui.say(['Avant l’aube, Betti me secoue doucement.', '« Debout. La liaison va s’ouvrir. Pixel nous attend. »'], () => {
-        g.flags.add('sliceDone');
+      g.flags.add('aube');
+      ui.say(['Betti me secoue doucement. Elle a les yeux rouges, et elle sourit.', '« Debout. Toute la ville va à l’école, ce matin. Toute la ville. »', '« La maîtresse a dit qu’elle avait une leçon à refaire. »'], () => {
+        g.api.clue('azlAube');
         g.save();
-        ui.say(['— Fin de la démo d’Azura —', 'La suite, le jour 5 (le retour sur Vesper avec le robot R-7), arrive bientôt. Merci d’avoir joué.']);
       });
     } else if (next === 4) {
       ui.say(['« Debout ! »', 'Betti, à la fenêtre, une tasse à la main.', '« Joss est parti pêcher sur son île à l’aube, de l’autre côté du lac, avec sa barque. Il avait retrouvé son carnet, il était tout content. »', '« Il dit que le bulletin annonce une journée calme. Tant mieux. »', '« Tu as vu le ciel, ce matin ? Les deux lunes sont presque l’une sur l’autre. »'], () => {
@@ -1142,6 +1143,7 @@ export const azura: Chapter = {
       { label: 'Jour 4 (réveil)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'canneTaken', 'cabaneOpen', 'oskarDeal', 'centreOpen', 'centreIn', 'inflowCut', 'drained', 'powerOn', 'serverRead', 'oskarIn', 'pxFound', 'jour4'], items: ['canne'], at: { map: 'atelier', x: 7, y: 5, dir: 'left' } },
       { label: 'Jour 4 (Vesper, R-7)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'canneTaken', 'cabaneOpen', 'oskarDeal', 'centreOpen', 'centreIn', 'pxFound', 'jour4', 'j4Moons', 'sireneOn', 'vague', 'barqueOk', 'jossSaved', 'jossLeft', 'j4Oskar', 'j4Confession', 'j4Plans', 'j4Soir', 'j4Plan'], items: ['canne'], at: { map: 'pilotes', x: 8, y: 3, dir: 'up' } },
       { label: 'Jour 4 (nuit, après le transfert)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'canneTaken', 'cabaneOpen', 'oskarDeal', 'centreOpen', 'centreIn', 'inflowCut', 'drained', 'powerOn', 'serverRead', 'oskarIn', 'pxFound', 'jour4', 'j4Moons', 'sireneOn', 'vague', 'barqueOk', 'jossSaved', 'jossLeft', 'j4Oskar', 'j4Confession', 'j4Plans', 'j4Soir', 'j4Plan', 'r7Up', 'bs1Taken', 'bs1OnPlate', 'bs1Charged', 'bs1PickedUp', 'pixelWake', 'pixelSent', 'oubli'], items: ['canne'], at: { map: 'ville', x: 17, y: 15, dir: 'down' } },
+      { label: 'Jour 4 (nuit, les cinq ancres)', flags: ['bettiJoins', 'pixel2', 'pixelOn', 'bettiRestored', 'chargeGlobal', 'villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'canneTaken', 'cabaneOpen', 'oskarDeal', 'centreOpen', 'centreIn', 'inflowCut', 'drained', 'powerOn', 'serverRead', 'oskarIn', 'pxFound', 'jour4', 'j4Moons', 'sireneOn', 'vague', 'barqueOk', 'jossSaved', 'jossLeft', 'j4Oskar', 'j4Confession', 'j4Plans', 'j4Soir', 'j4Plan', 'r7Up', 'bs1Taken', 'bs1OnPlate', 'bs1Charged', 'bs1PickedUp', 'pixelWake', 'pixelSent', 'oubli'], items: ['canne'], at: { map: 'ville', x: 6, y: 13, dir: 'up' } },
       { label: 'Jour 3 (cabane de Joss)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3'], items: [], at: { map: 'chemin', x: 6, y: 17, dir: 'left' } },
       { label: 'Jour 3 (centre, avec Oskar)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'oskarDeal', 'centreOpen'], items: [], at: { map: 'cuves', x: 27, y: 9, dir: 'up' } },
       { label: 'Jour 2 (école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'bettiHome', 'jour2'], items: [], at: { map: 'ville', x: 27, y: 6, dir: 'up' } },
@@ -1169,6 +1171,7 @@ export const azura: Chapter = {
     });
   },
   hooks: {
+    journalFade: (g) => journalFade(g),
     tileName(g, ch, x, y, below) {
       if (isR7(g)) return undefined; // Vesper : les tuiles du chapitre 1
       const ct = centreTile(g, x, y, ch);
@@ -1242,6 +1245,7 @@ export const azura: Chapter = {
       // (parties d'avant cette version) Betti était partie avec nous sans nous suivre à l'écran
       if (g.flags.has('bettiJoins') && !g.flags.has('bettiRestored') && !g.flags.has('bettiFollow')) g.flags.add('bettiFollow');
       updateFollower(g, dt);
+      updateFinale(g);
       // (sauvegardes d'avant la correction) Joss est sauvé : il n'est plus sur l'île, ni dans la barque
       if (g.flags.has('jossSaved')) {
         g.flags.add('jossLeft');
@@ -1266,6 +1270,7 @@ export const azura: Chapter = {
         return true;
       }
       if (r7UseItem(g, id)) return true;
+      if (nightUseItem(g, id)) return true;
       if (id === 'cable') return useCable(g);
       if (id === 'manivelle') return useCrank(g);
       if (id === 'badge') {
@@ -1324,7 +1329,7 @@ export const azura: Chapter = {
       if (r7PixelGrowl(g, fx, fy)) return true;
       if (r7Body(g, fx, fy)) return true;
       // la nuit de l'oubli
-      if (obj && lostLines(g, obj.id)) return true;
+      if (obj && !g.flags.has('chargeGlobal') && lostLines(g, obj.id)) return true;
       if (obj?.id === 'bettiPlans' && g.flags.has('oubli') && !g.flags.has('bettiJoins')) {
         bettiNight(g);
         return true;
@@ -1333,6 +1338,8 @@ export const azura: Chapter = {
         bettiTalk(g);
         return true;
       }
+      // le second chargement : les cinq ancres
+      if (nightInteract(g, obj, fx, fy)) return true;
       if (obj?.id === 'serveurPX' && g.flags.has('pixelSent') && !g.flags.has('bettiJoins')) {
         serverWaiting(g);
         return true;
@@ -1440,6 +1447,7 @@ export const azura: Chapter = {
             '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. »',
             '« Anomalies de mémoire chez certains sujets : un mot, un nom. Les souvenirs se fixent mal. »',
             '« Prévoir un second chargement depuis la copie locale, pour les fixer. »',
+            '« Sujet 07 : s’il arrive un jour, il arrivera seul. Pas de copie, pas de seconde chance. »',
             'Sur la page suivante, un croquis à main levée.',
           ],
           () =>
@@ -1563,8 +1571,12 @@ export const azura: Chapter = {
           ui.say(['Pas encore sommeil. Le carnet de Joss est toujours enfermé dans sa cabane, au bord de la rivière.']);
           return true;
         }
+        if (day(g) === 4 && anchorsDone(g) === 5) {
+          ui.say(['Je m’allonge. Dehors, les pylônes brillent, turquoise, sur la ville endormie.'], () => night(g));
+          return true;
+        }
         if (day(g) === 4) {
-          ui.say(g.flags.has('j4Plan') ? ['Pas le temps de dormir : la liaison se referme ce soir.', 'Au centre des pilotes, vite.'] : ['Pas maintenant.']);
+          ui.say(g.flags.has('chargeGlobal') ? ['Pas encore. Il reste des fiches sur le mur d’Oskar.'] : g.flags.has('j4Plan') ? ['Pas le temps de dormir : la liaison se referme ce soir.', 'Au centre des pilotes, vite.'] : ['Pas maintenant.']);
           return true;
         }
         if (day(g) >= 5) {
@@ -1616,6 +1628,7 @@ export const azura: Chapter = {
       const [hx0, hy0] = g.heroPixel();
       const cox = Math.round(hx0 + T / 2 - w / 2), coy = Math.round(hy0 + T / 2 - (h - view.padBottom) / 2);
       renderTide(g, c, cox, coy, w, h);
+      drawSleepers(g, c, cox, coy);
       drawJour4(g, c, cox, coy, w, h);
       drawBoatOver(g, c, cox, coy);
       if (isEvening(g)) {
@@ -1730,9 +1743,11 @@ export const azura: Chapter = {
       }
       // à l'école, la leçon commence dès qu'on entre, une fois par jour
       if (mapId === 'ecole') {
-        const due = g.flags.has('jour4') ? !g.flags.has('lesson4Heard') : g.flags.has('jour3') ? !g.flags.has('lesson3Heard') : g.flags.has('jour2') ? !g.flags.has('lesson2Heard') : !g.flags.has('lesson1Heard');
-        if (due) window.setTimeout(() => SCRIPTS_AZ.lecon(g.api), 400);
+        const due = g.flags.has('jour5') ? !g.flags.has('lesson5Heard') : g.flags.has('jour4') ? !g.flags.has('lesson4Heard') : g.flags.has('jour3') ? !g.flags.has('lesson3Heard') : g.flags.has('jour2') ? !g.flags.has('lesson2Heard') : !g.flags.has('lesson1Heard');
+        if (due && !(g.flags.has('oubli') && !g.flags.has('aube'))) window.setTimeout(() => SCRIPTS_AZ.lecon(g.api), 400);
       }
+      // le jour 5, en sortant de l'école : la fin
+      if (day(g) === 5 && mapId === 'ville' && g.flags.has('lesson5Heard')) window.setTimeout(() => finale(g), 700);
       // en sortant de l'école, le jour 2 : l'envie de voir l'eau monter
       if (day(g) === 2 && mapId === 'ville' && g.flags.has('lesson2Heard') && !g.clues.has('azl6')) {
         window.setTimeout(() => ui.say(['Il faudrait quand même que je voie cette montée des eaux, une fois.'], () => g.api.clue('azl6')), 500);

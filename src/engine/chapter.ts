@@ -54,6 +54,9 @@ export interface ChapterHooks {
   renderOverlay?(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number, x0: number, y0: number): void;
   /** La lumière du chapitre (teinte, particules) ; true si elle a été dessinée. */
   renderAtmosphere?(g: Game, c: CanvasRenderingContext2D, w: number, h: number): boolean;
+  /** Le journal qui s'efface : ce qui s'efface à cette ouverture (now), ce qui est déjà effacé (gone),
+   *  une entrée qui résiste toujours (keep), et s'il faut cacher tout le reste (hideGone). */
+  journalFade?(g: Game): { now: string[]; gone: string[]; keep?: string; hideGone?: boolean } | undefined;
   /** Pixel est-il « chez lui » ici (il remue la queue, jappe de joie) ? */
   isPixelHome?(g: Game): boolean;
 }

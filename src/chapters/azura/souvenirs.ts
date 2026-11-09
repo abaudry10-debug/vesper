@@ -77,3 +77,8 @@ export function projectMemory(n: number, done: () => void) {
   const m = MEMORIES[n - 1];
   play(m.tableaux.map((_, i) => ({ m, i, dur: m.tableaux[i].dur })), { done });
 }
+
+/** Un souvenir écrit pour Azura (un colon), projeté de la même façon. */
+export function projectCustom(m: Memory, done: () => void) {
+  play(m.tableaux.map((_, i) => ({ m, i, dur: m.tableaux[i].dur })), { done });
+}

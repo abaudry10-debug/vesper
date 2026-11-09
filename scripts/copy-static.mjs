@@ -22,7 +22,7 @@ if (existsSync('dist/js')) {
     if (out !== src) writeFileSync(f, out);
   }
 }
-const html = readFileSync('dist/index.html', 'utf8').replace('src="js/main.js"', `src="js/main.js?v=${stamp}"`).replace('</body>', `<!-- version ${stamp} -->\n</body>`);
+const html = readFileSync('dist/index.html', 'utf8').replace('src="js/main.js"', `src="js/main.js?v=${stamp}"`).replace('href="style.css"', `href="style.css?v=${stamp}"`).replace('</body>', `<!-- version ${stamp} -->\n</body>`);
 const label = new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(' ', ' · ');
 writeFileSync('dist/index.html', html.replace('__VERSION__', label));
 console.log(`Version ${stamp}`);

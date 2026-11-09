@@ -145,9 +145,12 @@ function renderServerRoom(g: Game, c: CanvasRenderingContext2D, w: number, h: nu
   for (let row = 0; row < 18; row++) {
     for (let col = 0; col < 12; col++) {
       const i = row * 12 + col;
+      // la nuit du second chargement : tout s'allume, sauf cinq lumières rouges (les ancres à rendre)
+      const anchor = [23, 77, 120, 160, 199].indexOf(i);
+      const red = anchor >= 0 && g.flags.has('chargeGlobal') && !g.flags.has(`ancre_${['joss', 'nora', 'tom', 'prof', 'ilda'][anchor]}`);
       const alive = g.flags.has('pixelSent') || i % 37 === 11 || i === 100 || i === 151;
       const px = cx + 12 + col * 2, py = cy + 7 + row * 2;
-      c.fillStyle = alive && power ? `rgba(95,240,224,${(0.5 + 0.5 * Math.sin(g.time * 3 + i)) * pw})` : power ? '#16222e' : '#0c141c';
+      c.fillStyle = red && power ? (g.time % 1 < 0.6 ? '#ff5a5a' : '#6a1a1a') : alive && power ? `rgba(95,240,224,${(0.5 + 0.5 * Math.sin(g.time * 3 + i)) * pw})` : power ? '#16222e' : '#0c141c';
       c.fillRect(px, py, 1, 1);
     }
   }

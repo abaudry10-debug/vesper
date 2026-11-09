@@ -293,6 +293,7 @@ export function openCurveHand(done: () => void) {
     c.stroke();
   }
   c.fillText('?!', X(11) + 26, Y(0.5) - 34);
+  c.fillText('mauvais chargement = pente plus raide', X(3.4), Y(0.42));
   c.fillText('tout part', X(6.4), Y(0.3));
   c.fillText("d'un coup", X(6.4), Y(0.3) + 15);
   seg(X(8.8), Y(0.3) - 4, X(9.7), Y(0.38), 1.2);
@@ -396,4 +397,63 @@ export function openOskarWall(done: () => void) {
     c.fillStyle = '#e83a3a'; c.beginPath(); c.arc(x, y, 3.5, 0, Math.PI * 2); c.fill();
     c.fillStyle = '#ffb0b0'; c.fillRect(x - 1.5, y - 1.5, 1.5, 1.5);
   }
+}
+
+/** La nuit du second chargement : le mur d'Oskar, réduit à cinq fiches. Une ancre retrouvée, un tampon. */
+export function openAnchorWall(done: boolean[], cb: () => void) {
+  const W = 360, H = 250;
+  const c = popup('az-ancres', `<h3>LES CINQ FICHES D’OSKAR</h3><canvas></canvas>`, { w: W, h: H, pixel: false }, cb);
+  const HAND = '"Snell Roundhand","Bradley Hand","Segoe Script","Comic Sans MS",cursive';
+  let seed = 11;
+  const rnd = () => {
+    const v = Math.sin(seed++ * 78.233) * 43758.5453;
+    return v - Math.floor(v);
+  };
+  c.fillStyle = '#a8743f';
+  c.fillRect(0, 0, W, H);
+  for (let i = 0; i < 900; i++) {
+    c.fillStyle = rnd() < 0.5 ? 'rgba(90,55,25,0.35)' : 'rgba(210,160,100,0.3)';
+    c.fillRect(rnd() * W, rnd() * H, 1 + rnd() * 2, 1 + rnd());
+  }
+  // les trous des punaises qu'il a retirées
+  for (let i = 0; i < 26; i++) { c.fillStyle = 'rgba(40,20,10,0.6)'; c.fillRect(10 + rnd() * (W - 20), 8 + rnd() * (H - 16), 2, 2); }
+  c.strokeStyle = '#4a3020';
+  c.lineWidth = 6;
+  c.strokeRect(3, 3, W - 6, H - 6);
+  const cards: [string, string[], string][] = [
+    ['JOSS', ['Dort : la passerelle,', 'au bord du lac.', 'Ancre : son carnet.', '(sa barque est revenue…)'], '#fffdf4'],
+    ['NORA VEY', ['Dort : sous un lampadaire,', 'sur la place.', 'Ancre : son premier', 'bulletin (je l’ai !)'], '#e0f0e0'],
+    ['TOM', ['Dort : au pied de la tour.', 'Ancre : la sirène.', 'Il faut qu’il l’entende.'], '#fff0a0'],
+    ['LA MAÎTRESSE', ['Dort : à l’école.', 'Ancre : la navette.', 'La plaque, près des cuves.', 'L’y emmener.'], '#ffd0e0'],
+    ['MME ILDA', ['Dort : devant son étal.', 'Ancre : un fruit.', 'Elle accueillait tout le', 'monde avec un fruit.'], '#e8f0f4'],
+  ];
+  const pos: [number, number][] = [[18, 16], [190, 16], [104, 92], [18, 166], [190, 166]];
+  cards.forEach(([name, lines, col], i) => {
+    const [x, y] = pos[i];
+    const w = 152, h = 70;
+    c.save();
+    c.translate(x + w / 2, y + h / 2);
+    c.rotate((rnd() - 0.5) * 0.08);
+    c.translate(-w / 2, -h / 2);
+    c.fillStyle = 'rgba(0,0,0,0.3)'; c.fillRect(3, 3, w, h);
+    c.fillStyle = col; c.fillRect(0, 0, w, h);
+    c.fillStyle = '#24264a';
+    c.font = `bold 13px ${HAND}`;
+    c.fillText(name, 8, 18);
+    c.font = `italic 11px ${HAND}`;
+    lines.forEach((l, k) => c.fillText(l, 8, 32 + k * 11));
+    if (done[i]) {
+      // le tampon : « SOUVENU »
+      c.save();
+      c.translate(110, 44);
+      c.rotate(-0.25);
+      c.strokeStyle = 'rgba(42,157,154,0.9)'; c.lineWidth = 2.5;
+      c.strokeRect(-36, -12, 72, 24);
+      c.fillStyle = 'rgba(42,157,154,0.95)'; c.font = 'bold 13px monospace';
+      c.fillText('SOUVENU', -29, 5);
+      c.restore();
+    }
+    c.restore();
+    c.fillStyle = '#e83a3a'; c.beginPath(); c.arc(x + w / 2, y + 4, 3.5, 0, Math.PI * 2); c.fill();
+  });
 }

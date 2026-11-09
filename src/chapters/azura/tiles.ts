@@ -1288,6 +1288,15 @@ registerTiles({
   netWall, tackleShelf, cabinTableBook: table(true), cabinTable: table(false), barrel,
 });
 registerIcons({
+  carnetJoss: (c) => {
+    r(c, 3, 2, 10, 12, AZ.ink); r(c, 4, 3, 8, 10, '#7a4a2a'); r(c, 4, 3, 8, 1, '#a86a3a');
+    r(c, 6, 6, 4, 3, '#d8b070'); r(c, 12, 4, 1, 8, '#f2e9dc'); r(c, 5, 12, 2, 1, '#5ff0e0');
+  },
+  bulletin0: (c) => {
+    r(c, 2, 2, 12, 12, AZ.ink); r(c, 3, 3, 10, 10, '#e8d8a8'); r(c, 3, 3, 10, 2, '#2a9d9a');
+    for (let x = 4; x < 12; x++) r(c, x, 10 - Math.round(Math.max(Math.exp(-(((x - 6) / 1.5) ** 2)), Math.exp(-(((x - 10) / 1.5) ** 2))) * 4), 1, 1, '#2a9d9a');
+    r(c, 9, 11, 3, 1, '#8a7a68');
+  },
   badge: (c) => {
     r(c, 3, 2, 10, 13, AZ.ink); r(c, 4, 3, 8, 11, AZ.white); r(c, 4, 3, 8, 3, AZ.tealDark);
     r(c, 7, 0, 2, 3, AZ.metalDark); // l'attache

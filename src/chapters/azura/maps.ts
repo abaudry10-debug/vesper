@@ -362,6 +362,7 @@ function atelier(): GameMap {
     obj('pieces', 2, 5, 'robotParts', 'pieces'),
     obj('lit', 8, 5, 'bedAz', 'lit'),
     npc('betti', 6, 3, 'betti', 'down', 'betti', { hideWhen: 'vague' }),
+    npc('bettiAube', 6, 4, 'betti', 'down', 'bettiAube', { showWhen: 'aube' }),
     // le jour 4 : Betti et les plans de sa mère, puis Oskar et la commandante, le soir
     npc('bettiPlans', 3, 4, 'betti', 'up', 'bettiPlans', { showWhen: 'j4Confession', hideWhen: 'bettiJoins' }),
     npc('irisAtelier', 6, 5, 'iris', 'left', 'irisAtelier', { showWhen: 'j4Soir', hideWhen: 'j4Plan' }),
@@ -421,6 +422,7 @@ function oskar(): GameMap {
     obj('tableOskar2', 2, 3, 'workbench', 'tableOskar'),
     obj('litOskar', 7, 4, 'bedAz', 'litOskar'),
     npc('oskarMaison', 5, 3, 'oskar', 'down', 'oskar', { showWhen: 'oskarLead', hideWhen: 'centreIn' }),
+    npc('oskarNuit', 4, 2, 'oskar', 'up', 'oskarNuit', { showWhen: 'chargeGlobal', hideWhen: 'aube' }),
   ];
   return {
     id: 'oskar', name: 'Chez Oskar', outdoor: false, width: 9, height: 7, rows: b.rows, objects,
@@ -442,7 +444,7 @@ function ecole(): GameMap {
     obj('pupitre2', 4, 4, 'desk', 'pupitre'),
     obj('pupitre3', 7, 4, 'desk', 'pupitre'),
     obj('pupitre4', 8, 4, 'desk', 'pupitre'),
-    npc('prof', 5, 2, 'prof', 'down', 'lecon'),
+    npc('prof', 5, 2, 'prof', 'down', 'lecon', { hideWhen: 'profFollow' }),
     npc('mina', 4, 5, 'mina', 'up', 'mina'),
     npc('lio', 8, 5, 'lio', 'up', 'lio'),
     npc('pao', 2, 5, 'enfant', 'up', 'pao'),

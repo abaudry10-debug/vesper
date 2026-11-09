@@ -3,6 +3,7 @@
 // Betti aussi. On l'emmène au centre avec le nouveau corps : Pixel 2.0 s'éveille, et c'est elle qu'on
 // recharge en premier, son dessin pour ancre, pendant que Pixel projette le jour du départ.
 import { openCurveDigital } from './schemas.js';
+import { startGlobal } from './ancres.js';
 import type { Game } from '../../engine/game.js';
 import { sfx } from '../../engine/audio.js';
 import * as ui from '../../engine/ui.js';
@@ -76,7 +77,10 @@ function backToAzura(g: Game) {
               'Iris : « Le carnet du médecin l’avait prévu. Le premier chargement était défectueux : les souvenirs ne se sont jamais vraiment fixés. »',
               '« Pendant une dizaine d’années, ils s’effacent lentement : un mot, un nom, une date. Puis, d’un coup, tout part. »',
               '« Nous sommes en l’an 11. C’est maintenant. Ce soir, toute la colonie est en train de perdre la mémoire. »',
-              'Oskar : « Écoute. »',
+              'Elle tape quelque chose. Elle s’arrête. « Sujet 07… Aucun dossier. »',
+              '« Ton chargement est passé directement dans ta cuve, depuis Vesper. Rien n’a été copié. Et chargé de si loin… »',
+              'Elle me regarde. « Pour toi, ce ne sera pas dix ans. »',
+              'Oskar : « Plus tard. Écoute. »',
               'Dehors, une voix. « Qui suis-je ? » Puis une autre. « Où suis-je ? »',
               'Oskar : « Le nouveau corps de Pixel. Betti. Vite ! »',
             ],
@@ -147,8 +151,11 @@ export function placeFollower(g: Game) {
   follow.set(g, { x, y, px: x * 16, py: y * 16, dir: g.dir, last: `${g.x},${g.y}`, map: g.map.id });
 }
 
+/** Qui nous suit : Betti (avec le chien de métal), ou la maîtresse, la nuit du second chargement. */
+export const followWho = (g: Game) => (g.flags.has('bettiFollow') ? 'betti' : g.flags.has('profFollow') ? 'prof' : null);
+
 export function updateFollower(g: Game, dt: number) {
-  if (!g.flags.has('bettiFollow')) return;
+  if (!followWho(g)) return;
   let f = follow.get(g);
   if (!f || f.map !== g.map.id) {
     placeFollower(g);
@@ -172,21 +179,24 @@ export function updateFollower(g: Game, dt: number) {
 
 export function followerAt(g: Game, x: number, y: number) {
   const f = follow.get(g);
-  return !!f && g.flags.has('bettiFollow') && f.map === g.map.id && f.x === x && f.y === y;
+  return !!f && !!followWho(g) && f.map === g.map.id && f.x === x && f.y === y;
 }
 
-export function drawFollower(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number, look: PersonLook) {
+export function drawFollower(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number, looks: Record<string, PersonLook>) {
   const f = follow.get(g);
-  if (!f || !g.flags.has('bettiFollow') || f.map !== g.map.id) return;
+  const who = followWho(g);
+  if (!f || !who || f.map !== g.map.id) return;
+  const look = looks[who];
   const moving = Math.abs(f.px - f.x * 16) + Math.abs(f.py - f.y * 16) > 1;
   const frame = moving ? (Math.floor(g.time * 7) % 2 ? 1 : 2) : 0;
   c.drawImage(person(look, f.dir as Dir, frame), Math.round(f.px - ox), Math.round(f.py - oy) - 3);
   // le chien de métal, dans ses bras (jusqu'à ce que Pixel s'y éveille)
-  if (!g.flags.has('pixel2')) c.drawImage(dogSprite(f.dir === 'left' ? 'left' : 'right', { pose: 'lie', off: true }), Math.round(f.px - ox) + (f.dir === 'left' ? -5 : 5), Math.round(f.py - oy) + 1);
+  if (who === 'betti' && !g.flags.has('pixel2')) c.drawImage(dogSprite(f.dir === 'left' ? 'left' : 'right', { pose: 'lie', off: true }), Math.round(f.px - ox) + (f.dir === 'left' ? -5 : 5), Math.round(f.py - oy) + 1);
 }
 
 /** Ce que dit Betti en chemin : elle s'efface, pas à pas. */
 export function bettiTalk(g: Game) {
+  if (followWho(g) === 'prof') return ui.say(['La maîtresse me suit, les yeux mi-clos. « On va où ? À l’école ? »']);
   const lines: Record<string, string[]> = {
     serveurs: ['Betti regarde autour d’elle, perdue.', '« Qui êtes-vous ? … Et moi, qui suis-je ? »', 'Elle serre le dessin. Le chien de métal glisse un peu dans ses bras.'],
     ville: ['« On va où ? »', 'Elle regarde les lampadaires comme si elle les voyait pour la première fois.'],
@@ -278,7 +288,7 @@ export function rechargeBetti(g: Game) {
             g.flags.delete('bettiFollow');
             g.api.clue('azBettiRetour');
             g.save();
-            ui.say(['— Fin de la démo d’Azura —', 'La suite (rendre leur mémoire aux autres colons, chacun avec son ancre) arrive bientôt. Merci d’avoir joué.']);
+            startGlobal(g);
           },
         );
       });

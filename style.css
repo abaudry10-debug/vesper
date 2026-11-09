@@ -1403,3 +1403,25 @@ details.thread > summary.has-new .count { color: var(--accent-dark); }
   font-size: 13px;
   color: rgba(242, 233, 220, 0.45);
 }
+
+/* ---------- le journal qui s'efface (Azura, la fin) ---------- */
+.clue.faded, .clue.fading-now { background: rgba(251, 243, 223, 0.35); border-left-color: #c9b48a; }
+.clue.faded strong, .clue.faded p, .clue.fading-now strong, .clue.fading-now p { color: #8a7a68; }
+.clue span.ghost { opacity: 0.5; filter: blur(0.3px); }
+.clue span.lost { opacity: 0.06; filter: blur(2px); }
+.clue span.anim { opacity: 1; filter: none; animation: az-dissolve 1.7s ease-in forwards; display: inline-block; white-space: pre; }
+.clue span.ghost.anim { animation-name: az-dim; }
+@keyframes az-dissolve {
+  0% { opacity: 1; color: #2c5c58; transform: none; filter: none; text-shadow: none; }
+  30% { opacity: 1; color: #2a9d9a; text-shadow: 0 0 6px #5ff0e0, 0 0 12px #5ff0e0; }
+  100% { opacity: 0.06; color: #5ff0e0; transform: translateY(-10px) rotate(10deg); filter: blur(2px); text-shadow: 0 0 10px #5ff0e0; }
+}
+@keyframes az-dim {
+  0% { opacity: 1; color: #2c5c58; filter: none; }
+  40% { color: #2a9d9a; text-shadow: 0 0 5px #5ff0e0; }
+  100% { opacity: 0.5; filter: blur(0.3px); }
+}
+.clue.fading-now { animation: az-card-glow 3.6s ease-out; }
+@keyframes az-card-glow { 0% { box-shadow: 0 0 0 rgba(95, 240, 224, 0); } 25% { box-shadow: 0 0 16px rgba(95, 240, 224, 0.75); } 100% { box-shadow: 0 0 0 rgba(95, 240, 224, 0); } }
+.clue.keep { background: #efe3c8; border-left-color: #24264a; }
+.clue.keep strong, .clue.keep p { color: #24264a; font-family: "Snell Roundhand", "Bradley Hand", "Segoe Script", cursive; font-style: italic; font-size: 1.1em; }

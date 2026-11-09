@@ -1675,7 +1675,7 @@ export class Game {
   openJournal() {
     ui.renderJournal(this.clues, this.fresh, this.openQ, this.solvedQ, (id) => this.flags.has(id) || this.items.has(id),
       ch().achievements.map((a) => ({ title: a.title, text: a.text, done: this.flags.has(`ach_${a.id}`), progress: `${Math.min(a.goal, this.counters[a.counter] ?? 0)}/${a.goal}` })),
-      (n) => this.replayMemory(n));
+      (n) => this.replayMemory(n), ch().hooks.journalFade?.(this));
     ui.setJournal(true);
     releaseAll();
     // tout ce qui vient d'être affiché est désormais « lu »

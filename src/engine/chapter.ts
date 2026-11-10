@@ -102,11 +102,27 @@ export interface Chapter {
   dev?: {
     /** Étapes de l'histoire : on pose ces drapeaux et objets, puis on se téléporte. */
     presets: { label: string; flags: string[]; items: string[]; at?: { map: string; x: number; y: number; dir: Dir } }[];
+    /** Le parcours complet du chapitre, étape par étape : sauter à une étape rejoue tout ce qui précède
+     *  (drapeaux, sac, journal, heure), comme si on avait joué jusque-là. Les parties « opt » (facultatives)
+     *  ne sont appliquées qu'en parcours complet. */
+    journey?: JourneyStep[];
     /** Actions propres au chapitre (lancer la fin…). */
     actions: { label: string; run(g: Game): void }[];
   };
   /** Ce que ce chapitre transmet au suivant quand on le termine. */
   legacy?(g: Game): Record<string, unknown>;
+}
+
+export interface JourneyPart { flags?: string[]; items?: string[]; drop?: string[]; clues?: string[]; unflag?: string[] }
+export interface JourneyStep extends JourneyPart {
+  /** Une étape où l'on peut sauter (sinon, juste un morceau du parcours). */
+  label?: string;
+  at?: { map: string; x: number; y: number; dir: Dir };
+  counters?: Record<string, number>;
+  /** Pixel nous suit à cette étape. */
+  pixel?: boolean;
+  /** Ce qu'on ne fait qu'en jouant tout (objets facultatifs, découvertes annexes). */
+  opt?: JourneyPart;
 }
 
 let current: Chapter | null = null;

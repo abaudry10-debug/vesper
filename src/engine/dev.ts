@@ -1,6 +1,7 @@
 // Mode développeur, caché : ?dev dans l'adresse, ou cinq touchers rapides sur le titre.
 // Un petit bouton « DEV » ouvre un panneau : se téléporter, prendre un objet, sauter
 // à une étape de l'histoire, déclencher une vague, revoir un souvenir, lancer la fin.
+import type { JourneyPart } from './chapter.js';
 import { ch } from './chapter.js';
 import type { Game } from './game.js';
 import type { Dir } from './sprites.js';
@@ -116,7 +117,64 @@ export function setupDev(getGame: () => Game, inGame: () => boolean, restarts: D
     const items = section('Prendre un objet');
     for (const [id, it] of Object.entries(c.items)) action(items, it.name, () => getGame().api.item(id));
 
-    if (c.dev?.presets.length) {
+    if (c.dev?.journey?.length) {
+      const steps = section('Sauter à une étape');
+      const full = () => {
+        try {
+          return localStorage.getItem('vesper.dev.parcours') !== 'minimal';
+        } catch {
+          return true;
+        }
+      };
+      const mode = el('button', `Parcours : ${full() ? 'complet' : 'minimal'}`);
+      mode.addEventListener('click', () => {
+        try {
+          localStorage.setItem('vesper.dev.parcours', full() ? 'minimal' : 'complet');
+        } catch {
+          /* rien */
+        }
+        mode.textContent = `Parcours : ${full() ? 'complet' : 'minimal'}`;
+      });
+      steps.append(mode);
+      const journey = c.dev.journey;
+      journey.forEach((st, idx) => {
+        if (!st.label) return;
+        action(steps, st.label, () => {
+          const g = getGame();
+          // on repart de zéro, puis on rejoue tout le parcours jusqu'à cette étape
+          g.flags.clear();
+          g.items.clear();
+          g.clues.clear();
+          for (const k of Object.keys(g.counters)) delete g.counters[k];
+          const apply = (p: JourneyPart) => {
+            for (const f of p.flags ?? []) g.flags.add(f);
+            for (const f of p.unflag ?? []) g.flags.delete(f);
+            for (const i of p.items ?? []) g.items.add(i);
+            for (const i of p.drop ?? []) g.items.delete(i);
+            for (const k of p.clues ?? []) g.clues.add(k);
+          };
+          let at = st.at;
+          let pixel = false;
+          for (const s2 of journey.slice(0, idx + 1)) {
+            apply(s2);
+            if (full() && s2.opt) apply(s2.opt);
+            Object.assign(g.counters, s2.counters ?? {});
+            if (s2.at) at = s2.at;
+            if (s2.pixel !== undefined) pixel = s2.pixel;
+          }
+          g.heroAlpha = 1;
+          g.blackout = false;
+          g.refreshQuestions(true);
+          g.save();
+          const dest = at ?? { map: g.map.id, x: g.x, y: g.y, dir: g.dir };
+          g.warp(dest.map, dest.x, dest.y, dest.dir);
+          window.setTimeout(() => {
+            g.pixel = pixel ? { x: dest.x, y: dest.y + 1, dir: 'up', moving: null } : null;
+          }, 450);
+          ui.toast(`Étape : ${st.label} (${full() ? 'complet' : 'minimal'})`);
+        });
+      });
+    } else if (c.dev?.presets.length) {
       const steps = section('Sauter à une étape');
       for (const p of c.dev.presets)
         action(steps, p.label, () => {

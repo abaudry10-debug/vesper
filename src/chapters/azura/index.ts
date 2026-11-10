@@ -15,6 +15,7 @@ import { openBulletin } from './bulletin.js';
 import { openCloneSchema, openCurveHand, openOskarWall } from './schemas.js';
 import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, useCrank, usePump } from './centre.js';
 import { openKeypad } from './panneaux.js';
+import { JOURNEY_AZ } from './parcours.js';
 import { openSatellite } from './animations.js';
 import { anchorsDone, drawAnchorGlints, drawSleepers, finale, journalFade, nightInteract, nightUseItem, updateFinale } from './ancres.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
@@ -1134,21 +1135,8 @@ export const azura: Chapter = {
   people: PEOPLE,
   heroLook: HERO_AZ,
   dev: {
-    presets: [
-      { label: 'Centre de clonage', flags: [], items: [], at: { map: 'cuves', x: 27, y: 10, dir: 'up' } },
-      { label: 'Arrivée en ville', flags: ['villeSeen', 'bettiMet'], items: [], at: { map: 'ville', x: 17, y: 5, dir: 'down' } },
-      { label: 'École (jour 1)', flags: ['villeSeen', 'bettiMet'], items: [], at: { map: 'ville', x: 27, y: 6, dir: 'up' } },
-      { label: 'Le soir (lit)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone'], items: [], at: { map: 'atelier', x: 7, y: 5, dir: 'right' } },
-      { label: 'Jour 2 (après l’école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard'], items: [], at: { map: 'ville', x: 15, y: 15, dir: 'up' } },
-      { label: 'Jour 3 (réveil)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3'], items: [], at: { map: 'atelier', x: 7, y: 5, dir: 'left' } },
-      { label: 'Jour 4 (réveil)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'canneTaken', 'cabaneOpen', 'oskarDeal', 'centreOpen', 'centreIn', 'inflowCut', 'drained', 'powerOn', 'serverRead', 'oskarIn', 'pxFound', 'jour4'], items: ['canne'], at: { map: 'atelier', x: 7, y: 5, dir: 'left' } },
-      { label: 'Jour 4 (Vesper, R-7)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'canneTaken', 'cabaneOpen', 'oskarDeal', 'centreOpen', 'centreIn', 'pxFound', 'jour4', 'j4Moons', 'sireneOn', 'vague', 'barqueOk', 'jossSaved', 'jossLeft', 'j4Oskar', 'j4Confession', 'j4Plans', 'j4Soir', 'j4Plan'], items: ['canne'], at: { map: 'pilotes', x: 8, y: 3, dir: 'up' } },
-      { label: 'Jour 4 (nuit, après le transfert)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'canneTaken', 'cabaneOpen', 'oskarDeal', 'centreOpen', 'centreIn', 'inflowCut', 'drained', 'powerOn', 'serverRead', 'oskarIn', 'pxFound', 'jour4', 'j4Moons', 'sireneOn', 'vague', 'barqueOk', 'jossSaved', 'jossLeft', 'j4Oskar', 'j4Confession', 'j4Plans', 'j4Soir', 'j4Plan', 'r7Up', 'bs1Taken', 'bs1OnPlate', 'bs1Charged', 'bs1PickedUp', 'pixelWake', 'pixelSent', 'oubli'], items: ['canne'], at: { map: 'ville', x: 17, y: 15, dir: 'down' } },
-      { label: 'Jour 4 (nuit, les cinq ancres)', flags: ['bettiJoins', 'pixel2', 'pixelOn', 'bettiRestored', 'chargeGlobal', 'villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'canneTaken', 'cabaneOpen', 'oskarDeal', 'centreOpen', 'centreIn', 'inflowCut', 'drained', 'powerOn', 'serverRead', 'oskarIn', 'pxFound', 'jour4', 'j4Moons', 'sireneOn', 'vague', 'barqueOk', 'jossSaved', 'jossLeft', 'j4Oskar', 'j4Confession', 'j4Plans', 'j4Soir', 'j4Plan', 'r7Up', 'bs1Taken', 'bs1OnPlate', 'bs1Charged', 'bs1PickedUp', 'pixelWake', 'pixelSent', 'oubli'], items: ['canne'], at: { map: 'ville', x: 6, y: 13, dir: 'up' } },
-      { label: 'Jour 3 (cabane de Joss)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3'], items: [], at: { map: 'chemin', x: 6, y: 17, dir: 'left' } },
-      { label: 'Jour 3 (centre, avec Oskar)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'soirSeen', 'bettiHome', 'jour2', 'lesson2Heard', 'tideWitnessed', 'jour3', 'lesson3Heard', 'carnetRead', 'oskarDeal', 'centreOpen'], items: [], at: { map: 'cuves', x: 27, y: 9, dir: 'up' } },
-      { label: 'Jour 2 (école)', flags: ['villeSeen', 'bettiMet', 'tideRead', 'drawingSeen', 'pixelTalk', 'lesson1Heard', 'helpDone', 'lakeScene', 'bettiHome', 'jour2'], items: [], at: { map: 'ville', x: 27, y: 6, dir: 'up' } },
-    ],
+    presets: [],
+    journey: JOURNEY_AZ,
     actions: [],
   },
   begin(g: Game) {

@@ -158,11 +158,17 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     ),
   serveurs: (api) =>
     api.say(
-      [
-        'Une large vitre. Derrière, une salle pleine d’armoires de serveurs.',
-        'L’eau leur arrive à mi-hauteur. Turquoise, immobile. Plus un voyant ne brille.',
-        'Sur le mur du fond, une trace sèche, bien plus haut : l’eau est déjà montée jusque-là.',
-      ],
+      api.has('chargeGlobal')
+        ? ['Par la vitre, la salle des serveurs. Sèche, allumée. Au centre, le cœur de mémoire brille de milliers de lumières.']
+        : api.has('powerOn')
+          ? ['Par la vitre, la salle des serveurs. Vidée, les néons allumés.', 'Sur les armoires, une ligne sèche marque encore la hauteur de l’eau.']
+          : api.has('drained')
+            ? ['Par la vitre, la salle des serveurs. L’eau est partie.', 'Les armoires ruissellent encore, dans le noir. Plus un voyant ne brille.']
+            : [
+                'Une large vitre. Derrière, une salle pleine d’armoires de serveurs.',
+                'L’eau leur arrive à mi-hauteur. Turquoise, immobile. Plus un voyant ne brille.',
+                'Sur le mur du fond, une trace sèche, bien plus haut : l’eau est déjà montée jusque-là.',
+              ],
       () => api.clue('azServeurs'),
     ),
   navette: (api) =>

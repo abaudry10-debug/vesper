@@ -1297,6 +1297,14 @@ registerTiles({
   netWall, tackleShelf, cabinTableBook: table(true), cabinTable: table(false), barrel,
 });
 registerIcons({
+  maquette: (c) => {
+    // la navette Aurore, en petit : coque blanche, hublots, ailerons, un socle
+    r(c, 2, 6, 12, 5, AZ.ink); r(c, 3, 7, 10, 3, '#e8e8f0'); r(c, 12, 8, 2, 1, '#e8e8f0');
+    r(c, 5, 8, 1, 1, AZ.tealDark); r(c, 7, 8, 1, 1, AZ.tealDark); r(c, 9, 8, 1, 1, AZ.tealDark);
+    r(c, 3, 4, 3, 3, AZ.ink); r(c, 4, 5, 2, 2, '#c8ccd4'); r(c, 3, 10, 3, 2, '#c8ccd4');
+    r(c, 1, 8, 2, 1, '#ffd45e');
+    r(c, 7, 11, 2, 3, AZ.metalDark); r(c, 4, 14, 8, 1, '#7a5034');
+  },
   carnetJoss: (c) => {
     r(c, 3, 2, 10, 12, AZ.ink); r(c, 4, 3, 8, 10, '#7a4a2a'); r(c, 4, 3, 8, 1, '#a86a3a');
     r(c, 6, 6, 4, 3, '#d8b070'); r(c, 12, 4, 1, 8, '#f2e9dc'); r(c, 5, 12, 2, 1, '#5ff0e0');

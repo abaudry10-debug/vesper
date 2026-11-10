@@ -421,11 +421,11 @@ export function openAnchorWall(done: boolean[], cb: () => void) {
   c.lineWidth = 6;
   c.strokeRect(3, 3, W - 6, H - 6);
   const cards: [string, string[], string][] = [
-    ['JOSS', ['Dort : la passerelle,', 'au bord du lac.', 'Déclic : son carnet.', '(sa barque est revenue…)'], '#fffdf4'],
-    ['NORA VEY', ['Dort : sous un lampadaire,', 'sur la place.', 'Déclic : son premier', 'bulletin (je l’ai !)'], '#e0f0e0'],
-    ['TOM', ['Dort : au pied de la tour.', 'Déclic : la sirène.', 'Il faut qu’il l’entende.'], '#fff0a0'],
-    ['LA MAÎTRESSE', ['Dort : à l’école.', 'Déclic : la navette.', 'La plaque, près des cuves.', 'L’y emmener.'], '#ffd0e0'],
-    ['MME ILDA', ['Dort : devant son étal.', 'Déclic : un fruit.', 'Elle accueillait tout le', 'monde avec un fruit.'], '#e8f0f4'],
+    ['JOSS', ['Dort : la passerelle,', 'au bord du lac.', 'Ce qui comptait : la pêche,', 'tous les jours, quoi qu’il arrive.'], '#fffdf4'],
+    ['NORA VEY', ['Dort : sous un lampadaire,', 'sur la place.', 'Ce qui comptait : son premier', 'bulletin. (Je te l’ai donné !)'], '#e0f0e0'],
+    ['TOM', ['Dort : au pied de la tour.', 'Ce qui comptait : toujours', 'un outil à la main.'], '#fff0a0'],
+    ['LA MAÎTRESSE', ['Dort : à l’école, à son bureau.', 'Ce qui comptait : ses leçons,', 'toujours la même histoire :', 'le voyage.'], '#ffd0e0'],
+    ['MME ILDA', ['Dort : devant son étal.', 'Ce qui comptait : accueillir', 'chaque nouveau avec quelque', 'chose de son étal.'], '#e8f0f4'],
   ];
   const pos: [number, number][] = [[18, 16], [190, 16], [104, 92], [18, 166], [190, 166]];
   cards.forEach(([name, lines, col], i) => {

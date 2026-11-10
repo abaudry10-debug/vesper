@@ -1367,9 +1367,8 @@ export const azura: Chapter = {
         return true;
       }
       // le jour 4 : rendre sa pince à Tom ; la barque ; Joss sur l'îlot
-      if (obj?.id === 'tom' && g.flags.has('sireneOn') && g.items.has('pince')) {
-        g.items.delete('pince');
-        ui.say(['Je rends sa pince à Tom.', '« Garde-la, j’ai failli dire. Non, rends-la. » Il la serre dans sa main.', '« Je l’avais débranchée parce qu’elle sonnait pour rien. Elle ne sonnait pas pour rien. »'], () => g.save());
+      if (obj?.id === 'tom' && g.flags.has('sireneOn') && g.items.has('pince') && !g.flags.has('oubli')) {
+        ui.say(['Je lui tends sa pince.', '« Garde-la encore un peu. Tu me la rendras. »', '« Je l’avais débranchée parce qu’elle sonnait pour rien. Elle ne sonnait pas pour rien. »']);
         return true;
       }
       if (obj?.id === 'barqueQuai') {

@@ -5,12 +5,11 @@
 // Puis l'aube du jour 5 (la leçon juste), et la fin : le journal s'efface en entier.
 import type { Game } from '../../engine/game.js';
 import type { MapObject } from '../../engine/world.js';
-import { playEnding, setHeatSound, sfx } from '../../engine/audio.js';
+import { playEnding, sfx } from '../../engine/audio.js';
 import * as ui from '../../engine/ui.js';
 import { T } from '../../engine/sprites.js';
 import { ANCHOR_MEMORIES } from './ancresSouvenirs.js';
 import { projectCustom, projectMemory } from './souvenirs.js';
-import { placeFollower } from './nuit.js';
 import { openAnchorWall } from './schemas.js';
 import { playFinale, playGlobalLoad } from './animations.js';
 
@@ -18,7 +17,8 @@ export const ANCHORS = ['joss', 'nora', 'tom', 'prof', 'ilda'] as const;
 type Who = (typeof ANCHORS)[number];
 const NAME: Record<Who, string> = { joss: 'Joss', nora: 'Nora', tom: 'Tom', prof: 'la maîtresse', ilda: 'Mme Ilda' };
 const NPC: Record<string, Who> = { jossQuai: 'joss', nora: 'nora', tom: 'tom', prof: 'prof', ilda: 'ilda' };
-const ITEM: Partial<Record<Who, string>> = { joss: 'carnetJoss', nora: 'bulletin0', ilda: 'fruit' };
+// les déclics : des objets qu'on a dans le sac (parfois depuis longtemps), à utiliser face à la personne
+const ITEM: Record<Who, string> = { joss: 'canne', nora: 'bulletin0', tom: 'pince', prof: 'maquette', ilda: 'fruit' };
 
 const done = (g: Game, w: Who) => g.flags.has(`ancre_${w}`);
 export const anchorsDone = (g: Game) => ANCHORS.filter((w) => done(g, w)).length;
@@ -80,11 +80,18 @@ function fadeMore(g: Game, k: number) {
 
 // ---------- rendre une ancre ----------
 const AFTER: Record<Who, string[]> = {
-  joss: ['Joss serre le carnet contre lui. Il ouvre la première page.', '« Le premier poisson d’Azura… Il brillait. Je l’ai noté là, page une. »', '« Je me souviens. De tout. »'],
+  joss: ['Joss serre la canne entre ses doigts. Il la soupèse, comme pour lancer.', '« Le premier poisson d’Azura… Il brillait. Je l’ai noté, page une. »', '« Je me souviens. De tout. »'],
   nora: ['Nora fixe le bulletin. Ses lèvres bougent : six heures, dix-huit heures…', '« Et une heure de plus chaque jour. Je le savais. Je recopiais sans le voir. »', '« Plus jamais. Je recalculerai. Chaque matin. »'],
-  tom: ['Tom se redresse d’un bond, la pince à la main.', '« La sirène ! C’est moi qui l’ai installée, l’an 1. »', '« Et ce matin, on l’a rebranchée. Toi et moi. Hein ? »'],
-  prof: ['La maîtresse pose la main sur la plaque. « Aurore — 1. »', '« D’où venons-nous ? … De Vesper. »', '« Demain matin, je leur raconterai tout. Correctement, cette fois. »'],
-  ilda: ['Mme Ilda prend le fruit. Elle le regarde. Puis elle me regarde, moi.', '« Toi, tu es le petit de la cuve 07. Je t’ai souhaité la bienvenue deux fois, hein ? »', 'Elle rit. Un vrai rire.'],
+  tom: ['Tom referme la main sur sa pince. Il ouvre les yeux.', '« Tu me l’as rendue… La sirène ! C’est moi qui l’ai installée, l’an 1. »', '« Et ce matin, on l’a rebranchée. Toi et moi. Hein ? »'],
+  prof: ['La maîtresse fait tourner la maquette entre ses doigts. « Aurore — 1. »', '« D’où venons-nous ? … De Vesper. »', '« Demain matin, je leur raconterai tout. Correctement, cette fois. »'],
+  ilda: ['Mme Ilda prend le fruit. Elle le regarde. Puis elle me regarde, moi.', '« C’est moi qui te l’ai donné. Le jour de ton arrivée. Tu l’as gardé tout ce temps ? »', 'Elle rit. Un vrai rire.'],
+};
+const GIVE: Record<Who, string> = {
+  joss: 'Je pose la canne à pêche entre les mains de Joss.',
+  nora: 'Je glisse le vieux bulletin entre les mains de Nora.',
+  tom: 'Je glisse la pince dans la main ouverte de Tom. « Tu m’avais dit de te la rendre. »',
+  prof: 'Je pose la maquette de la navette sur son bureau, juste devant elle.',
+  ilda: 'Je lui tends le fruit qu’elle m’avait offert. « Bienvenue, Mme Ilda. »',
 };
 
 function restore(g: Game, w: Who, intro: string[]) {
@@ -93,9 +100,7 @@ function restore(g: Game, w: Who, intro: string[]) {
     g.locked = true;
     projectCustom(ANCHOR_MEMORIES[w], () => {
       g.locked = false;
-      const it = ITEM[w];
-      if (it) g.items.delete(it);
-      if (w === 'prof') g.flags.delete('profFollow');
+      g.items.delete(ITEM[w]);
       g.flags.add(`ancre_${w}`);
       sfx.success();
       const first = ![...g.flags].some((f) => f.startsWith('f:'));
@@ -103,7 +108,7 @@ function restore(g: Game, w: Who, intro: string[]) {
       const n = anchorsDone(g);
       ui.say(
         [
-          ...AFTER[w],
+          ...(w === 'ilda' && g.flags.has('fruitEtal') ? [AFTER.ilda[0], '« Un fruit de mon étal… Toi, tu es le petit de la cuve 07. Je t’ai souhaité la bienvenue deux fois, hein ? »', AFTER.ilda[2]] : AFTER[w]),
           `Au loin, un pylône de plus passe au turquoise. (${n} / 5)`,
           ...(first
             ? ['Et moi… Il y avait quelque chose, juste là. Un nom, un endroit. Parti.', '(Ouvre ton journal.)']
@@ -124,9 +129,9 @@ function restore(g: Game, w: Who, intro: string[]) {
 
 /** Les cinq colons, endormis : ce qu'on voit d'eux tant qu'ils n'ont pas leur ancre. */
 const SLEEP: Record<Who, string> = {
-  joss: 'Joss dort sur la passerelle, assis contre un poteau. Ses mains cherchent quelque chose sur ses genoux.',
+  joss: 'Joss dort sur la passerelle, assis contre un poteau. Ses mains cherchent quelque chose, comme si elles tenaient une ligne.',
   nora: 'Nora dort sous un lampadaire. Elle murmure des chiffres.',
-  tom: 'Tom dort au pied de la tour, la pince à la main. Il tressaille, comme s’il guettait un bruit.',
+  tom: 'Tom dort au pied de la tour, la main ouverte. Il lui manque quelque chose, dans cette main.',
   prof: 'La maîtresse dort à son bureau, la joue sur ses notes.',
   ilda: 'Mme Ilda dort contre son étal, la main tendue vers la rue vide.',
 };
@@ -155,33 +160,14 @@ export function nightInteract(g: Game, obj: MapObject | undefined, fx: number, f
     return true;
   }
   const seen = g.flags.has('ficheVue');
-  // les ancres à trouver
-  if (obj?.id === 'barqueQuai' && !done(g, 'joss') && !g.items.has('carnetJoss')) {
-    ui.say(['Au fond de la barque de Joss, sous un filet : un petit carnet de cuir, trempé.', 'Son carnet. Il l’avait emporté sur son île.'], () => {
-      g.items.add('carnetJoss');
-      sfx.select();
-      g.save();
-    });
-    return true;
-  }
+  // si on n'a jamais pris le fruit, ou la maquette : ils sont encore là, la nuit
   if (obj?.id === 'etal' && seen && !done(g, 'ilda') && !g.items.has('fruit')) {
     ui.say(['L’étal de Mme Ilda. Je prends un fruit, orange, encore tiède du soleil.'], () => {
       g.items.add('fruit');
+      g.flags.add('fruitEtal');
       sfx.select();
       g.save();
     });
-    return true;
-  }
-  if (obj?.id === 'sirene' && seen && !done(g, 'tom')) {
-    sfx.select();
-    setHeatSound(0.6, 0);
-    window.setTimeout(() => setHeatSound(0, 0), 2600);
-    ui.say(['J’abaisse la manette. La sirène hurle sur la ville endormie.', 'Au pied de la tour, Tom ouvre les yeux.'], () => restore(g, 'tom', []));
-    return true;
-  }
-  const atShuttle = obj?.id === 'plaqueNavette' || (!obj && g.map.id === 'cuves' && fx >= 25 && fx <= 31 && fy >= 11 && fy <= 15);
-  if (atShuttle && g.flags.has('profFollow') && !done(g, 'prof')) {
-    restore(g, 'prof', ['La maîtresse s’arrête devant la navette. Elle lève la tête, longtemps.']);
     return true;
   }
   // les autres : ils dorment, le chargement passe ; Mina, elle, veille
@@ -200,17 +186,19 @@ export function nightInteract(g: Game, obj: MapObject | undefined, fx: number, f
       ui.say([w === 'prof' ? '« Demain, la leçon. La vraie. »' : '« Je me souviens. Merci, petit. »']);
       return true;
     }
-    if (w === 'prof' && seen && !g.flags.has('profFollow')) {
-      ui.say(['La maîtresse ouvre les yeux à moitié. « La leçon… Quelle leçon ? »', 'Je lui prends la main. Elle se lève et me suit, sans un mot. Jusqu’à la navette, près des cuves.'], () => {
-        g.flags.add('profFollow');
-        placeFollower(g);
+    if (w === 'prof' && seen && !g.items.has('maquette')) {
+      ui.say([SLEEP[w], 'Sur son bureau, à côté d’elle : la maquette de la navette Aurore. Je la prends.'], () => {
+        g.items.add('maquette');
+        sfx.select();
         g.save();
       });
       return true;
     }
-    const it = ITEM[w];
-    if (it && g.items.has(it)) {
-      restore(g, w, [w === 'joss' ? 'Je pose le carnet sur les genoux de Joss.' : w === 'nora' ? 'Je glisse le vieux bulletin entre les mains de Nora.' : 'Je lui tends le fruit. « Bienvenue, Mme Ilda. »']);
+    if (w === 'tom' && seen && !g.items.has('pince')) {
+      ui.say([SLEEP[w], 'Sa pince est tombée dans l’herbe, à côté de lui. Je la ramasse.'], () => {
+        g.items.add('pince');
+        g.save();
+      });
       return true;
     }
     ui.say([SLEEP[w], ...(seen ? [] : ['Le chargement n’a pas pris, chez elle ou chez lui. Oskar a dit : « Venez chez moi. »'])]);
@@ -219,17 +207,24 @@ export function nightInteract(g: Game, obj: MapObject | undefined, fx: number, f
   return false;
 }
 
-/** Utiliser une ancre depuis le sac : il faut être face à la bonne personne. */
+/** La nuit, utiliser un objet du sac face à l'un des cinq : le bon objet fait le déclic. Ailleurs, ou
+ *  avec un autre objet, on laisse le jeu faire comme d'habitude (la canne pêche, etc.). */
 export function nightUseItem(g: Game, id: string): boolean {
-  const w = (Object.keys(ITEM) as Who[]).find((k) => ITEM[k] === id);
-  if (!w) return false;
+  if (!nightOn(g)) return false;
   const [fx, fy] = g.facing();
-  const o = g.map.objects.find((x) => x.x === fx && x.y === fy && NPC[x.id] === w);
-  if (!o || !nightOn(g)) {
-    ui.say([`Le déclic de ${NAME[w]}. Il faudrait être devant ${w === 'ilda' || w === 'nora' ? 'elle' : 'lui'}.`]);
+  const o = g.objAt(fx, fy);
+  const w = o ? NPC[o.id] : undefined;
+  if (!w) return false;
+  if (done(g, w)) {
+    ui.say(['« Je me souviens. Merci, petit. »']);
     return true;
   }
-  return nightInteract(g, o, fx, fy);
+  if (ITEM[w] !== id) {
+    ui.say([`${NAME[w][0].toUpperCase()}${NAME[w].slice(1)} ne réagit pas. Ce n’est pas ça qui compte pour ${w === 'joss' || w === 'tom' ? 'lui' : 'elle'}.`]);
+    return true;
+  }
+  restore(g, w, [GIVE[w]]);
+  return true;
 }
 
 function oskarNight(g: Game) {
@@ -242,6 +237,7 @@ function oskarNight(g: Game) {
       'Oskar est déjà là, devant son mur. Il a tout décroché… sauf cinq fiches, au centre.',
       '« Joss, Nora, Tom, la maîtresse, Mme Ilda. Ceux qui ont le plus lutté contre l’oubli. Ceux qui ont tout noté, tout répété. »',
       '« Pendant des années, j’ai écrit ce qui comptait pour chacun. On se moquait de moi. »',
+      '« Le déclic, c’est à toi de le trouver. Quelque chose que tu as croisé avec eux, ces derniers jours. »',
       'Il décroche un vieux papier jauni, tout en bas du mur.',
       '« Tiens. Le premier bulletin de Nora, jour 1, an 0. Le plus vieux de ma collection. »',
     ],
@@ -256,28 +252,16 @@ function oskarNight(g: Game) {
   );
 }
 
-/** La nuit, une fois les fiches lues : un petit éclat sur ce qu'il faut aller chercher (le carnet dans
- *  la barque, les fruits de l'étal, la sirène, la navette quand la maîtresse nous suit). */
+/** La nuit, si on n'a jamais pris le fruit de Mme Ilda : un petit éclat sur son étal. */
 export function drawAnchorGlints(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
-  if (!nightOn(g) || !g.flags.has('ficheVue')) return;
-  const spots: [number, number][] = [];
-  const at = (id: string) => g.map.objects.find((o) => o.id === id);
-  if (g.map.id === 'ville') {
-    const barque = at('barqueQuai'), etal = at('etal'), sir = at('sirene');
-    if (barque && !done(g, 'joss') && !g.items.has('carnetJoss')) spots.push([barque.x, barque.y]);
-    if (etal && !done(g, 'ilda') && !g.items.has('fruit')) spots.push([etal.x, etal.y]);
-    if (sir && !done(g, 'tom')) spots.push([sir.x, sir.y]);
-  }
-  if (g.map.id === 'cuves' && g.flags.has('profFollow')) spots.push([28, 12]);
-  for (const [x, y] of spots) {
-    const k = (Math.sin(g.time * 4 + x) + 1) / 2;
-    const cx = x * T + 8 - ox, cy = y * T + 4 - oy;
-    c.fillStyle = `rgba(216,255,250,${0.35 + k * 0.6})`;
-    c.fillRect(cx - 3, cy, 7, 1);
-    c.fillRect(cx, cy - 3, 1, 7);
-    c.fillStyle = `rgba(95,240,224,${0.2 + k * 0.3})`;
-    c.fillRect(cx - 1, cy - 1, 3, 3);
-  }
+  if (!nightOn(g) || !g.flags.has('ficheVue') || g.map.id !== 'ville') return;
+  const etal = g.map.objects.find((o) => o.id === 'etal');
+  if (!etal || done(g, 'ilda') || g.items.has('fruit')) return;
+  const k = (Math.sin(g.time * 4) + 1) / 2;
+  const cx = etal.x * T + 8 - ox, cy = etal.y * T + 4 - oy;
+  c.fillStyle = `rgba(216,255,250,${0.35 + k * 0.6})`;
+  c.fillRect(cx - 3, cy, 7, 1);
+  c.fillRect(cx, cy - 3, 1, 7);
 }
 
 /** La nuit : de petits « z » au-dessus des dormeurs. */

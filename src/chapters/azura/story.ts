@@ -92,7 +92,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Oskar m’attend devant la porte du centre, près des cuves.', doneWhen: 'centreIn' },
   { id: 'azlOskar', thread: 'leads', title: 'Oskar', text: 'Dans le carnet de Joss, une note de sa main : « Dire au petit nouveau : Oskar veut le voir. La maison à l’étiquette. » Une étiquette… La porte marquée « PORTE », dans la ville ?', doneWhen: 'oskarDeal' },
   { id: 'azlCinq', thread: 'leads', title: 'Cinq échecs', text: 'Le second chargement est passé par les pylônes, pendant le sommeil. Cinq colons n’ont pas accroché. Oskar sait qui : « Venez chez moi. C’est sur mon mur. »', doneWhen: 'ficheVue' },
-  { id: 'azlAncres', thread: 'leads', title: 'Les cinq déclics', text: 'Un déclic : quelque chose qui compte pour la personne (un objet, un son, un lieu) et qui fait revenir le souvenir. Joss : son carnet. Nora : son premier bulletin. Tom : la sirène. La maîtresse : la navette. Mme Ilda : un fruit.', doneWhen: 'ancresOk' },
+  { id: 'azlAncres', thread: 'leads', title: 'Les cinq déclics', text: 'Un déclic : un objet qui compte pour la personne, et qui fait revenir le souvenir. Oskar a noté ce qui comptait pour chacun ; à moi de trouver, dans mon sac, ce qui leur ressemble. (Utiliser l’objet face à la personne.)', doneWhen: 'ancresOk' },
   { id: 'azlDormir', thread: 'leads', title: 'Tous les pylônes brillent', text: 'Les cinq ont retrouvé la mémoire. Rentrer dormir chez Betti.', doneWhen: 'aube' },
   { id: 'azlAube', thread: 'leads', title: 'La leçon', text: 'Ce matin, toute la ville va à l’école. La maîtresse a une leçon à refaire.', doneWhen: 'lesson5Heard' },
   { id: 'azDernier', thread: 'leads', title: 'À ne pas oublier', text: 'Tu es le sujet 07. Le chien s’appelle Pixel. Il t’a attendu.' },
@@ -121,14 +121,15 @@ export const QUESTIONS_AZ: Question[] = [
 
 export const ITEMS_AZ: Record<string, ItemDef> = {
   canne: { name: 'Canne à pêche', text: 'La canne de Joss, avec son moulinet et un bouchon rouge et blanc. Joss pêche toujours depuis son ponton.', usable: true },
-  pince: { name: 'Pince de Tom', text: 'Une pince d’électricien, aux poignées rouges. Tom ne la quitte jamais.' },
+  pince: { name: 'Pince de Tom', text: 'Une pince d’électricien, aux poignées rouges. Tom ne la quitte jamais. « Rends-la-moi après, hein. »', usable: true },
   cable: { name: 'Câble électrique', text: 'Un petit câble électrique neuf, trouvé dans la salle des serveurs du centre de clonage.', usable: true },
   liaison: { name: 'Commandes de R-7', text: 'Les commandes du robot de patrouille, depuis la console du centre des pilotes. On peut les rendre à tout moment : R-7 restera où il est.', usable: true },
   bs1Vide: { name: 'BS-1 (vide)', text: 'La batterie de Pixel, retirée de ma capsule. Le voyant est éteint. À recharger au soleil, sur la plaque de la place des Missions.', usable: true },
   battery: { name: 'BS-1 (chargée)', text: 'La batterie de Pixel, pleine. Il faut la brancher sur son dos.', usable: true },
   carnetJoss: { name: 'Carnet de Joss', text: 'Son carnet de pêche, trempé. Retrouvé au fond de sa barque. Le déclic de Joss.', usable: true },
-  bulletin0: { name: 'Premier bulletin', text: 'Le tout premier bulletin des eaux, jour 1, an 0, signé N. Vey. Le plus vieux de la collection d’Oskar. Le déclic de Nora.', usable: true },
-  fruit: { name: 'Fruit d’Azura', text: 'Un fruit orange, pris sur l’étal de Mme Ilda. Elle accueillait tout le monde avec. Le déclic de Mme Ilda.', usable: true },
+  bulletin0: { name: 'Premier bulletin', text: 'Le tout premier bulletin des eaux, jour 1, an 0, signé N. Vey. Le plus vieux de la collection d’Oskar.', usable: true },
+  fruit: { name: 'Fruit d’Azura', text: 'Orange, sucré, avec un goût de miel. Mme Ilda me l’a offert à mon arrivée.', usable: true },
+  maquette: { name: 'Maquette de la navette', text: 'Une petite maquette de la navette, peinte à la main : « AURORE — 1 ». La maîtresse me l’a donnée après sa leçon.', usable: true },
   badge: { name: 'Badge d’Oskar', text: 'Le badge de pilote d’Oskar : « AU-04 ». À passer devant la porte du centre de clonage. Il faut aussi le code : « le nombre de ceux qu’on a ramenés ».', usable: true },
   manivelle: { name: 'Manivelle', text: 'Une grosse manivelle d’acier, étiquetée « VIDANGE ». Pour la pompe de la salle des pompes.', usable: true },
   cleCabane: { name: 'Clé de la cabane', text: 'Une clé de cuivre, repêchée devant la cabane de Joss. Un petit médaillon gravé « J ».', usable: true },
@@ -272,9 +273,12 @@ export const SCRIPTS_AZ: Record<string, Script> = {
         [
           '« Oh, un nouveau visage ! Bienvenue à Nouvelle-Vesper, mon grand ! »',
           'Une vieille dame te sourit derrière son étal de fruits.',
-          '« Tout vient des vergers de la vallée. Repasse quand tu veux ! »',
+          '« Tiens, goûte-moi ça. Ça vient des vergers de la vallée. »',
         ],
-        () => api.set('ildaTalk'),
+        () => {
+          api.set('ildaTalk');
+          api.item('fruit');
+        },
       );
     }
     if (api.has('tideRead') && !api.has('ildaTwice')) {
@@ -672,8 +676,12 @@ export const SCRIPTS_AZ: Record<string, Script> = {
           '« Le jour du grand départ, les capsules ont envoyé nos esprits jusqu’ici… »',
           'Hélios… Sur Vesper, c’était la centrale. Pas la mission.',
           'Hier, elle disait Aurore. J’en suis sûr.',
+          'Après la leçon, la maîtresse s’approche, une petite maquette à la main.',
+          '« Tiens. Garde-la : tu viens d’arriver, ça t’aidera à retenir. »',
+          'Une maquette de la navette. Sur la coque, en lettres peintes : « AURORE — 1 ».',
         ],
         () => {
+          api.item('maquette');
           api.set('lesson2Heard');
           api.clue('azLecon2');
           api.clue('azMina');

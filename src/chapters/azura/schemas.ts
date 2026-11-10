@@ -75,7 +75,7 @@ export function openCloneSchema(done: () => void) {
     'az-schema',
     `<h3>MISSION AURORE — LE TRANSFERT</h3><canvas></canvas>
     <ol>
-      <li><b>Vesper.</b> La navette Aurore part avec <b>12 pilotes</b>. À bord : les <b>données biologiques</b> des 4 212 habitants. 212 ans de voyage.</li>
+      <li><b>Vesper.</b> La navette Aurore part avec <b>12 pilotes</b>. À bord : les <b>données biologiques</b> des 4 212 habitants. 212 ans de voyage.</li>
       <li><b>Azura.</b> Les pilotes cultivent les <b>clones</b>, un corps par habitant, et construisent les <b>cuves réceptrices</b>.</li>
       <li><b>Le grand départ.</b> Sur Vesper, chacun s’allonge dans sa <b>capsule</b>. L’antenne du spatioport envoie toutes les <b>mémoires</b> sur 47,2.</li>
       <li><b>L’arrivée.</b> Les mémoires sont reçues par le <b>serveur du centre de clonage</b>, puis chargées dans les nouveaux corps.</li>
@@ -421,11 +421,11 @@ export function openAnchorWall(done: boolean[], cb: () => void) {
   c.lineWidth = 6;
   c.strokeRect(3, 3, W - 6, H - 6);
   const cards: [string, string[], string][] = [
-    ['JOSS', ['Dort : la passerelle,', 'au bord du lac.', 'Ancre : son carnet.', '(sa barque est revenue…)'], '#fffdf4'],
-    ['NORA VEY', ['Dort : sous un lampadaire,', 'sur la place.', 'Ancre : son premier', 'bulletin (je l’ai !)'], '#e0f0e0'],
-    ['TOM', ['Dort : au pied de la tour.', 'Ancre : la sirène.', 'Il faut qu’il l’entende.'], '#fff0a0'],
-    ['LA MAÎTRESSE', ['Dort : à l’école.', 'Ancre : la navette.', 'La plaque, près des cuves.', 'L’y emmener.'], '#ffd0e0'],
-    ['MME ILDA', ['Dort : devant son étal.', 'Ancre : un fruit.', 'Elle accueillait tout le', 'monde avec un fruit.'], '#e8f0f4'],
+    ['JOSS', ['Dort : la passerelle,', 'au bord du lac.', 'Déclic : son carnet.', '(sa barque est revenue…)'], '#fffdf4'],
+    ['NORA VEY', ['Dort : sous un lampadaire,', 'sur la place.', 'Déclic : son premier', 'bulletin (je l’ai !)'], '#e0f0e0'],
+    ['TOM', ['Dort : au pied de la tour.', 'Déclic : la sirène.', 'Il faut qu’il l’entende.'], '#fff0a0'],
+    ['LA MAÎTRESSE', ['Dort : à l’école.', 'Déclic : la navette.', 'La plaque, près des cuves.', 'L’y emmener.'], '#ffd0e0'],
+    ['MME ILDA', ['Dort : devant son étal.', 'Déclic : un fruit.', 'Elle accueillait tout le', 'monde avec un fruit.'], '#e8f0f4'],
   ];
   const pos: [number, number][] = [[18, 16], [190, 16], [104, 92], [18, 166], [190, 166]];
   cards.forEach(([name, lines, col], i) => {

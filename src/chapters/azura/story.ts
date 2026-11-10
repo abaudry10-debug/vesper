@@ -41,20 +41,20 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azMina', thread: 'ecole', title: 'Mina', text: 'Une élève, née sur Azura, a corrigé la maîtresse : « C’était Aurore ! » La maîtresse ne l’a pas crue. Hélios, c’était la centrale, sur Vesper.' },
   { id: 'azCarnet', thread: 'eaux', title: 'Le carnet de Joss', text: 'Des années de marées, jamais aux mêmes heures d’un jour à l’autre. « Tous les trente jours, les deux lunes s’alignent : grande marée. Ne jamais rester au bord ce jour-là. » Puis l’écriture se défait : « Pourquoi je note ça, déjà ? », « Demander à Nora. Nora sait. » Le bulletin, lui, annonce les mêmes heures depuis deux jours.' },
   { id: 'azOskar', thread: 'arrivee', title: 'Oskar', text: 'Un vieux pilote d’Aurore, sur un banc de la place. Ce matin, l’eau est montée deux heures après l’heure du bulletin. « Il se passe quelque chose, comme avant l’accident de l’an 3. » Il veut voir les relevés du centre de clonage, discrètement : rendez-vous devant la porte, près des cuves.' },
-  { id: 'azCulture', thread: 'arrivee', title: 'La salle de culture', text: 'Les données biologiques apportées par Aurore, la culture des corps, le chargement de l’esprit reçu du spatioport de Vesper, le réveil dans le champ des cuves. Un mur de 4 212 noms, dont « Moreau, Betti ».' },
+  { id: 'azCulture', thread: 'arrivee', title: 'La salle de culture', text: 'Les données biologiques apportées par Aurore, la culture des corps, le chargement de l’esprit reçu du spatioport de Vesper, le réveil dans le champ des cuves. Un mur de 4 212 noms, dont « Moreau, Betti ».' },
   { id: 'azSchema', thread: 'arrivee', title: 'Le schéma du transfert', text: 'Dans la salle des serveurs : la navette et les 12 pilotes emportent les données biologiques ; sur Azura, ils cultivent les clones et construisent les cuves ; le jour du grand départ, chacun entre dans sa capsule sur Vesper et l’antenne envoie les mémoires sur 47,2 ; le serveur du centre les reçoit et les charge dans les corps.' },
   { id: 'azMurOskar', thread: 'arrivee', title: 'Le mur d’Oskar', text: 'Chez Oskar, un mur de liège : les bulletins tous à 6 h, ses relevés qui ne collent pas, l’an 3, le centre fermé, un « second chargement ?? », une photo de la commandante (« ELLE SAIT »), Nora qui a oublié le nom de sa sœur.' },
   { id: 'azOskarPeur', thread: 'arrivee', title: 'Oskar a peur', text: 'Au-dessus de son lit : « Tu es Oskar. Pilote d’Aurore. Tu n’oublies pas. » Les pilotes ne perdent pas la mémoire… mais il a peur que ça le prenne aussi. D’où les étiquettes partout, jusque sur sa porte.' },
   { id: 'azLecon5', thread: 'arrivee', title: 'La leçon juste', text: 'Jour 5 : toute la ville à l’école. « D’où venons-nous ? — De Vesper ! » Et Mina qui sourit.' },
   { id: 'azChargeGlobal', thread: 'arrivee', title: 'Le second chargement', text: 'Après Betti, Iris a chargé toute la colonie par les pylônes, pendant le sommeil. Tous les dossiers ont accroché… sauf cinq.' },
-  { id: 'azMedecin', thread: 'arrivee', title: 'Le carnet du médecin', text: '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. » Puis : « Anomalies de mémoire chez certains sujets. Prévoir un second chargement depuis la copie locale, pour fixer les souvenirs. » Et, sous un croquis à la main : « Courbe d’effacement : lente une dizaine d’années, puis brutale. » Le carnet s’arrête à l’an 3.' },
+  { id: 'azMedecin', thread: 'arrivee', title: 'Le carnet du médecin', text: '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. » Puis : « Anomalies de mémoire chez certains sujets. Prévoir un second chargement depuis la copie locale, pour fixer les souvenirs. » Et, sous un croquis à la main : « Courbe d’effacement : lente une dizaine d’années, puis brutale. » Le carnet s’arrête à l’an 3.' },
   { id: 'az07', thread: 'arrivee', title: 'Sujet 07', text: 'Dans la salle de culture, une cuve à part : « SUJET 07 — Signal non reçu. Cuve maintenue en attente. » Moi. Voilà pourquoi je me suis réveillé onze ans après les autres.' },
   { id: 'azJet', thread: 'arrivee', title: 'Le tuyau éclaté', text: 'Deux tuyaux alimentaient la salle des serveurs : le refroidissement et la dérivation de secours. Il a fallu fermer les deux vannes, sans jamais couper la culture.' },
   { id: 'azIris', thread: 'arrivee', title: 'La commandante', text: 'Iris Aurel, commandante de la mission Aurore : « Le centre de clonage ? Fermé depuis l’accident de l’an 3. Il n’y a plus rien à voir. » Elle a détourné les yeux.' },
   { id: 'azVidange', thread: 'arrivee', title: 'La salle vidée', text: 'L’arrivée d’eau coupée, la manivelle en place, la pompe a vidé la salle des serveurs vers la rivière, une fois la marée redescendue.' },
   { id: 'azPX07', thread: 'arrivee', title: 'PX-07', text: 'Le serveur du centre : copie locale des souvenirs perdue dans l’inondation de l’an 3, second chargement annulé. Récupération demandée à la source, sur Vesper, par AU-01 : dossier vide, tout est parti vers l’appareil PX-07. Oskar : « AU-01, c’est la commandante. Elle savait. » Avec cette copie, on pourrait refaire le chargement, correctement.' },
   { id: 'azGrande', thread: 'eaux', title: 'La grande marée', text: 'Jour 4 : sur la tour, les deux lunes sont alignées. Le carnet de Joss : « Tous les trente jours, les deux lunes s’alignent : grande marée. » Et les heures avancent d’une heure par jour : aujourd’hui, vers 9 h. Le bulletin annonce 6 h et une journée calme.' },
-  { id: 'azSirene', thread: 'eaux', title: 'La sirène', text: 'J’ai rebranché la sirène avec la pince de Tom et un câble de Betti. En l’entendant, les colons ont retrouvé le vieux réflexe : évacuer les zones à risque.' },
+  { id: 'azSirene', thread: 'eaux', title: 'La sirène', text: 'J’ai rebranché la sirène avec la pince de Tom et le câble de la salle des serveurs. En l’entendant, les colons ont retrouvé le vieux réflexe : évacuer les zones à risque.' },
   { id: 'azVague', thread: 'eaux', title: 'La vague', text: 'À 9 h, le lac a reculé, puis une vague a passé la passerelle et traversé le jardin, jusqu’au pied des maisons. Personne n’était plus au bord de l’eau.' },
   { id: 'azJoss4', thread: 'eaux', title: 'Joss', text: 'Ramené de son île en barque, à l’étale. Nora a compris : chaque matin, elle recopiait les heures du premier jour, sans s’en rendre compte. La commandante regardait le lac, sans un mot.' },
   { id: 'azLecon4', thread: 'ecole', title: 'La leçon du jour 4', text: '« Le jour du grand départ, les capsules ont envoyé nos corps jusqu’ici. » Nos corps ? Ce sont nos esprits qui sont partis. Les corps dorment toujours sur Vesper.' },
@@ -65,7 +65,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azChute', thread: 'arrivee', title: 'La chute', text: 'Le médecin l’avait écrit : l’effacement est lent pendant une dizaine d’années, puis brutal. Nous sommes en l’an 11. Ce soir, tout le monde oublie d’un coup.' },
   { id: 'azOubli', thread: 'ville', title: 'Cette nuit', text: '« Qui suis-je ? » « Où suis-je ? » Dans les rues, les colons ne se reconnaissent plus. Les enfants nés sur Azura, eux, n’oublient pas.' },
   { id: 'azPixel2', thread: 'betti', title: 'Pixel 2.0', text: 'Dans la salle des serveurs, Pixel s’est réveillé dans le corps construit par Betti. Il m’a reconnu. Puis il est allé poser sa tête contre le genou de Betti.' },
-  { id: 'azBettiRetour', thread: 'betti', title: 'Betti se souvient', text: 'Le second chargement de Betti, son dessin pour ancre. Pixel a projeté le jour du départ. « Je t’avais dit d’attendre. Et tu as attendu. »' },
+  { id: 'azBettiRetour', thread: 'betti', title: 'Betti se souvient', text: 'Le second chargement de Betti, son dessin pour déclic. Pixel a projeté le jour du départ. « Je t’avais dit d’attendre. Et tu as attendu. »' },
   { id: 'azLecon3', thread: 'ecole', title: 'La leçon du jour 3', text: '« Nos ancêtres ont voyagé deux ans pour arriver ici. » Deux ans ? Le voyage d’Aurore a duré deux cent douze ans.' },
   { id: 'azl1', thread: 'leads', title: 'Où sont les autres ?', text: 'Le sentier part vers le sud, au-delà des cuves.', doneWhen: 'bettiMet' },
   { id: 'azl2', thread: 'leads', title: 'L’atelier de Betti', text: 'En bas, près du lac. Passer d’abord voir le bulletin des eaux, sur la place.', doneWhen: 'drawingSeen' },
@@ -75,7 +75,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl6', thread: 'leads', title: 'Voir l’eau monter', text: 'Le bulletin des eaux, sur la place, donne l’heure du jour. Un banc permet d’attendre. Ensuite, dormir chez Betti, le soir venu.', doneWhen: 'tideWitnessed' },
   { id: 'azl7', thread: 'leads', title: 'Le carnet de Joss', text: 'Le carnet de Joss est enfermé dans sa cabane de pêche, sur la rive sud de la rivière, au chemin des crêtes. Joss a perdu la clé : il pêchait devant la cabane.', doneWhen: 'carnetRead' },
   { id: 'azl12', thread: 'leads', title: 'Une journée calme ?', text: 'Joss est parti pêcher sur son île, de l’autre côté du lac. Le bulletin annonce une journée calme. Mais le carnet de Joss parlait d’une grande marée, tous les trente jours… Regarder les lunes, sur la tour de l’horloge.', doneWhen: 'j4Moons' },
-  { id: 'azl13', thread: 'leads', title: 'Prévenir la ville', text: 'Grande marée vers 9 h, et personne ne me croit. La sirène ferait évacuer tout le monde : Tom l’a débranchée, ses fils sont grillés. Il faudrait une pince (Tom en a toujours une) et un câble neuf (l’atelier de Betti ?).', doneWhen: 'sireneOn' },
+  { id: 'azl13', thread: 'leads', title: 'Prévenir la ville', text: 'Grande marée vers 9 h, et personne ne me croit. La sirène ferait évacuer tout le monde : Tom l’a débranchée, ses fils sont grillés. Il faudrait une pince (Tom en a toujours une) et un câble neuf. J’en ai peut-être vu un quelque part…', doneWhen: 'sireneOn' },
   { id: 'azl14', thread: 'leads', title: 'La barque de Joss', text: 'Joss est bloqué sur son île, de l’autre côté du lac. La vague a arraché sa barque : elle a dérivé jusque devant le ponton de la ville. Elle flotte hors de portée de main. Il faut trouver un moyen de l’attraper.', doneWhen: 'barqueOk' },
   { id: 'azl15', thread: 'leads', title: 'L’étale', text: 'La barque est au ponton, mais le courant tire vers le large. Attendre que l’eau s’arrête de bouger (l’étale, vers 10 h), puis ramer jusqu’à Joss, au sud de l’île, et le ramener au ponton.', doneWhen: 'jossSaved' },
   { id: 'azl16', thread: 'leads', title: 'La commandante', text: 'Oskar veut mettre la commandante face à « AU-01 ». Rendez-vous au centre des pilotes, en bas à droite de la ville.', doneWhen: 'j4Confession' },
@@ -92,7 +92,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Oskar m’attend devant la porte du centre, près des cuves.', doneWhen: 'centreIn' },
   { id: 'azlOskar', thread: 'leads', title: 'Oskar', text: 'Dans le carnet de Joss, une note de sa main : « Dire au petit nouveau : Oskar veut le voir. La maison à l’étiquette. » Une étiquette… La porte marquée « PORTE », dans la ville ?', doneWhen: 'oskarDeal' },
   { id: 'azlCinq', thread: 'leads', title: 'Cinq échecs', text: 'Le second chargement est passé par les pylônes, pendant le sommeil. Cinq colons n’ont pas accroché. Oskar sait qui : « Venez chez moi. C’est sur mon mur. »', doneWhen: 'ficheVue' },
-  { id: 'azlAncres', thread: 'leads', title: 'Les cinq ancres', text: 'Le mur d’Oskar : Joss (son carnet), Nora (son premier bulletin), Tom (la sirène), la maîtresse (la navette), Mme Ilda (un fruit). Pixel projette le souvenir, une fois l’ancre rendue.', doneWhen: 'ancresOk' },
+  { id: 'azlAncres', thread: 'leads', title: 'Les cinq déclics', text: 'Un déclic : quelque chose qui compte pour la personne (un objet, un son, un lieu) et qui fait revenir le souvenir. Joss : son carnet. Nora : son premier bulletin. Tom : la sirène. La maîtresse : la navette. Mme Ilda : un fruit.', doneWhen: 'ancresOk' },
   { id: 'azlDormir', thread: 'leads', title: 'Tous les pylônes brillent', text: 'Les cinq ont retrouvé la mémoire. Rentrer dormir chez Betti.', doneWhen: 'aube' },
   { id: 'azlAube', thread: 'leads', title: 'La leçon', text: 'Ce matin, toute la ville va à l’école. La maîtresse a une leçon à refaire.', doneWhen: 'lesson5Heard' },
   { id: 'azDernier', thread: 'leads', title: 'À ne pas oublier', text: 'Tu es le sujet 07. Le chien s’appelle Pixel. Il t’a attendu.' },
@@ -107,7 +107,7 @@ export const CLUES_AZ: Clue[] = [
 export const QUESTIONS_AZ: Question[] = [
   {
     id: 'q-px07', thread: 'arrivee', opensWith: ['azPX07'], answeredBy: 'azPlans',
-    ask: 'Qui est l’appareil PX-07 ?', answer: 'Pixel. Le chien robot de Betti porte la seule copie intacte des souvenirs des 4 211 colons.',
+    ask: 'Qui est l’appareil PX-07 ?', answer: 'Pixel. Le chien robot de Betti porte la seule copie intacte des souvenirs des 4 211 colons.',
   },
   {
     id: 'q-sommeil', thread: 'arrivee', opensWith: ['az1'], answeredBy: 'az2',
@@ -122,13 +122,13 @@ export const QUESTIONS_AZ: Question[] = [
 export const ITEMS_AZ: Record<string, ItemDef> = {
   canne: { name: 'Canne à pêche', text: 'La canne de Joss, avec son moulinet et un bouchon rouge et blanc. Joss pêche toujours depuis son ponton.', usable: true },
   pince: { name: 'Pince de Tom', text: 'Une pince d’électricien, aux poignées rouges. Tom ne la quitte jamais.' },
-  cable: { name: 'Câble neuf', text: 'Un câble électrique neuf, de l’atelier de Betti. De quoi rebrancher la sirène.', usable: true },
+  cable: { name: 'Câble électrique', text: 'Un petit câble électrique neuf, trouvé dans la salle des serveurs du centre de clonage.', usable: true },
   liaison: { name: 'Commandes de R-7', text: 'Les commandes du robot de patrouille, depuis la console du centre des pilotes. On peut les rendre à tout moment : R-7 restera où il est.', usable: true },
   bs1Vide: { name: 'BS-1 (vide)', text: 'La batterie de Pixel, retirée de ma capsule. Le voyant est éteint. À recharger au soleil, sur la plaque de la place des Missions.', usable: true },
   battery: { name: 'BS-1 (chargée)', text: 'La batterie de Pixel, pleine. Il faut la brancher sur son dos.', usable: true },
-  carnetJoss: { name: 'Carnet de Joss', text: 'Son carnet de pêche, trempé. Retrouvé au fond de sa barque. L’ancre de Joss.', usable: true },
-  bulletin0: { name: 'Premier bulletin', text: 'Le tout premier bulletin des eaux, jour 1, an 0, signé N. Vey. Le plus vieux de la collection d’Oskar. L’ancre de Nora.', usable: true },
-  fruit: { name: 'Fruit d’Azura', text: 'Un fruit orange, pris sur l’étal de Mme Ilda. Elle accueillait tout le monde avec. L’ancre de Mme Ilda.', usable: true },
+  carnetJoss: { name: 'Carnet de Joss', text: 'Son carnet de pêche, trempé. Retrouvé au fond de sa barque. Le déclic de Joss.', usable: true },
+  bulletin0: { name: 'Premier bulletin', text: 'Le tout premier bulletin des eaux, jour 1, an 0, signé N. Vey. Le plus vieux de la collection d’Oskar. Le déclic de Nora.', usable: true },
+  fruit: { name: 'Fruit d’Azura', text: 'Un fruit orange, pris sur l’étal de Mme Ilda. Elle accueillait tout le monde avec. Le déclic de Mme Ilda.', usable: true },
   badge: { name: 'Badge d’Oskar', text: 'Le badge de pilote d’Oskar : « AU-04 ». À passer devant la porte du centre de clonage. Il faut aussi le code : « le nombre de ceux qu’on a ramenés ».', usable: true },
   manivelle: { name: 'Manivelle', text: 'Une grosse manivelle d’acier, étiquetée « VIDANGE ». Pour la pompe de la salle des pompes.', usable: true },
   cleCabane: { name: 'Clé de la cabane', text: 'Une clé de cuivre, repêchée devant la cabane de Joss. Un petit médaillon gravé « J ».', usable: true },
@@ -234,7 +234,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       api.has('sireneOn')
         ? ['La sirène hurle encore, au-dessus de la place.']
         : api.has('jour4') && api.has('j4Moons')
-          ? ['La sirène. Ses vieux fils sont grillés.', ...(api.hasItem('cable') && api.hasItem('pince') ? ['(Le câble et la pince sont dans mon sac.)'] : ['Il faudrait un câble neuf, et une pince. Tom a toujours une pince à la main ; Betti doit avoir des câbles, à l’atelier.'])]
+          ? ['La sirène. Ses vieux fils sont grillés.', ...(api.hasItem('cable') && api.hasItem('pince') ? ['(Le câble et la pince sont dans mon sac.)'] : ['Il faudrait un câble neuf pour la rebrancher, et une pince pour couper les vieux fils.'])]
           : api.has('tomTalk')
         ? ['La sirène. Tom l’a débranchée : elle sonnait pour rien.']
         : ['Une sirène rouge, en haut d’un mât.', 'Un câble pend à son pied. Débranché.'],
@@ -246,7 +246,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       if (!api.has('j4Moons')) return api.say(['« Journée calme, d’après le bulletin. Ça fait du bien. »']);
       if (api.hasItem('pince')) return api.say(['« Ma pince, rends-la-moi après, hein. »']);
       return api.say(
-        ['Je lui parle des lunes, de la grande marée.', '« Une grande marée ? Le bulletin dit le contraire. »', 'Il hésite. Il regarde le lac.', '« …Bon. Si tu veux rebrancher ta sirène, les vieux fils sont grillés. Il te faudra un câble neuf. Betti en a sûrement, à son atelier. »', '« Et prends ma pince. »'],
+        ['Je lui parle des lunes, de la grande marée.', '« Une grande marée ? Le bulletin dit le contraire. »', 'Il hésite. Il regarde le lac.', '« …Bon. Si tu veux rebrancher ta sirène, les vieux fils sont grillés. Il te faudra un câble neuf. »', '« Et prends ma pince. »'],
         () => api.item('pince'),
       );
     }
@@ -339,7 +339,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   console47: (api) => api.say(api.has('j4Plan') ? ['La console de la liaison 47,2. Quelque part sur Vesper, un robot de patrouille attend.'] : ['Une console, avec un grand cadran : « LIAISON 47,2 ». Éteinte.']),
   tablePilotes: (api) => api.say(['Une grande table, couverte de relevés. Des marées, des horaires… tous recopiés à la main.']),
   casiers: (api) => api.say(['Douze casiers. Douze noms. Douze pilotes.']),
-  irisPilotes: (api) => api.say(api.has('oubli') ? ['« Les serveurs du centre de clonage. Et Betti. Vite. »'] : api.has('j4Plan') ? ['« La console est prête. La fenêtre se referme ce soir. »'] : ['« Je n’ai plus rien à cacher. Va retrouver Betti. »']),
+  irisPilotes: (api) => api.say(api.has('chargeGlobal') ? ['« Les cinq fiches d’Oskar. Va. »'] : api.has('pixel2') ? ['« Le fauteuil de chargement, en salle de culture. Betti d’abord. »'] : api.has('oubli') ? ['« Les serveurs du centre de clonage. Et Betti. Vite. »'] : api.has('j4Plan') ? ['« La console est prête. La fenêtre se referme ce soir. »'] : ['« Je n’ai plus rien à cacher. Va retrouver Betti. »']),
   oskarPilotes: (api) => api.say(api.has('oubli') ? ['« Nous, on se souvient. On est venus dans nos corps. Ça ne sert à rien, si on est les seuls. »'] : api.has('j4Plan') ? ['« La console, là-bas. Vas-y. »'] : ['« Va voir Betti. Je reste avec elle. »', 'Il regarde la commandante.']),
   bettiPilotes: (api) => api.say(['« PX-07… »']),
   fauteuil: (api) => api.say(['Le fauteuil de chargement. Un casque, des câbles qui partent vers les serveurs.', api.has('pixel2') ? 'Betti attend, son dessin à la main.' : 'Il n’a pas servi depuis onze ans.']),
@@ -365,7 +365,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   lit: (api) => api.say(['Un lit fait au carré.']),
   bettiVague: (api) => api.say(api.has('jossSaved') ? ['« Tu l’as ramené… Merci. »'] : api.has('barqueOk') ? ['« Le courant est encore trop fort. Attends que l’eau s’arrête : regarde les lunes, sur la tour. »'] : ['« La barque est juste devant le ponton… mais trop loin pour la main. »']),
   noraQuai: (api) => api.say(['« Chaque matin, j’ai recopié… Comment j’ai pu ne rien voir ? »']),
-  tomQuai: (api) => api.say(['« La sirène a tenu. Le câble de Betti, ma pince… On a eu de la chance. »']),
+  tomQuai: (api) => api.say(['« La sirène a tenu. Ton câble, ma pince… On a eu de la chance. »']),
   ildaQuai: (api) => api.say(['« Quelle frayeur, mon grand ! Mes fruits sont partis avec la vague. »', '« Ce n’est rien. Tout le monde est là. »']),
   oskarQuai: (api) => api.say(['« Au centre des pilotes. Elle nous doit des explications. »']),
   bettiQuai: (api) => api.say(['« Allons-y. Au centre des pilotes. »']),
@@ -376,8 +376,8 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     if (!api.has('drawingSeen')) return api.say(['« Fais comme chez toi. Regarde, si tu veux. »']);
     if (api.has('jour4')) {
       if (!api.has('j4Moons')) return api.say(['« Joss est parti pêcher sur son île à l’aube, de l’autre côté du lac. Il dit que le bulletin annonce une journée calme. »']);
-      if (api.hasItem('cable') || api.has('sireneOn')) return api.say(['« Vite ! »']);
-      return api.say(['Je lui parle des lunes, du carnet de Joss.', '« Une grande marée ? Aujourd’hui ? »', '« Il faut faire sonner la sirène. Tom l’a débranchée… Tiens, prends ce câble neuf. Vite ! »'], () => api.item('cable'));
+      if (api.has('sireneOn')) return api.say(['« Vite ! »']);
+      return api.say(['Je lui parle des lunes, du carnet de Joss.', '« Une grande marée ? Aujourd’hui ? »', '« Il faut faire sonner la sirène ! Tom l’a débranchée… Vite ! »']);
     }
     if (api.has('jour3')) {
       if (api.has('carnetGiven'))
@@ -529,14 +529,21 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       'Sous « Salle des pompes » : « Prise d’eau de la rivière. Quatre départs : culture, fontaines, refroidissement des serveurs… et une dérivation de secours, qui double le refroidissement. »',
       'En rouge : « NE JAMAIS COUPER LA CULTURE. »',
     ]),
+  cableServeurs: (api) => {
+    if (!api.has('powerOn')) return api.say(['Quelque chose traîne par terre, contre une armoire. Dans le noir, impossible de voir quoi.']);
+    api.say(['Par terre, contre une armoire : un petit câble électrique, neuf, encore enroulé.', 'Je le prends. Ça peut servir.'], () => {
+      api.set('cableTaken');
+      api.item('cable');
+    });
+  },
   oskarNuit: (api) => api.say(['« Regarde le mur. »']),
   bettiAube: (api) => api.say(['« Allez, à l’école ! Toute la ville y est. »', 'Pixel tourne autour de ses jambes.']),
   etagereOskar: (api) =>
-    api.say(['Une étagère. Une étiquette sur chaque objet : « TASSE », « LAMPE », « RADIO ».', 'Sur la plus haute, une petite boîte : « SI JE COMMENCE À OUBLIER, LIRE CECI ».', 'Elle est vide.']),
+    api.say(['Une étagère. Une étiquette sur chaque objet : « TASSE », « LAMPE », « RADIO ».']),
   tableOskar: (api) =>
     api.say(['Une table ensevelie sous les papiers. Des bulletins des eaux, des dizaines. Tous identiques.', 'Des heures notées au crayon, barrées, réécrites. Des plans du centre de clonage.', 'Une tasse froide. Étiquette : « TASSE ».']),
   litOskar: (api) =>
-    api.say(['Un lit défait. Au-dessus, punaisée au mur : « LIT. Tu es Oskar. Pilote d’Aurore. Tu n’oublies pas. »', 'Il s’écrit ça… pour être sûr.'], () => api.clue('azOskarPeur')),
+    api.say(['Un lit défait. Un post-it collé dessus : « LIT ».']),
   sortieSecours: (api) => api.say(['Une plaque : « DÉRIVATION DE SECOURS → REFROIDISSEMENT ».', 'Elle rejoint, elle aussi, la salle des serveurs.']),
   armoireSecours: (api) => {
     if (api.has('crankTaken')) return api.say(['L’armoire de secours. Une trousse, une lampe. La place de la manivelle est vide.']);
@@ -571,7 +578,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     ),
   // ---------- la salle de culture ----------
   noms: (api) =>
-    api.say(['Un mur couvert de plaques. Des noms, des milliers de noms.', '« Moreau, Betti ». « Moreau, Sam ». Plus loin, « Vey, Nora ».', 'Les 4 212.'], () => api.set('cultureNoms')),
+    api.say(['Un mur couvert de plaques. Des noms, des milliers de noms.', '« Moreau, Betti ». « Moreau, Sam ». Plus loin, « Vey, Nora ».', 'Les 4 212.'], () => api.set('cultureNoms')),
   etape1: (api) => api.say(['« 1. LES DONNÉES — L’ADN et les scans de chaque habitant, emportés par Aurore. »']),
   etape2: (api) => api.say(['« 2. LA CULTURE — Chaque corps grandit dans son berceau, ici. »']),
   etape3: (api) => api.say(['« 3. LE CHARGEMENT — L’esprit, reçu depuis le spatioport de Vesper, est chargé dans le corps. »']),
@@ -586,7 +593,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     api.say(
       [
         'Le carnet de bord du médecin de la mission.',
-        '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. »',
+        '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. »',
         '« Anomalies de mémoire chez certains sujets : un mot, un nom. Les souvenirs se fixent mal. »',
         '« Prévoir un second chargement depuis la copie locale, pour les fixer. »',
         '« Courbe d’effacement : lente une dizaine d’années, puis brutale. Sans second chargement, tout partira d’un coup. »',

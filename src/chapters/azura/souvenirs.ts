@@ -3,9 +3,9 @@
 import { MH, MW, type Memory } from '../../engine/content.js';
 import { MEMORIES } from '../vesper/memories.js';
 
-interface Shot { m: Memory; i: number; dur: number }
+interface Shot { m: Memory; i: number; dur: number; speed?: number }
 
-function play(shots: Shot[], opts: { bar?: string; done: () => void }) {
+function play(shots: Shot[], opts: { bar?: string; done: () => void; ff?: boolean }) {
   const screen = document.getElementById('screen')!;
   const box = document.createElement('div');
   box.style.cssText = 'position:absolute;inset:0;z-index:7;background:#05060c;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity .5s;';
@@ -36,17 +36,32 @@ function play(shots: Shot[], opts: { bar?: string; done: () => void }) {
     const s = shots[k];
     const local = Math.min(s.dur, t - acc);
     c.clearRect(0, 0, MW, MH);
-    s.m.tableaux[s.i].draw(c, local);
+    if (opts.ff) {
+      // en défilement rapide : l'image glisse un peu, des traînées horizontales la traversent
+      const slide = Math.max(0, 1 - local / 0.12) * 18;
+      c.save();
+      c.translate(slide, 0);
+      s.m.tableaux[s.i].draw(c, local * (s.speed ?? 1));
+      c.restore();
+      for (let k = 0; k < 7; k++) {
+        const y = (k * 37 + Math.floor(t * 60) * 13) % MH;
+        c.fillStyle = 'rgba(216,255,250,0.10)';
+        c.fillRect(0, y, MW, 1 + (k % 2));
+      }
+      c.fillStyle = '#d8fffa';
+      const bx = MW - 16, by = 4;
+      for (let k = 0; k < 2; k++) for (let j = 0; j < 4; j++) c.fillRect(bx + k * 5 + j, by + j, 1, 7 - j * 2);
+    } else s.m.tableaux[s.i].draw(c, local);
     // un léger grain de transmission
     c.fillStyle = 'rgba(0,0,0,0.12)';
     for (let y = 0; y < MH; y += 2) c.fillRect(0, y, MW, 1);
     // fondu au noir entre deux plans
-    const edge = Math.min(local, s.dur - local);
-    if (edge < 0.25) {
-      c.fillStyle = `rgba(5,6,12,${1 - edge / 0.25})`;
+    const edge = Math.min(local, s.dur - local), fadeT = opts.ff ? 0.06 : 0.25;
+    if (edge < fadeT) {
+      c.fillStyle = `rgba(5,6,12,${1 - edge / fadeT})`;
       c.fillRect(0, 0, MW, MH);
     }
-    cap.textContent = s.m.tableaux[s.i].caption;
+    cap.textContent = opts.ff ? s.m.title : s.m.tableaux[s.i].caption;
     const p = Math.min(1, t / total);
     fill.style.width = `${Math.round(p * 100)}%`;
     if (opts.bar) label.textContent = `${opts.bar} — ${Math.round(p * 100)} %`;
@@ -69,16 +84,16 @@ function play(shots: Shot[], opts: { bar?: string; done: () => void }) {
 
 /** Le transfert de Pixel : ses six souvenirs, un plan chacun, sous une barre qui se remplit. */
 export function transferMontage(done: () => void) {
-  play(MEMORIES.map((m) => ({ m, i: m.tableaux.length - 1, dur: 3 })), { bar: 'TRANSFERT 47,2', done });
+  play(MEMORIES.flatMap((m) => m.tableaux.map((_, i) => ({ m, i, dur: 0.45, speed: 4 }))), { bar: 'TRANSFERT 47,2', done, ff: true });
 }
 
 /** Un souvenir en entier (numéro 1 à 6), projeté par l'œil de Pixel. */
 export function projectMemory(n: number, done: () => void) {
   const m = MEMORIES[n - 1];
-  play(m.tableaux.map((_, i) => ({ m, i, dur: m.tableaux[i].dur })), { done });
+  play(m.tableaux.map((_, i) => ({ m, i, dur: 0.9, speed: 3 })), { bar: 'CHARGEMENT', done, ff: true });
 }
 
-/** Un souvenir écrit pour Azura (un colon), projeté de la même façon. */
+/** Un souvenir écrit pour Azura (un colon), projeté en défilement rapide. */
 export function projectCustom(m: Memory, done: () => void) {
-  play(m.tableaux.map((_, i) => ({ m, i, dur: m.tableaux[i].dur })), { done });
+  play(m.tableaux.map((_, i) => ({ m, i, dur: 1.4, speed: 3 })), { bar: 'CHARGEMENT', done, ff: true });
 }

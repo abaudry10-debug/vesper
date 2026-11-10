@@ -151,7 +151,7 @@ function cuves(): GameMap {
   b.rect(12, 8, 12, 1, '.').set(23, 9, '.');
   objects.push(
     { id: 'porteCentre', x: 27, y: 8, sprite: 'aurDoorClosed', spriteWhen: ['centreOpen', 'aurDoor'], script: 'centreClonage', door: { to: 'centre', x: 6, y: 6, dir: 'up', needs: 'centreOpen' } },
-    npc('oskarGuet', 26, 9, 'oskar', 'down', 'oskarGuet', { showWhen: 'oskarDeal', hideWhen: 'oskarIn' }),
+    npc('oskarGuet', 24, 9, 'oskar', 'down', 'oskarGuet', { showWhen: 'oskarDeal', hideWhen: 'oskarIn' }),
     obj('vitreServeurs', 29, 8, 'floodWindow', 'serveurs', { spriteWhen: ['drained', 'dryWindow'] }),
     obj('vitreServeurs2', 30, 8, 'floodWindow', 'serveurs', { spriteWhen: ['drained', 'dryWindow'] }),
   );
@@ -318,7 +318,7 @@ function ville(): GameMap {
     npc('passant2', 8, 16, 'pass2', 'right', 'passant2', { npc: { look: 'pass2', dir: 'right', wander: 3 } }),
     npc('passant3', 20, 23, 'pass3', 'down', 'passant3', { hideWhen: 'mareeHaute' }),
     npc('passant3b', 20, 21, 'pass3', 'down', 'passant3', { showWhen: 'mareeHaute' }),
-    npc('passant4', 26, 7, 'pass4', 'left', 'passant4', { npc: { look: 'pass4', dir: 'left', wander: 3 } }),
+    npc('passant4', 24, 7, 'pass4', 'left', 'passant4', { npc: { look: 'pass4', dir: 'left', wander: 3 } }),
     // le jour 4 : Joss sur l'îlot, sa barque, Betti après la vague
     npc('jossIlot', 14, 39, 'joss', 'down', 'jossIlot', { showWhen: 'jour4', hideWhen: 'jossLeft' }),
     obj('barqueIle', 14, 31, 'barqueWater', 'barqueIle', { showWhen: 'jour4', hideWhen: 'vague' }),
@@ -550,6 +550,7 @@ function serveurs(): GameMap {
     obj('disjoncteur', 13, 8, 'breaker', 'disjoncteur'),
     obj('serveurPX', 10, 3, 'serverTerm', 'serveurPX'),
     obj('schemaClonage', 4, 1, 'wallScreen', 'schemaClonage'),
+    obj('cableServeurs', 3, 8, 'cableCoil', 'cableServeurs', { hideWhen: 'cableTaken' }),
     npc('oskarIn', 7, 7, 'oskar', 'up', 'oskarIn', { showWhen: 'oskarIn' }),
   ];
   return {

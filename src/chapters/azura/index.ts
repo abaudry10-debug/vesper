@@ -15,7 +15,8 @@ import { openBulletin } from './bulletin.js';
 import { openCloneSchema, openCurveHand, openOskarWall } from './schemas.js';
 import { centreTile, oskarJoins, renderCentre, turnValve, useBreaker, useCrank, usePump } from './centre.js';
 import { openKeypad } from './panneaux.js';
-import { anchorsDone, drawSleepers, finale, journalFade, nightInteract, nightUseItem, updateFinale } from './ancres.js';
+import { openSatellite } from './animations.js';
+import { anchorsDone, drawAnchorGlints, drawSleepers, finale, journalFade, nightInteract, nightUseItem, updateFinale } from './ancres.js';
 import { HEAD_EYES, HEAD_SIZE, guardianSprites } from './guardian.js';
 import { atJetty, drawFishing, startFishing, updateFishing } from './peche.js';
 import { bettiNight, bettiTalk, drawFollower, followerAt, lostLines, rechargeBetti, sendPixel, serverWaiting, updateFollower, wakePixel2 } from './nuit.js';
@@ -1290,7 +1291,7 @@ export const azura: Chapter = {
               g.items.delete('badge');
               g.flags.add('centreOpen');
               sfx.door();
-              ui.say(['Un déclic. La porte du centre s’entrouvre.', 'Je rends son badge à Oskar. « 4 212… Bien sûr. Comment j’ai pu oublier ça ? »'], () => g.save());
+              ui.say(['Un déclic. La porte du centre s’entrouvre.', 'Je rends son badge à Oskar. « 4 212… Bien sûr. Comment j’ai pu oublier ça ? »'], () => g.save());
               return;
             }
             if (g.counters.codeFails >= 2) g.flags.add('codeHint');
@@ -1355,7 +1356,7 @@ export const azura: Chapter = {
       if (r7Interact(g, obj)) return true;
       // au centre des pilotes : la console de la liaison 47,2
       if (obj?.id === 'console47' && g.flags.has('j4Plan') && !g.flags.has('r7On')) {
-        ui.say(g.flags.has('r7Started') ? ['La console de la liaison 47,2. Sur l’écran, l’image de R-7, immobile.', 'Je reprends les commandes.'] : ['Iris allume la console. « LIAISON 47,2 — VESPER ». Le cadran s’emballe, puis se stabilise.', 'Sur l’écran, une image tremblée apparaît : une rue ensablée, une lumière orange. Vesper.', 'Oskar me tend les commandes. « À toi. »'], () => startR7(g));
+        ui.say(g.flags.has('r7Started') ? ['La console de la liaison 47,2. Sur l’écran, l’image de R-7, immobile.', 'Je reprends les commandes.'] : ['Iris allume la console. « LIAISON 47,2 — VESPER ». Le cadran s’emballe, puis se stabilise.', 'Sur l’écran, une image tremblée apparaît : une rue ensablée, une lumière orange. Vesper.', 'Oskar me tend les commandes. « À toi. »', 'Sur l’écran, une image satellite de Vesper. Il faut d’abord trouver le robot, et s’y connecter.'], () => (g.flags.has('r7Started') ? startR7(g) : openSatellite(g, () => startR7(g))));
         return true;
       }
       // en barque : accoster
@@ -1444,7 +1445,7 @@ export const azura: Chapter = {
         ui.say(
           [
             'Le carnet de bord du médecin de la mission.',
-            '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. »',
+            '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. »',
             '« Anomalies de mémoire chez certains sujets : un mot, un nom. Les souvenirs se fixent mal. »',
             '« Prévoir un second chargement depuis la copie locale, pour les fixer. »',
             '« Sujet 07 : s’il arrive un jour, il arrivera seul. Pas de copie, pas de seconde chance. »',
@@ -1629,6 +1630,7 @@ export const azura: Chapter = {
       const cox = Math.round(hx0 + T / 2 - w / 2), coy = Math.round(hy0 + T / 2 - (h - view.padBottom) / 2);
       renderTide(g, c, cox, coy, w, h);
       drawSleepers(g, c, cox, coy);
+      drawAnchorGlints(g, c, cox, coy);
       drawJour4(g, c, cox, coy, w, h);
       drawBoatOver(g, c, cox, coy);
       if (isEvening(g)) {

@@ -12,6 +12,7 @@ import { ANCHOR_MEMORIES } from './ancresSouvenirs.js';
 import { projectCustom, projectMemory } from './souvenirs.js';
 import { placeFollower } from './nuit.js';
 import { openAnchorWall } from './schemas.js';
+import { playFinale, playGlobalLoad } from './animations.js';
 
 export const ANCHORS = ['joss', 'nora', 'tom', 'prof', 'ilda'] as const;
 type Who = (typeof ANCHORS)[number];
@@ -29,21 +30,28 @@ export function startGlobal(g: Game) {
     [
       'Iris : « Pour les autres, pas de fauteuil. On passe par les pylônes, comme la première fois. »',
       'Oskar : « Ça passe pendant le sommeil. Ils dorment tous, maintenant. Là où ils sont tombés. »',
-      'Iris lance le chargement. Sur l’écran : « SECOND CHARGEMENT — 4 210 DOSSIERS ».',
-      'FIXÉS : 1 204… 2 871… 4 012… 4 205.',
-      'Le compteur s’arrête. « ÉCHECS : 5 ».',
-      'Iris : « Cinq. Leurs souvenirs ne tiennent plus seuls. Il leur faut une ancre, comme Betti. »',
-      'Oskar se redresse d’un coup. « Cinq ? Je sais qui. J’ai tout noté. Venez chez moi : c’est sur mon mur. »',
-      'Betti : « Moi, je reste avec Iris. Prends Pixel. »',
+      'Iris lance le chargement.',
     ],
-    () => {
-      g.flags.add('chargeGlobal');
-      g.flags.add('bettiRestored');
-      g.api.clue('azChargeGlobal');
-      g.api.clue('azlCinq');
-      g.save();
-      ui.showPlace('Dehors, les pylônes passent au turquoise');
-    },
+    () =>
+      playGlobalLoad(g, () =>
+        ui.say(
+          [
+            'Le compteur s’arrête. « ÉCHECS : 5 ».',
+            'Iris : « Cinq. Leurs souvenirs ne tiennent plus seuls. »',
+            'Oskar : « Il leur faut un déclic. Quelque chose qui compte pour eux, un objet, un son, un lieu. Comme le dessin de Betti. »',
+            '« Cinq… Je sais qui. J’ai tout noté. Venez chez moi : c’est sur mon mur. »',
+            'Betti : « Moi, je reste avec Iris. Prends Pixel. »',
+          ],
+          () => {
+            g.flags.add('chargeGlobal');
+            g.flags.add('bettiRestored');
+            g.api.clue('azChargeGlobal');
+            g.api.clue('azlCinq');
+            g.save();
+            ui.showPlace('Dehors, les pylônes passent au turquoise');
+          },
+        ),
+      ),
   );
 }
 
@@ -100,12 +108,12 @@ function restore(g: Game, w: Who, intro: string[]) {
           ...(first
             ? ['Et moi… Il y avait quelque chose, juste là. Un nom, un endroit. Parti.', '(Ouvre ton journal.)']
             : ['Encore un trou, dans ma tête. Je n’ose pas ouvrir mon journal.']),
-          ...(n === 5 ? ['Tous les pylônes brillent. Sur la ville endormie, le silence.', 'Il est tard. Je devrais rentrer dormir chez Betti.'] : []),
         ],
         () => {
           if (n === 5) {
             g.flags.add('ancresOk');
-            g.api.clue('azlDormir');
+            g.save();
+            return lastScene(g);
           }
           g.save();
         },
@@ -171,8 +179,18 @@ export function nightInteract(g: Game, obj: MapObject | undefined, fx: number, f
     ui.say(['J’abaisse la manette. La sirène hurle sur la ville endormie.', 'Au pied de la tour, Tom ouvre les yeux.'], () => restore(g, 'tom', []));
     return true;
   }
-  if (obj?.id === 'plaqueNavette' && g.flags.has('profFollow') && !done(g, 'prof')) {
+  const atShuttle = obj?.id === 'plaqueNavette' || (!obj && g.map.id === 'cuves' && fx >= 25 && fx <= 31 && fy >= 11 && fy <= 15);
+  if (atShuttle && g.flags.has('profFollow') && !done(g, 'prof')) {
     restore(g, 'prof', ['La maîtresse s’arrête devant la navette. Elle lève la tête, longtemps.']);
+    return true;
+  }
+  // les autres : ils dorment, le chargement passe ; Mina, elle, veille
+  if (obj?.id === 'minaNuit') {
+    ui.say(['« Maman dort. Les pylônes sont tout bleus, maintenant. »', '« C’est bien, hein ? »']);
+    return true;
+  }
+  if (obj?.npc && /^passant/.test(obj.id)) {
+    ui.say(['Il dort, recroquevillé contre un mur. Il sourit dans son sommeil.', 'Le chargement a pris, chez lui.']);
     return true;
   }
   // les colons
@@ -208,7 +226,7 @@ export function nightUseItem(g: Game, id: string): boolean {
   const [fx, fy] = g.facing();
   const o = g.map.objects.find((x) => x.x === fx && x.y === fy && NPC[x.id] === w);
   if (!o || !nightOn(g)) {
-    ui.say([`L’ancre de ${NAME[w]}. Il faudrait être devant ${w === 'ilda' || w === 'nora' ? 'elle' : 'lui'}.`]);
+    ui.say([`Le déclic de ${NAME[w]}. Il faudrait être devant ${w === 'ilda' || w === 'nora' ? 'elle' : 'lui'}.`]);
     return true;
   }
   return nightInteract(g, o, fx, fy);
@@ -238,6 +256,30 @@ function oskarNight(g: Game) {
   );
 }
 
+/** La nuit, une fois les fiches lues : un petit éclat sur ce qu'il faut aller chercher (le carnet dans
+ *  la barque, les fruits de l'étal, la sirène, la navette quand la maîtresse nous suit). */
+export function drawAnchorGlints(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
+  if (!nightOn(g) || !g.flags.has('ficheVue')) return;
+  const spots: [number, number][] = [];
+  const at = (id: string) => g.map.objects.find((o) => o.id === id);
+  if (g.map.id === 'ville') {
+    const barque = at('barqueQuai'), etal = at('etal'), sir = at('sirene');
+    if (barque && !done(g, 'joss') && !g.items.has('carnetJoss')) spots.push([barque.x, barque.y]);
+    if (etal && !done(g, 'ilda') && !g.items.has('fruit')) spots.push([etal.x, etal.y]);
+    if (sir && !done(g, 'tom')) spots.push([sir.x, sir.y]);
+  }
+  if (g.map.id === 'cuves' && g.flags.has('profFollow')) spots.push([28, 12]);
+  for (const [x, y] of spots) {
+    const k = (Math.sin(g.time * 4 + x) + 1) / 2;
+    const cx = x * T + 8 - ox, cy = y * T + 4 - oy;
+    c.fillStyle = `rgba(216,255,250,${0.35 + k * 0.6})`;
+    c.fillRect(cx - 3, cy, 7, 1);
+    c.fillRect(cx, cy - 3, 1, 7);
+    c.fillStyle = `rgba(95,240,224,${0.2 + k * 0.3})`;
+    c.fillRect(cx - 1, cy - 1, 3, 3);
+  }
+}
+
 /** La nuit : de petits « z » au-dessus des dormeurs. */
 export function drawSleepers(g: Game, c: CanvasRenderingContext2D, ox: number, oy: number) {
   if (!nightOn(g) || g.map.id !== 'ville') return;
@@ -254,7 +296,26 @@ export function drawSleepers(g: Game, c: CanvasRenderingContext2D, ox: number, o
   }
 }
 
-// ---------- l'aube, et la fin ----------
+// ---------- la fin ----------
+/** Le dernier pylône s'allume ; puis c'est mon tour d'oublier. */
+function lastScene(g: Game) {
+  ui.say(
+    [
+      'Tous les pylônes brillent. Sur la ville endormie, le silence.',
+      'Iris (radio) : « 4 211 sur 4 211. Tout le monde. »',
+      'Je souris. Et puis quelque chose s’éteint, derrière mes yeux.',
+      'Le nom de la grande rue, sur Vesper. La couleur du ciel, là-bas. Ils partent.',
+      'Iris l’avait dit : pour moi, ce ne serait pas dix ans.',
+    ],
+    () =>
+      playFinale(g, () => {
+        g.recordLegacy();
+        g.onFinished();
+      }),
+  );
+}
+
+// ---------- (ancienne fin, au jour 5 : gardée pour les sauvegardes déjà arrivées là) ----------
 export function finale(g: Game) {
   if (g.flags.has('finale')) return;
   g.flags.add('finale');

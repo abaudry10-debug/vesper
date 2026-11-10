@@ -1280,7 +1280,16 @@ const secoursBox: Painter = (c, v) => {
   r(c, 7, 3, 2, 6, AZ.white); r(c, 5, 5, 6, 2, AZ.white);
   r(c, 11, 8, 1, 3, AZ.metalLight); r(c, 3, 13, 10, 1, '#7a1a1a');
 };
+/** Un petit câble électrique enroulé, par terre, dans la salle des serveurs. */
+const cableCoil: Painter = (c, v) => {
+  metalFloor(c, v);
+  r(c, 4, 7, 8, 6, 'rgba(0,0,0,0.25)');
+  r(c, 4, 6, 8, 6, AZ.ink); r(c, 5, 7, 6, 4, '#c83a3a'); r(c, 6, 8, 4, 2, '#5a1a1a'); r(c, 7, 8, 2, 2, AZ.ink);
+  r(c, 5, 7, 6, 1, '#ff7a7a');
+  r(c, 11, 9, 3, 1, '#c83a3a'); r(c, 13, 9, 1, 2, AZ.metalLight);
+};
 registerTiles({
+  cableCoil,
   secoursBox,
   loadChair,
   barqueWater,

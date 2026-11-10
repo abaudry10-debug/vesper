@@ -304,6 +304,8 @@ export class Game {
       if (this.npcFace.has(o.id) && Math.abs(o.x - this.x) + Math.abs(o.y - this.y) > 1) this.npcFace.delete(o.id);
       const r = o.npc.wander;
       if (!r || this.busy || this.npcFace.has(o.id) || this.npcStep.has(o.id) || !this.objAt(o.x, o.y)) continue;
+      // à côté du héros, on ne s'en va pas : il allait peut-être nous parler
+      if (Math.abs(o.x - this.x) + Math.abs(o.y - this.y) <= 1) continue;
       if (!this.npcHome.has(o.id)) this.npcHome.set(o.id, [o.x, o.y]);
       const left = (this.npcWait.get(o.id) ?? 1 + Math.random() * 3) - dt;
       this.npcWait.set(o.id, left);
@@ -1976,6 +1978,50 @@ export class Game {
       c.arc(cx, cy, inner, 0, Math.PI * 2);
       c.fill();
     }
+  }
+
+  /** Une image de toute une carte (sols, objets, ombres, grands décors), sans les personnages :
+   *  pour une vue satellite, ou un souvenir de lieu. Optionnellement limitée à un rectangle de cases. */
+  mapImage(mapId: string, rect?: { x: number; y: number; w: number; h: number }): HTMLCanvasElement {
+    const saved = this.map, savedCtx = this.ctx;
+    const m = ch().maps[mapId];
+    const r = rect ?? { x: 0, y: 0, w: m.width, h: m.height };
+    const cv = document.createElement('canvas');
+    cv.width = r.w * T;
+    cv.height = r.h * T;
+    const c = cv.getContext('2d')!;
+    c.imageSmoothingEnabled = false;
+    this.map = m;
+    this.ctx = c;
+    try {
+      const ox = r.x * T, oy = r.y * T;
+      const vis: [string, number, number][] = [];
+      for (let y = r.y; y < r.y + r.h; y++)
+        for (let x = r.x; x < r.x + r.w; x++) {
+          if (x < 0 || y < 0 || x >= m.width || y >= m.height) {
+            if (ch().hooks.renderVoid?.(this, c, x, y, x * T - ox, y * T - oy)) continue;
+            const voidTile = m.voidTile ?? (m.outdoor ? 'rubble' : '');
+            if (voidTile) c.drawImage(tile(voidTile, hash(x, y)), x * T - ox, y * T - oy);
+            continue;
+          }
+          const obj = this.objAt(x, y);
+          const sprite = obj && !obj.npc ? this.objSprite(obj) : '';
+          const name = sprite || this.tileName(x, y);
+          c.drawImage(tile(name, hash(x, y)), x * T - ox, y * T - oy);
+          vis.push([name, x, y]);
+        }
+      this.renderShadows(vis, ox, oy);
+      for (const d of m.decals ?? []) {
+        const img = DECALS[d.kind] ??
+          (d.kind === 'shuttle' ? this.decalShuttle : d.kind === 'dish' ? this.decalDish : d.kind === 'radioTower' ? this.decalRadio
+          : d.kind === 'train' ? this.decalTrain : d.kind === 'bigTree' ? this.decalBigTree : this.decalTower);
+        c.drawImage(img, d.x * T - ox, (d.y + d.h) * T - img.height - oy);
+      }
+    } finally {
+      this.map = saved;
+      this.ctx = savedCtx;
+    }
+    return cv;
   }
 
   objSprite(o: MapObject): string {

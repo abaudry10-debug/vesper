@@ -18,17 +18,21 @@ export function useCable(g: Game): boolean {
   const [fx, fy] = g.facing();
   const sir = g.map.id === 'ville' && g.map.objects.find((o) => o.id === 'sirene');
   if (!sir || sir.x !== fx || sir.y !== fy) {
-    ui.say(['Un câble neuf, de l’atelier de Betti. Il servirait à rebrancher la sirène, sur la place.']);
+    ui.say(['Un petit câble électrique, neuf. Ça peut servir.']);
+    return true;
+  }
+  if (!g.flags.has('jour4') || !g.flags.has('j4Moons')) {
+    ui.say(['La sirène. Tom l’a débranchée : elle sonnait pour rien.', 'Je n’ai aucune raison d’y toucher.']);
     return true;
   }
   if (!g.items.has('pince')) {
-    ui.say(['Les vieux fils sont grillés. Il faudrait une pince pour les couper et brancher le câble neuf.', 'Tom en a toujours une à la main.']);
+    ui.say(['Les vieux fils sont grillés. Il faudrait une pince pour les couper et brancher le câble.', 'Tom en a toujours une à la main.']);
     return true;
   }
   g.items.delete('cable');
   g.flags.add('sireneOn');
   sfx.clank();
-  ui.say(['Je coupe les fils grillés avec la pince de Tom. Je branche le câble neuf.', 'Un déclic. Puis un hurlement, au-dessus de la place.'], () => {
+  ui.say(['Je coupe les fils grillés avec la pince de Tom. Je branche le câble.', 'Un déclic. Puis un hurlement, au-dessus de la place.'], () => {
     setHeatSound(1, 0);
     ui.say(
       [

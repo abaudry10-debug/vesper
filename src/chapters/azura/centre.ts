@@ -135,7 +135,7 @@ function renderServerRoom(g: Game, c: CanvasRenderingContext2D, w: number, h: nu
     }
   }
   const power = g.flags.has('powerOn');
-  // le cœur de mémoire : 4 212 lumières… presque toutes éteintes
+  // le cœur de mémoire : 4 212 lumières… presque toutes éteintes
   const cx = 6 * T - ox, cy = 6 * T - CORE.h - oy;
   // quand on passe derrière la colonne, elle se redessine par-dessus le héros (et Pixel)
   const [hx, hy] = g.heroPixel();
@@ -246,7 +246,6 @@ export function usePump(g: Game) {
       'Je tourne la manivelle. La pompe force, le cadran grimpe dans le rouge.',
       'Un cadran « RIVIÈRE » est au maximum : la sortie est sous l’eau, la marée est haute. L’eau revient aussitôt.',
       'Il faudrait attendre que la marée redescende.',
-      '(Le banc du hall permet d’attendre.)',
     ]);
   }
   sfx.select();

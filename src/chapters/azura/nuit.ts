@@ -211,7 +211,7 @@ export function bettiTalk(g: Game) {
 export function serverWaiting(g: Game) {
   ui.say([
     'Le cœur de mémoire brille de toutes ses lumières. Des milliers.',
-    'Sur l’écran : « RÉCEPTION 47,2 : TERMINÉE. 4 211 DOSSIERS. 1 CONSCIENCE : PX-07. »',
+    'Sur l’écran : « RÉCEPTION 47,2 : TERMINÉE. 4 211 DOSSIERS. 1 CONSCIENCE : PX-07. »',
     '« CONSCIENCE EN ATTENTE. AUCUN SUPPORT COMPATIBLE. »',
     'La réception a marché. Mais pour que Pixel revive, il faut un corps capable d’absorber ses données… et de les transmettre ensuite aux colons.',
     'Le nouveau corps. Celui que Betti a construit.',
@@ -228,7 +228,7 @@ export function wakePixel2(g: Game) {
   const [bx, by] = spots.find(([x, y]) => g.pixelFree(x, y) && !(x === fx && y === fy)) ?? [g.x + 1, g.y];
   ui.say(
     [
-      'Sur l’écran : « RÉCEPTION 47,2 : TERMINÉE. 4 211 DOSSIERS ET 1 CONSCIENCE : PX-07. SUPPORT COMPATIBLE DÉTECTÉ. »',
+      'Sur l’écran : « RÉCEPTION 47,2 : TERMINÉE. 4 211 DOSSIERS ET 1 CONSCIENCE : PX-07. SUPPORT COMPATIBLE DÉTECTÉ. »',
       'Betti pose le chien de métal par terre, sans savoir pourquoi.',
       '« TRANSFERT PX-07 → NOUVEAU CORPS. »',
     ],
@@ -280,8 +280,8 @@ export function rechargeBetti(g: Game) {
             '« Pixel… »',
             '« Je t’avais dit d’attendre. Et tu as attendu. »',
             'Pixel saute sur ses genoux. Betti rit et pleure en même temps.',
-            'Iris : « Ça marche. Il en reste 4 210. »',
-            'Oskar : « Ils n’ont pas tous besoin de nous. Mais certains auront besoin d’une ancre, comme Betti avec son dessin. Quelque chose de concret, pour accrocher le souvenir. »',
+            'Iris : « Ça marche. Il en reste 4 210. »',
+            'Oskar : « Ils n’ont pas tous besoin de nous. Mais certains auront besoin d’un déclic, comme Betti avec son dessin. Quelque chose de concret, pour accrocher le souvenir. »',
           ],
           () => {
             g.flags.add('bettiRestored');

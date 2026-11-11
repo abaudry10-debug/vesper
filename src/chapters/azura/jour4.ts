@@ -77,11 +77,10 @@ function startWave(g: Game) {
           '« Tu as vu ça ? Sans la sirène… »',
           '« Joss ! Il était sur l’île, de l’autre côté du lac ! »',
           '« Et sa barque… La vague l’a arrachée de son ponton. Regarde, elle a dérivé jusque devant notre ponton ! »',
-          '« Sans barque, il ne peut plus revenir. Et elle est bien trop loin du bord pour l’attraper à la main… »',
+          '« Sans barque, il ne peut plus revenir… »',
         ],
         () => {
           g.api.clue('azVague');
-          g.api.clue('azl14');
           g.save();
         },
       );

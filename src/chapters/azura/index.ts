@@ -542,6 +542,18 @@ function updateFish(g: Game, dt: number) {
     if (st.fish.t >= st.fish.dur) st.fish = null;
     return;
   }
+  // en allant chercher Joss : passé un certain point, sa queue surgit à coup sûr, juste à côté de la barque
+  if (boat && !g.flags.has('jossSaved') && !g.flags.has('boatTail') && g.y >= 32) {
+    for (const [dx, dy] of [[2, 1], [-2, 1], [2, 0], [-2, 0], [1, 2], [-1, 2]]) {
+      const x = g.x + dx, y = g.y + dy;
+      if (g.map.rows[y]?.[x] !== '~') continue;
+      g.flags.add('boatTail');
+      st.fish = { x: x * T + T / 2, y: y * T + 10, kind: 'queue', t: 0, dur: 3.2, flip: dx < 0 };
+      st.timer = 6;
+      if (!ui.dialogOpen()) window.setTimeout(() => ui.say(['Une queue immense jaillit de l’eau, juste à côté de la barque…', 'Et replonge. Je rame plus vite.']), 900);
+      return;
+    }
+  }
   st.timer -= dt;
   if (st.timer > 0) return;
   // jamais pendant une scène : il apparaîtra quand on le regarde vraiment
@@ -666,6 +678,9 @@ function fishGlow(g: Game, glow: (x: number, y: number, r: number, rgb: string, 
 const isEvening = (g: Game) =>
   day(g) === 1 ? g.flags.has('helpDone') : hour(g) >= EVENING;
 let eveningNow = false;
+/** Où en est l'histoire, pour la musique. */
+let azPhase: 'joie' | 'mystere' | 'epic' = 'joie';
+let azNightUrgent = false;
 
 function renderEvening(g: Game, c: CanvasRenderingContext2D, w: number, h: number) {
   const [hx, hy] = g.heroPixel();
@@ -1128,7 +1143,16 @@ export const azura: Chapter = {
   switches: { labels: [], order: [] },
   intro: [],
   features: { heatWaves: false, movement: 'grid' },
-  music: (map) => (map.id === 'r7Ville' ? 'outdoor' : map.id.startsWith('r7') ? 'lab' : ['atelier', 'cabane', 'pilotes', 'ecole', 'centre', 'culture', 'pompes', 'serveurs'].includes(map.id) || eveningNow ? 'home' : 'azura'),
+  // la musique suit l'histoire : joyeuse en arrivant, mystérieuse quand l'eau ne suit plus le bulletin,
+  // épique une fois qu'on a compris (PX-07) ; la berceuse des intérieurs et du soir, tant qu'on n'en est pas là
+  music: (map) => {
+    if (map.id === 'r7Ville') return 'outdoor';
+    if (map.id.startsWith('r7')) return 'lab';
+    const outdoorTheme = azPhase === 'epic' ? 'azuraEpic' : azPhase === 'mystere' ? 'azura' : 'azuraJoie';
+    const inside = ['atelier', 'cabane', 'pilotes', 'ecole', 'centre', 'culture', 'pompes', 'serveurs', 'oskar'].includes(map.id);
+    if (azPhase === 'epic') return inside && !azNightUrgent ? 'home' : outdoorTheme;
+    return inside || eveningNow ? 'home' : outdoorTheme;
+  },
   dialogStyle: 'azura',
   cutTargets: {},
   solid: SOLID_AZ,
@@ -1140,7 +1164,7 @@ export const azura: Chapter = {
     actions: [],
   },
   begin(g: Game) {
-    playTheme('azura');
+    playTheme('azuraJoie');
     g.heroAlpha = 0; // caché jusqu'à ce qu'il sorte de sa cuve
     const sky = skyOpening(() => {});
     ui.say(['…', 'Du bleu.', 'Un ciel bleu… et deux lunes.', 'Au-dessus de l’horizon, une planète immense, cerclée d’anneaux.', 'L’air est frais. Il sent l’herbe… et le métal chaud.'], () => {
@@ -1251,6 +1275,14 @@ export const azura: Chapter = {
       if (g.flags.has('helpNow') && !ui.dialogOpen() && !g.locked) startHelp(g);
       if (g.flags.has('lakeNow') && !g.flags.has('lakeScene') && !ui.dialogOpen() && !g.locked) lakeScene(g);
       eveningNow = isEvening(g);
+      // la classe se vide le soir (sauf la nuit de l'oubli : la maîtresse dort à son bureau)
+      const vide = hour(g) >= EVENING && !g.flags.has('oubli');
+      if (vide !== g.flags.has('ecoleVide')) {
+        if (vide) g.flags.add('ecoleVide');
+        else g.flags.delete('ecoleVide');
+      }
+      azPhase = g.flags.has('pxFound') ? 'epic' : g.flags.has('tideWitnessed') ? 'mystere' : 'joie';
+      azNightUrgent = g.flags.has('oubli') && !g.flags.has('aube');
     },
     blocked: (g, x, y) => r7Blocked(g, x, y) ?? boatBlocked(g, x, y),
     useItem(g, id) {
@@ -1717,6 +1749,8 @@ export const azura: Chapter = {
       }
       // en sortant, le soir est tombé : on comprend qu'il est temps d'aller dormir
       eveningNow = isEvening(g);
+      azPhase = g.flags.has('pxFound') ? 'epic' : g.flags.has('tideWitnessed') ? 'mystere' : 'joie';
+      azNightUrgent = g.flags.has('oubli') && !g.flags.has('aube');
       if (eveningNow && g.map.outdoor && !g.flags.has('soirSeen') && day(g) === 1) {
         g.flags.add('soirSeen');
         setHour(g, EVENING);
@@ -1733,7 +1767,7 @@ export const azura: Chapter = {
       // à l'école, la leçon commence dès qu'on entre, une fois par jour
       if (mapId === 'ecole') {
         const due = g.flags.has('jour5') ? !g.flags.has('lesson5Heard') : g.flags.has('jour4') ? !g.flags.has('lesson4Heard') : g.flags.has('jour3') ? !g.flags.has('lesson3Heard') : g.flags.has('jour2') ? !g.flags.has('lesson2Heard') : !g.flags.has('lesson1Heard');
-        if (due && !(g.flags.has('oubli') && !g.flags.has('aube'))) window.setTimeout(() => SCRIPTS_AZ.lecon(g.api), 400);
+        if (due && hour(g) < EVENING && !(g.flags.has('oubli') && !g.flags.has('aube'))) window.setTimeout(() => SCRIPTS_AZ.lecon(g.api), 400);
       }
       // le jour 5, en sortant de l'école : la fin
       if (day(g) === 5 && mapId === 'ville' && g.flags.has('lesson5Heard')) window.setTimeout(() => finale(g), 700);

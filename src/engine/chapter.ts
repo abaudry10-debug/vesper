@@ -8,7 +8,7 @@ import type { Game } from './game.js';
 import type { Dir, PersonLook } from './sprites.js';
 import type { GameMap, MapObject } from './world.js';
 
-export type Theme = 'title' | 'outdoor' | 'lab' | 'home' | 'azura' | 'none';
+export type Theme = 'title' | 'outdoor' | 'lab' | 'home' | 'azura' | 'azuraJoie' | 'azuraEpic' | 'none';
 export type CutKind = 'pixelFlap' | 'pixelVent' | 'pixelPower' | 'pixelCar';
 
 export interface ChapterFeatures {

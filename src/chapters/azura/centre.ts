@@ -38,7 +38,7 @@ function serverWater(g: Game) {
   const s = st(g);
   let jet = 1, level = 0.58;
   if (g.flags.has('inflowCut')) jet = s.cutAt === undefined ? 0 : Math.max(0, 1 - (g.time - s.cutAt) / 2.4);
-  else if (g.flags.has('vanneCFermee') || g.flags.has('vanneDFermee')) jet = 0.45; // un seul des deux tuyaux coupé
+  else if (g.flags.has('vanneAFermee') || g.flags.has('vanneCFermee')) jet = 0.45; // un seul des deux tuyaux coupé
   if (g.flags.has('drained')) level = 0;
   else if (s.drainAt !== undefined) level = 0.58 * Math.max(0, 1 - (g.time - s.drainAt) / 4.5);
   return { jet, level };
@@ -180,15 +180,16 @@ function renderServerRoom(g: Game, c: CanvasRenderingContext2D, w: number, h: nu
 }
 
 // ---------- les actions ----------
-// Quatre vannes : culture (A), fontaines (B), refroidissement (C) et la dérivation de secours (D),
-// qui double le refroidissement. Il faut fermer C et D, sans jamais couper la culture.
-const OTHER: Record<string, string> = { vanneC: 'vanneDFermee', vanneD: 'vanneCFermee' };
+// Quatre vannes. En suivant les tuyaux : A (en haut) mène au refroidissement des serveurs, B aux fontaines,
+// C à la dérivation de secours (qui double le refroidissement), D (en bas) à la culture.
+// Il faut fermer A et C, sans jamais couper la culture.
+const OTHER: Record<string, string> = { vanneA: 'vanneCFermee', vanneC: 'vanneAFermee' };
 
 export function turnValve(g: Game, id: string) {
   if (g.flags.has('inflowCut')) {
-    return ui.say([id === 'vanneC' || id === 'vanneD' ? 'Cette vanne est fermée. Le jet ne coule plus.' : 'Mieux vaut ne plus toucher aux autres vannes.']);
+    return ui.say([id === 'vanneA' || id === 'vanneC' ? 'Cette vanne est fermée. Le jet ne coule plus.' : 'Mieux vaut ne plus toucher aux autres vannes.']);
   }
-  if (id === 'vanneA') {
+  if (id === 'vanneD') {
     sfx.bump();
     return ui.say([
       'Je ferme la vanne. Un long grincement.',
@@ -204,7 +205,7 @@ export function turnValve(g: Game, id: string) {
       'Ce n’est pas la bonne. Quelque part en ville, les fontaines ont dû s’arrêter un instant… Je la rouvre.',
     ]);
   }
-  const mine = id === 'vanneC' ? 'vanneCFermee' : 'vanneDFermee';
+  const mine = id === 'vanneA' ? 'vanneAFermee' : 'vanneCFermee';
   if (g.flags.has(mine)) {
     g.flags.delete(mine);
     sfx.select();

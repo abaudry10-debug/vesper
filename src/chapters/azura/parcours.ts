@@ -54,7 +54,6 @@ export const JOURNEY_AZ: JourneyStep[] = [
     label: 'Jour 2 — après l’école',
     at: { map: 'ville', x: 27, y: 7, dir: 'down' },
     flags: ['lesson2Heard'],
-    items: ['maquette'],
     clues: ['azLecon2', 'azMina', 'azl6'],
     counters: { heure: 12 },
     opt: { flags: ['ildaTwice'], clues: ['azNora2', 'azJoss', 'azRepere'] },
@@ -66,6 +65,7 @@ export const JOURNEY_AZ: JourneyStep[] = [
     flags: ['tideWitnessed', 'jour3'],
     clues: ['azMaree', 'azLunes', 'azl7'],
     counters: { heure: 11 },
+    opt: { flags: ['maquetteTaken'], items: ['maquette'] },
   },
   {
     label: 'Jour 3 — la cabane de Joss',
@@ -103,7 +103,7 @@ export const JOURNEY_AZ: JourneyStep[] = [
   {
     label: 'Jour 3 — salle des serveurs (courant remis)',
     at: { map: 'serveurs', x: 7, y: 8, dir: 'up' },
-    flags: ['crankTaken', 'crankOn', 'vanneCFermee', 'vanneDFermee', 'inflowCut', 'drained', 'powerOn'],
+    flags: ['crankTaken', 'crankOn', 'vanneAFermee', 'vanneCFermee', 'inflowCut', 'drained', 'powerOn'],
     clues: ['azJet', 'azl10', 'azlManivelle', 'azVidange', 'azl11'],
     counters: { heure: 22 },
     opt: { flags: ['cableTaken', 'cultureNoms'], items: ['cable'], clues: ['azSchema', 'azCulture', 'azMedecin'] },
@@ -130,7 +130,7 @@ export const JOURNEY_AZ: JourneyStep[] = [
     at: { map: 'ville', x: 17, y: 23, dir: 'down' },
     flags: ['sireneOn', 'vague'],
     drop: ['cable'],
-    clues: ['azSirene', 'azVague', 'azl14'],
+    clues: ['azSirene', 'azVague'],
     counters: { heure: 9 },
   },
   {

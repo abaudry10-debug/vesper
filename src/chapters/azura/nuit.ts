@@ -3,6 +3,7 @@
 // Betti aussi. On l'emmène au centre avec le nouveau corps : Pixel 2.0 s'éveille, et c'est elle qu'on
 // recharge en premier, son dessin pour ancre, pendant que Pixel projette le jour du départ.
 import { openCurveDigital } from './schemas.js';
+import { clearVesperFx } from './r7.js';
 import { startGlobal } from './ancres.js';
 import type { Game } from '../../engine/game.js';
 import { sfx } from '../../engine/audio.js';
@@ -56,6 +57,7 @@ function backToAzura(g: Game) {
   g.flags.add('oubli');
   g.pixel = null;
   setHour(g, 21);
+  clearVesperFx(g);
   g.warp('pilotes', 8, 3, 'up');
   window.setTimeout(() => {
     // une fois revenu sur Azura (pas avant : tant qu'on est sur Vesper, le sac reste celui du robot)

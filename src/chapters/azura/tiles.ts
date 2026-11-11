@@ -1288,7 +1288,16 @@ const cableCoil: Painter = (c, v) => {
   r(c, 5, 7, 6, 1, '#ff7a7a');
   r(c, 11, 9, 3, 1, '#c83a3a'); r(c, 13, 9, 1, 2, AZ.metalLight);
 };
+/** Le bureau de la maîtresse, avec la maquette de la navette posée dessus. */
+const deskShuttle: Painter = (c, v) => {
+  desk(c, v);
+  r(c, 3, 2, 10, 4, AZ.ink); r(c, 4, 3, 8, 2, '#e8e8f0'); r(c, 12, 3, 2, 1, '#e8e8f0');
+  r(c, 5, 3, 1, 1, AZ.tealDark); r(c, 7, 3, 1, 1, AZ.tealDark); r(c, 9, 3, 1, 1, AZ.tealDark);
+  r(c, 4, 1, 2, 2, '#c8ccd4'); r(c, 2, 4, 2, 1, '#ffd45e');
+  r(c, 7, 5, 2, 1, AZ.metalDark);
+};
 registerTiles({
+  deskShuttle,
   cableCoil,
   secoursBox,
   loadChair,

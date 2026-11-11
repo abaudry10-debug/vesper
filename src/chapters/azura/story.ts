@@ -75,19 +75,19 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azl6', thread: 'leads', title: 'Voir l’eau monter', text: 'Le bulletin des eaux, sur la place, donne l’heure du jour. Un banc permet d’attendre. Ensuite, dormir chez Betti, le soir venu.', doneWhen: 'tideWitnessed' },
   { id: 'azl7', thread: 'leads', title: 'Le carnet de Joss', text: 'Le carnet de Joss est enfermé dans sa cabane de pêche, sur la rive sud de la rivière, au chemin des crêtes. Joss a perdu la clé : il pêchait devant la cabane.', doneWhen: 'carnetRead' },
   { id: 'azl12', thread: 'leads', title: 'Une journée calme ?', text: 'Joss est parti pêcher sur son île, de l’autre côté du lac. Le bulletin annonce une journée calme. Mais le carnet de Joss parlait d’une grande marée, tous les trente jours… Regarder les lunes, sur la tour de l’horloge.', doneWhen: 'j4Moons' },
-  { id: 'azl13', thread: 'leads', title: 'Prévenir la ville', text: 'Grande marée vers 9 h, et personne ne me croit. La sirène ferait évacuer tout le monde : Tom l’a débranchée, ses fils sont grillés. Il faudrait une pince (Tom en a toujours une) et un câble neuf. J’en ai peut-être vu un quelque part…', doneWhen: 'sireneOn' },
+  { id: 'azl13', thread: 'leads', title: 'Prévenir la ville', text: 'Une grande marée, vers 9 h, et personne ne s’en doute. Il faut prévenir tout le monde du danger.', doneWhen: 'sireneOn' },
   { id: 'azl14', thread: 'leads', title: 'La barque de Joss', text: 'Joss est bloqué sur son île, de l’autre côté du lac. La vague a arraché sa barque : elle a dérivé jusque devant le ponton de la ville. Elle flotte hors de portée de main. Il faut trouver un moyen de l’attraper.', doneWhen: 'barqueOk' },
-  { id: 'azl15', thread: 'leads', title: 'L’étale', text: 'La barque est au ponton, mais le courant tire vers le large. Attendre que l’eau s’arrête de bouger (l’étale, vers 10 h), puis ramer jusqu’à Joss, au sud de l’île, et le ramener au ponton.', doneWhen: 'jossSaved' },
+  { id: 'azl15', thread: 'leads', title: 'L’étale', text: 'La barque est au ponton, mais le courant tire vers le large. Il faudrait que l’eau se calme.', doneWhen: 'jossSaved' },
   { id: 'azl16', thread: 'leads', title: 'La commandante', text: 'Oskar veut mettre la commandante face à « AU-01 ». Rendez-vous au centre des pilotes, en bas à droite de la ville.', doneWhen: 'j4Confession' },
   { id: 'azl17', thread: 'leads', title: 'Les plans de la mère de Betti', text: 'En entendant « PX-07 », Betti est partie en courant vers son atelier : sa mère numérotait ses prototypes.', doneWhen: 'j4Plans' },
-  { id: 'azl18', thread: 'leads', title: 'Vesper, maintenant', text: 'La liaison 47,2 n’est grande ouverte que tant que les lunes sont alignées : jusqu’à ce soir. Au centre des pilotes, prendre les commandes d’un robot de patrouille resté sur Vesper, et ramener Pixel.', doneWhen: 'j4Liaison' },
+  { id: 'azl18', thread: 'leads', title: 'Vesper, maintenant', text: 'La liaison 47,2 n’est grande ouverte que tant que les lunes sont alignées : jusqu’à ce soir. Au centre des pilotes, prendre les commandes d’un robot de patrouille resté sur Vesper, et ramener Pixel.', doneWhen: 'r7Started' },
   { id: 'r7l1', thread: 'leads', title: 'Trouver Pixel', text: 'Je pilote un robot de patrouille depuis Azura. Retrouver Pixel, quelque part dans la ville. Attention : au soleil, le robot surchauffe ; à l’ombre des murs, il refroidit.', doneWhen: 'bs1Taken' },
   { id: 'r7l2', thread: 'leads', title: 'Recharger la BS-1', text: 'La BS-1 de ma capsule est vide. La poser sur la plaque de recharge solaire de la place des Missions, attendre à l’ombre, puis la reprendre.', doneWhen: 'bs1Charged' },
   { id: 'r7l3', thread: 'leads', title: 'Réveiller Pixel', text: 'La BS-1 est pleine. La brancher sur Pixel (depuis le sac).', doneWhen: 'pixelOn' },
-  { id: 'r7l4', thread: 'leads', title: 'Le spatioport', text: 'Pixel me suit. Le ramener au spatioport : l’antenne et l’ordinateur des archives sont là-bas.', doneWhen: 'r7Transmit' },
+  { id: 'r7l4', thread: 'leads', title: 'Le spatioport', text: 'Pixel me suit. Le ramener au spatioport : l’antenne et l’ordinateur des archives sont là-bas.', doneWhen: 'pixelSent' },
   { id: 'azl19', thread: 'leads', title: 'Le nouveau corps', text: 'Les données de Pixel sont arrivées sur les serveurs du centre de clonage. Betti a fini son nouveau corps, à l’atelier. Mais tout le monde oublie, ce soir.', doneWhen: 'bettiJoins' },
-  { id: 'azl19b', thread: 'leads', title: 'Au centre de clonage', text: 'Betti me suit, le nouveau corps dans les bras. L’emmener jusqu’à la salle des serveurs du centre de clonage, près des cuves.', doneWhen: 'pixel2' },
-  { id: 'azl20', thread: 'leads', title: 'Le second chargement', text: 'Dans la salle de culture du centre, le fauteuil de chargement. Betti d’abord, avec son dessin.', doneWhen: 'bettiRestored' },
+  { id: 'azl19b', thread: 'leads', title: 'Au centre de clonage', text: 'Betti me suit, le nouveau corps dans les bras. Elle ne sait plus qui elle est. Les données de Pixel… où sont-elles arrivées ?', doneWhen: 'pixel2' },
+  { id: 'azl20', thread: 'leads', title: 'Le second chargement', text: 'Le second chargement est possible. Betti d’abord.', doneWhen: 'bettiRestored' },
   { id: 'azlCabane', thread: 'leads', title: 'La cabane verrouillée', text: 'La cabane de Joss est fermée à clé. Joss pêchait sur son ponton quand il l’a perdue… Elle est peut-être tombée à l’eau.', doneWhen: 'cabaneOpen' },
   { id: 'azl8', thread: 'leads', title: 'Le centre de clonage', text: 'Oskar m’attend devant la porte du centre, près des cuves.', doneWhen: 'centreIn' },
   { id: 'azlOskar', thread: 'leads', title: 'Oskar', text: 'Dans le carnet de Joss, une note de sa main : « Dire au petit nouveau : Oskar veut le voir. La maison à l’étiquette. » Une étiquette… La porte marquée « PORTE », dans la ville ?', doneWhen: 'oskarDeal' },
@@ -129,7 +129,7 @@ export const ITEMS_AZ: Record<string, ItemDef> = {
   carnetJoss: { name: 'Carnet de Joss', text: 'Son carnet de pêche, trempé. Retrouvé au fond de sa barque. Le déclic de Joss.', usable: true },
   bulletin0: { name: 'Premier bulletin', text: 'Le tout premier bulletin des eaux, jour 1, an 0, signé N. Vey. Le plus vieux de la collection d’Oskar.', usable: true },
   fruit: { name: 'Fruit d’Azura', text: 'Orange, sucré, avec un goût de miel. Mme Ilda me l’a offert à mon arrivée.', usable: true },
-  maquette: { name: 'Maquette de la navette', text: 'Une petite maquette de la navette, peinte à la main : « AURORE — 1 ». La maîtresse me l’a donnée après sa leçon.', usable: true },
+  maquette: { name: 'Maquette de la navette', text: 'Une petite maquette de la navette, peinte à la main : « AURORE — 1 ». Celle du bureau de la maîtresse.', usable: true },
   badge: { name: 'Badge d’Oskar', text: 'Le badge de pilote d’Oskar : « AU-04 ». À passer devant la porte du centre de clonage. Il faut aussi le code : « le nombre de ceux qu’on a ramenés ».', usable: true },
   manivelle: { name: 'Manivelle', text: 'Une grosse manivelle d’acier, étiquetée « VIDANGE ». Pour la pompe de la salle des pompes.', usable: true },
   cleCabane: { name: 'Clé de la cabane', text: 'Une clé de cuivre, repêchée devant la cabane de Joss. Un petit médaillon gravé « J ».', usable: true },
@@ -367,7 +367,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
   etagere: (api) => api.say(['Des outils, des pièces détachées, une petite batterie.', 'Betti bricole. Comme sa mère.']),
   etabli: (api) => api.say(['Un établi couvert de plans.', 'Des pattes mécaniques, une tête ronde… Elle construit quelque chose.']),
   lit: (api) => api.say(['Un lit fait au carré.']),
-  bettiVague: (api) => api.say(api.has('jossSaved') ? ['« Tu l’as ramené… Merci. »'] : api.has('barqueOk') ? ['« Le courant est encore trop fort. Attends que l’eau s’arrête : regarde les lunes, sur la tour. »'] : ['« La barque est juste devant le ponton… mais trop loin pour la main. »']),
+  bettiVague: (api) => api.say(api.has('jossSaved') ? ['« Tu l’as ramené… Merci. »'] : api.has('barqueOk') ? ['« Le courant est encore trop fort. Attends que l’eau s’arrête : regarde les lunes, sur la tour. »'] : ['« Joss… Il est coincé là-bas, sans barque. »']),
   noraQuai: (api) => api.say(['« Chaque matin, j’ai recopié… Comment j’ai pu ne rien voir ? »']),
   tomQuai: (api) => api.say(['« La sirène a tenu. Ton câble, ma pince… On a eu de la chance. »']),
   ildaQuai: (api) => api.say(['« Quelle frayeur, mon grand ! Mes fruits sont partis avec la vague. »', '« Ce n’est rien. Tout le monde est là. »']),
@@ -533,6 +533,15 @@ export const SCRIPTS_AZ: Record<string, Script> = {
       'Sous « Salle des pompes » : « Prise d’eau de la rivière. Quatre départs : culture, fontaines, refroidissement des serveurs… et une dérivation de secours, qui double le refroidissement. »',
       'En rouge : « NE JAMAIS COUPER LA CULTURE. »',
     ]),
+  bureauProf: (api) => {
+    if (api.has('maquetteTaken')) return api.say(['Le bureau de la maîtresse. Des copies à corriger, un bout de craie.']);
+    if (!api.has('ecoleVide') && !(api.has('oubli') && !api.has('aube')))
+      return api.say(['Sur le bureau, une petite maquette de la navette. Sur la coque, en lettres peintes : « AURORE — 1 ».', 'La maîtresse : « Pas touche ! J’en ai besoin pour mes leçons. »']);
+    api.say(['La classe est vide. Sur le bureau, la maquette de la navette : « AURORE — 1 ».', 'Je la prends. Juste pour la regarder de plus près…'], () => {
+      api.set('maquetteTaken');
+      api.item('maquette');
+    });
+  },
   cableServeurs: (api) => {
     if (!api.has('powerOn')) return api.say(['Quelque chose traîne par terre, contre une armoire. Dans le noir, impossible de voir quoi.']);
     api.say(['Par terre, contre une armoire : un petit câble électrique, neuf, encore enroulé.', 'Je le prends. Ça peut servir.'], () => {
@@ -676,12 +685,8 @@ export const SCRIPTS_AZ: Record<string, Script> = {
           '« Le jour du grand départ, les capsules ont envoyé nos esprits jusqu’ici… »',
           'Hélios… Sur Vesper, c’était la centrale. Pas la mission.',
           'Hier, elle disait Aurore. J’en suis sûr.',
-          'Après la leçon, la maîtresse s’approche, une petite maquette à la main.',
-          '« Tiens. Garde-la : tu viens d’arriver, ça t’aidera à retenir. »',
-          'Une maquette de la navette. Sur la coque, en lettres peintes : « AURORE — 1 ».',
         ],
         () => {
-          api.item('maquette');
           api.set('lesson2Heard');
           api.clue('azLecon2');
           api.clue('azMina');

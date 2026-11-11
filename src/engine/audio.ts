@@ -2,7 +2,7 @@
 // Le navigateur exige un geste de l'utilisateur avant de jouer du son : unlock() est
 // appelé au premier bouton pressé.
 
-type Theme = 'title' | 'outdoor' | 'lab' | 'home' | 'azura' | 'none';
+type Theme = 'title' | 'outdoor' | 'lab' | 'home' | 'azura' | 'azuraJoie' | 'azuraEpic' | 'none';
 
 let ac: AudioContext | null = null;
 let master: GainNode;
@@ -208,8 +208,80 @@ function scheduleAzura(t: number) {
   }
 }
 
+// Azura, l'arrivée : lumineuse et légère, en ré majeur. Un arpège qui sautille en croches, une petite
+// mélodie qui monte, une basse ronde. Joyeux, mais tendre.
+const JOY_CHORDS: { bass: number; notes: number[] }[] = [
+  { bass: 38, notes: [62, 66, 69, 74] }, // ré
+  { bass: 45, notes: [61, 64, 69, 73] }, // la
+  { bass: 47, notes: [62, 66, 71, 74] }, // si mineur
+  { bass: 43, notes: [59, 62, 67, 71] }, // sol
+];
+const JOY_TUNE = [
+  74, 0, 76, 0, 78, 0, 81, 0, 0, 0, 78, 0, 76, 0, 0, 0, 73, 0, 76, 0, 81, 0, 0, 0, 79, 0, 76, 0, 0, 0, 0, 0,
+  71, 0, 74, 0, 78, 0, 0, 0, 79, 0, 78, 0, 74, 0, 0, 0, 74, 0, 71, 0, 67, 0, 69, 0, 71, 0, 0, 0, 0, 0, 0, 0,
+];
+function scheduleJoy(t: number) {
+  const chord = JOY_CHORDS[Math.floor(step / 8) % JOY_CHORDS.length];
+  if (step % 8 === 0) {
+    for (const n of chord.notes.slice(0, 3)) tone(musicBus, 'triangle', hz(n), t, STEP * 8, 0.026, { attack: 0.6, release: 1.2, detune: 4 });
+    tone(musicBus, 'sine', hz(chord.bass), t, STEP * 3, 0.1, { attack: 0.03, release: 0.8 });
+  }
+  if (step % 8 === 4) tone(musicBus, 'sine', hz(chord.bass + 7), t, STEP * 3, 0.07, { attack: 0.03, release: 0.8 });
+  // l'arpège : deux notes par pas, qui sautillent
+  const arp = [0, 1, 2, 3, 2, 1];
+  for (let h = 0; h < 2; h++) {
+    const n = chord.notes[arp[(step * 2 + h) % arp.length]] + 12;
+    tone(musicBus, 'triangle', hz(n), t + h * STEP * 0.5, 0.22, 0.018, { attack: 0.012, release: 0.2, filter: 3200 });
+  }
+  // la mélodie, un tour sur deux
+  if (Math.floor(step / 64) % 2 === 0) {
+    const n = JOY_TUNE[step % JOY_TUNE.length];
+    if (n) {
+      tone(musicBus, 'sine', hz(n), t, STEP * 1.6, 0.05, { attack: 0.02, release: 0.6 });
+      tone(musicBus, 'triangle', hz(n + 12), t, STEP * 0.8, 0.01, { attack: 0.02, release: 0.4 });
+    }
+  }
+}
+
+// Azura, quand on a compris : épique et tendue, en ré mineur. Une pulsation grave en croches qui ne
+// s'arrête jamais, des coups sourds sur les temps forts, des nappes qui montent, et un thème de cuivres.
+const EPIC_CHORDS: { bass: number; notes: number[] }[] = [
+  { bass: 38, notes: [62, 65, 69] }, // ré mineur
+  { bass: 34, notes: [62, 65, 70] }, // si bémol
+  { bass: 43, notes: [62, 67, 70] }, // sol mineur
+  { bass: 45, notes: [61, 64, 69] }, // la majeur (la tension)
+];
+const EPIC_TUNE = [74, 0, 0, 0, 77, 0, 76, 0, 74, 0, 0, 0, 70, 0, 0, 0, 69, 0, 0, 0, 70, 0, 72, 0, 74, 0, 0, 0, 73, 0, 0, 0];
+function scheduleEpic(t: number) {
+  const chord = EPIC_CHORDS[Math.floor(step / 8) % EPIC_CHORDS.length];
+  // la pulsation : deux croches graves par pas
+  for (let h = 0; h < 2; h++) {
+    const n = (step + h) % 4 === 3 ? chord.bass + 12 : chord.bass;
+    tone(musicBus, 'sawtooth', hz(n), t + h * STEP * 0.5, 0.2, 0.03, { attack: 0.01, release: 0.16, filter: 420 });
+  }
+  // les coups sourds
+  if (step % 4 === 0) {
+    tone(musicBus, 'sine', hz(chord.bass - 12), t, 0.6, 0.16, { attack: 0.005, release: 0.55 });
+    tone(musicBus, 'sine', hz(chord.bass), t, 0.3, 0.05, { attack: 0.005, release: 0.28 });
+  }
+  // les nappes (cordes)
+  if (step % 8 === 0) {
+    for (const n of chord.notes) tone(musicBus, 'sawtooth', hz(n), t, STEP * 8, 0.016, { attack: 1.4, release: 1.2, detune: 7, filter: 1400 });
+  }
+  // le thème de cuivres, un tour sur deux
+  if (Math.floor(step / 32) % 2 === 1) {
+    const n = EPIC_TUNE[step % EPIC_TUNE.length];
+    if (n) {
+      tone(musicBus, 'sawtooth', hz(n - 12), t, STEP * 2.6, 0.03, { attack: 0.08, release: 0.8, filter: 1700 });
+      tone(musicBus, 'square', hz(n - 12), t, STEP * 2.6, 0.008, { attack: 0.08, release: 0.8, filter: 1100 });
+    }
+  }
+}
+
 function scheduleStep(t: number) {
   if (theme === 'azura') return scheduleAzura(t);
+  if (theme === 'azuraJoie') return scheduleJoy(t);
+  if (theme === 'azuraEpic') return scheduleEpic(t);
   if (theme === 'outdoor' || theme === 'title') {
     const chord = OUT_CHORDS[Math.floor(step / 8) % OUT_CHORDS.length];
     if (step % 8 === 0) {
@@ -268,6 +340,7 @@ function tick() {
 }
 
 function startAmbience(kind: Theme) {
+  if (kind === 'azuraJoie' || kind === 'azuraEpic') kind = 'azura'; // le même vent léger
   ambience?.stop();
   ambience = null;
   if (!ac || kind === 'none' || kind === 'home') return;

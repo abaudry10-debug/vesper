@@ -186,14 +186,6 @@ export function nightInteract(g: Game, obj: MapObject | undefined, fx: number, f
       ui.say([w === 'prof' ? '« Demain, la leçon. La vraie. »' : '« Je me souviens. Merci, petit. »']);
       return true;
     }
-    if (w === 'prof' && seen && !g.items.has('maquette')) {
-      ui.say([SLEEP[w], 'Sur son bureau, à côté d’elle : la maquette de la navette Aurore. Je la prends.'], () => {
-        g.items.add('maquette');
-        sfx.select();
-        g.save();
-      });
-      return true;
-    }
     if (w === 'tom' && seen && !g.items.has('pince')) {
       ui.say([SLEEP[w], 'Sa pince est tombée dans l’herbe, à côté de lui. Je la ramasse.'], () => {
         g.items.add('pince');
@@ -201,7 +193,7 @@ export function nightInteract(g: Game, obj: MapObject | undefined, fx: number, f
       });
       return true;
     }
-    ui.say([SLEEP[w], ...(seen ? [] : ['Le chargement n’a pas pris, chez elle ou chez lui. Oskar a dit : « Venez chez moi. »'])]);
+    ui.say([SLEEP[w], `Le chargement n’a pas pris, chez ${w === 'joss' || w === 'tom' ? 'lui' : 'elle'}.`]);
     return true;
   }
   return false;

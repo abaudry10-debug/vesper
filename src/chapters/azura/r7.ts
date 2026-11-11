@@ -228,8 +228,14 @@ export function drawR7Under(g: Game, c: CanvasRenderingContext2D, ox: number, oy
     c.drawImage(dogSprite('right', { pose: 'stand', off: true }), (g.counters.r7bx ?? 14) * T - ox, (g.counters.r7by ?? 9) * T - oy - 1);
   }
   if (g.map.id === 'r7Lab' && g.flags.has('pixelWake') && !g.flags.has('pixelOn')) {
-    const growl = Math.floor(g.time * 9) % 2;
-    c.drawImage(dogSprite('right', { pose: 'stand', eye: 'wide', tail: 3, earsDown: true, frame: 0 }), 3 * T - ox + growl, 3 * T - oy - 1);
+    // il grogne ; puis, quand il entend la voix, il se calme ; puis sa queue se met à battre
+    if (pixelMood === 'growl') {
+      const growl = Math.floor(g.time * 9) % 2;
+      c.drawImage(dogSprite('right', { pose: 'stand', eye: 'wide', tail: 3, earsDown: true, frame: 0 }), 3 * T - ox + growl, 3 * T - oy - 1);
+    } else {
+      const tail = pixelMood === 'wag' ? (Math.floor(g.time * 10) % 2 ? 0 : 2) : 1;
+      c.drawImage(dogSprite('right', { pose: 'stand', tail, frame: 0 }), 3 * T - ox, 3 * T - oy - 1);
+    }
   }
 }
 
@@ -447,31 +453,42 @@ export function r7Interact(g: Game, obj: MapObject | undefined): boolean {
   return true;
 }
 
+/** L'humeur de Pixel face au robot : il grogne, se calme en entendant la voix, puis remue la queue. */
+let pixelMood: 'growl' | 'calm' | 'wag' = 'growl';
+
 /** Pixel, réveillé mais méfiant : il faut lui parler dans le haut-parleur de R-7. */
 export function r7PixelGrowl(g: Game, fx: number, fy: number): boolean {
   if (g.map.id !== 'r7Lab' || !g.flags.has('pixelWake') || g.flags.has('pixelOn') || fx !== 3 || fy !== 3) return false;
   const nuts = ((readLegacy().vesper?.data?.achievements as string[] | undefined) ?? []).includes('nut10') ? 1 : 0;
-  say(
-    [
-      'Pixel grogne. Il ne voit qu’une machine.',
-      'J’appuie sur le bouton du haut-parleur de R-7.',
-      '« Pixel… C’est moi. »',
-      'Le grognement s’arrête net. Pixel penche la tête.',
-      ...(nuts > 0 ? ['« Tu te souviens de l’écrou ? Je te le lançais, et tu me le rapportais. »'] : ['« Tu m’as attendu tout ce temps… »']),
-      'Il s’approche. Il renifle les chenilles du robot, longtemps.',
-      'Puis sa queue se met à battre. De plus en plus fort.',
-      'Betti (radio), en larmes : « Pixel ! C’est lui ! »',
-      'Oskar (radio) : « Ramène-le au spatioport. L’antenne et les archives sont là-bas. »',
-    ],
-    () => {
+  pixelMood = 'growl';
+  say(['Pixel grogne. Il ne voit qu’une machine.', 'J’appuie sur le bouton du haut-parleur de R-7.', '« Pixel… C’est moi. »'], () => {
+    pixelMood = 'calm';
+    say(
+      [
+        'Le grognement s’arrête net. Pixel penche la tête.',
+        ...(nuts > 0 ? ['« Tu te souviens de l’écrou ? Je te le lançais, et tu me le rapportais. »'] : ['« Tu m’as attendu tout ce temps… »']),
+        'Il s’approche. Il renifle les chenilles du robot, longtemps.',
+      ],
+      () => {
+        pixelMood = 'wag';
+        say(
+          [
+            'Puis sa queue se met à battre. De plus en plus fort.',
+            'Betti (radio), en larmes : « Pixel ! C’est lui ! »',
+            'Oskar (radio) : « Ramène-le au spatioport. L’antenne et les archives sont là-bas. »',
+          ],
+          () => {
       g.flags.add('pixelOn');
       g.pixel = { x: 3, y: 3, dir: 'down', moving: null };
       sfx.success();
       g.api.clue('r7Pixel');
       g.api.clue('r7l4');
       g.save();
-    },
-  );
+          },
+        );
+      },
+    );
+  });
   return true;
 }
 
@@ -523,6 +540,7 @@ export function quitR7(g: Game) {
     g.pixel = null;
     g.items.delete('liaison');
     g.flags.delete('r7On');
+    clearVesperFx(g);
     g.warp('pilotes', 8, 3, 'up');
     window.setTimeout(() => {
       restoreBag(g);
@@ -592,8 +610,18 @@ export function startR7(g: Game) {
 }
 
 /** En revenant sur Azura : le héros retrouve son sac. */
+/** De retour sur Azura : plus de fumée, de poussière ni de chaleur venues de Vesper. */
+export function clearVesperFx(g: Game) {
+  g.fx.length = 0;
+  g.heatPhase = 'none';
+  g.heatT = 0;
+  g.heatGauge = 0;
+  puffs.delete(g);
+}
+
 export function restoreBag(g: Game) {
   g.heroAlpha = 1;
+  clearVesperFx(g);
   for (const f of [...g.flags]) {
     if (!f.startsWith('stash:')) continue;
     g.items.add(f.slice(6));

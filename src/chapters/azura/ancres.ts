@@ -16,7 +16,7 @@ import { playFinale, playGlobalLoad } from './animations.js';
 export const ANCHORS = ['joss', 'nora', 'tom', 'prof', 'ilda'] as const;
 type Who = (typeof ANCHORS)[number];
 const NAME: Record<Who, string> = { joss: 'Joss', nora: 'Nora', tom: 'Tom', prof: 'la maîtresse', ilda: 'Mme Ilda' };
-const NPC: Record<string, Who> = { jossQuai: 'joss', nora: 'nora', tom: 'tom', prof: 'prof', ilda: 'ilda' };
+const NPC: Record<string, Who> = { jossQuai: 'joss', jossCabane: 'joss', nora: 'nora', tom: 'tom', prof: 'prof', ilda: 'ilda' };
 // les déclics : des objets qu'on a dans le sac (parfois depuis longtemps), à utiliser face à la personne
 const ITEM: Record<Who, string> = { joss: 'canne', nora: 'bulletin0', tom: 'pince', prof: 'maquette', ilda: 'fruit' };
 
@@ -129,7 +129,7 @@ function restore(g: Game, w: Who, intro: string[]) {
 
 /** Les cinq colons, endormis : ce qu'on voit d'eux tant qu'ils n'ont pas leur ancre. */
 const SLEEP: Record<Who, string> = {
-  joss: 'Joss dort sur la passerelle, assis contre un poteau. Ses mains cherchent quelque chose, comme si elles tenaient une ligne.',
+  joss: 'Joss dort dans sa cabane de pêche, assis contre ses filets. Ses mains cherchent quelque chose, comme si elles tenaient une ligne.',
   nora: 'Nora dort sous un lampadaire. Elle murmure des chiffres.',
   tom: 'Tom dort au pied de la tour, la main ouverte. Il lui manque quelque chose, dans cette main.',
   prof: 'La maîtresse dort à son bureau, la joue sur ses notes.',
@@ -290,12 +290,23 @@ function lastScene(g: Game) {
       'Je souris. Et puis quelque chose s’éteint, derrière mes yeux.',
       'Le nom de la grande rue, sur Vesper. La couleur du ciel, là-bas. Ils partent.',
       'Iris l’avait dit : pour moi, ce ne serait pas dix ans.',
+      'Mon journal… Il s’ouvre tout seul entre mes mains.',
     ],
-    () =>
-      playFinale(g, () => {
-        g.recordLegacy();
-        g.onFinished();
-      }),
+    () => {
+      // le journal s'ouvre de lui-même, et tout s'y efface sous nos yeux ; puis la cinématique
+      fadeMore(g, 9999);
+      for (const f of [...g.flags]) if (f.startsWith('fs:')) g.flags.delete(f); // tout s'efface d'un coup, même le déjà pâli
+      g.flags.add('finaleSeen');
+      g.locked = true;
+      g.openJournal();
+      window.setTimeout(() => {
+        ui.setJournal(false);
+        playFinale(g, () => {
+          g.recordLegacy();
+          g.onFinished();
+        });
+      }, 6500);
+    },
   );
 }
 

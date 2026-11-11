@@ -11,6 +11,10 @@ function popup(id: string, html: string, canvas: { w: number; h: number; pixel: 
 .az-doc .panel{width:92%;max-width:400px;max-height:92%;overflow:auto;padding:12px 12px 10px;text-align:left}
 .az-doc h3{font-family:var(--font);font-size:21px;color:var(--teal);margin:0 0 6px;letter-spacing:.05em;text-align:center}
 .az-doc canvas{width:100%;display:block;margin:0 0 8px}
+.az-doc .zoomer{overflow:auto;-webkit-overflow-scrolling:touch;margin:0 0 8px;border-radius:2px}
+.az-doc .zoomer canvas{margin:0;transition:width .25s}
+.az-doc .zoomer.on canvas{width:220%}
+.az-doc .hint{font-family:var(--font);font-size:14px;color:#b8aec8;text-align:center;margin:0 0 8px}
 .az-doc canvas.px{image-rendering:pixelated}
 .az-doc ol{font-family:var(--font);font-size:16px;color:#f2e9dc;line-height:1.22;margin:0 0 8px;padding-left:22px}
 .az-doc ol li{margin-bottom:4px}
@@ -24,7 +28,15 @@ function popup(id: string, html: string, canvas: { w: number; h: number; pixel: 
   const el = document.createElement('div');
   el.className = 'az-doc';
   el.id = id;
-  el.innerHTML = `<div class="panel">${html.replace('<canvas>', `<canvas class="${canvas.pixel ? 'px' : ''}" width="${canvas.w}" height="${canvas.h}">`)}<button class="menu primary">Fermer</button></div>`;
+  // les dessins « à la main » sont tracés en haute définition (net sur iPhone), et on peut zoomer dessus
+  const k = canvas.pixel ? 1 : Math.max(3, Math.ceil(window.devicePixelRatio || 1));
+  const cvHtml = `<canvas class="${canvas.pixel ? 'px' : ''}" width="${canvas.w * k}" height="${canvas.h * k}"></canvas>`;
+  el.innerHTML = `<div class="panel">${html.replace(
+    '<canvas></canvas>',
+    canvas.pixel ? cvHtml : `<div class="zoomer">${cvHtml}</div><p class="hint">Touche le dessin pour zoomer.</p>`,
+  ).replace('<canvas>', cvHtml)}<button class="menu primary">Fermer</button></div>`;
+  const zoomer = el.querySelector('.zoomer') as HTMLElement | null;
+  if (zoomer) zoomer.onclick = () => zoomer.classList.toggle('on');
   host.appendChild(el);
   const close = () => {
     window.removeEventListener('keydown', key, true);
@@ -39,7 +51,9 @@ function popup(id: string, html: string, canvas: { w: number; h: number; pixel: 
   };
   window.addEventListener('keydown', key, true);
   (el.querySelector('button') as HTMLButtonElement).onclick = close;
-  return el.querySelector('canvas')!.getContext('2d')!;
+  const ctx = el.querySelector('canvas')!.getContext('2d')!;
+  if (k > 1) ctx.scale(k, k);
+  return ctx;
 }
 
 const R = (c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, col: string) => {
@@ -421,7 +435,7 @@ export function openAnchorWall(done: boolean[], cb: () => void) {
   c.lineWidth = 6;
   c.strokeRect(3, 3, W - 6, H - 6);
   const cards: [string, string[], string][] = [
-    ['JOSS', ['Dort : la passerelle,', 'au bord du lac.', 'Ce qui comptait : la pêche,', 'tous les jours, quoi qu’il arrive.'], '#fffdf4'],
+    ['JOSS', ['Dort : dans sa cabane', 'de pêche, au bord de l’eau.', 'Ce qui comptait : la pêche,', 'tous les jours, quoi qu’il arrive.'], '#fffdf4'],
     ['NORA VEY', ['Dort : sous un lampadaire,', 'sur la place.', 'Ce qui comptait : son premier', 'bulletin. (Je te l’ai donné !)'], '#e0f0e0'],
     ['TOM', ['Dort : au pied de la tour.', 'Ce qui comptait : toujours', 'un outil à la main.'], '#fff0a0'],
     ['LA MAÎTRESSE', ['Dort : à l’école, à son bureau.', 'Ce qui comptait : ses leçons,', 'toujours la même histoire :', 'le voyage.'], '#ffd0e0'],

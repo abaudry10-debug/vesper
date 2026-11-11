@@ -222,7 +222,7 @@ export function playGlobalLoad(g: Game, done: () => void) {
   const c = cv.getContext('2d')!;
   c.imageSmoothingEnabled = false;
   const pylons: [number, number][] = [[1, 9], [32, 9]];
-  const fails: [number, number][] = [[15, 23], [13, 9], [21, 10], [27, 5], [14, 13]];
+  const fails: [number, number][] = [[17, 1], [13, 9], [21, 10], [27, 5], [14, 13]];
   // des lumières de maisons, au hasard mais toujours les mêmes
   const homes: [number, number][] = [];
   for (let i = 0; i < 70; i++) homes.push([2 + ((i * 53) % 30), 2 + ((i * 31) % 21)]);
@@ -467,19 +467,14 @@ export function playFinale(g: Game, onEnd: () => void) {
         c.fillText('VESPER — Chapitre 2 : Azura', VW / 2, VH / 2 + 10);
         c.globalAlpha = 1;
       }
-      if (w > 12.5 && !el.querySelector('button')) {
-        const btn = document.createElement('button');
-        btn.className = 'menu primary';
-        btn.textContent = 'Retour à l’accueil';
-        btn.style.cssText = 'position:absolute;left:10%;right:10%;bottom:12%;';
-        btn.onclick = () => {
-          cancelAnimationFrame(raf);
-          stopMusic();
-          el.remove();
-          g.locked = false;
-          onEnd();
-        };
-        el.appendChild(btn);
+      // après « FIN », on revient tout seul au menu d'accueil
+      if (w > 16) {
+        cancelAnimationFrame(raf);
+        stopMusic();
+        el.remove();
+        g.locked = false;
+        onEnd();
+        return;
       }
     }
     raf = requestAnimationFrame(frame);

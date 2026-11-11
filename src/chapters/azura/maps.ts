@@ -323,7 +323,7 @@ function ville(): GameMap {
     npc('jossIlot', 14, 39, 'joss', 'down', 'jossIlot', { showWhen: 'jour4', hideWhen: 'jossLeft' }),
     obj('barqueIle', 14, 31, 'barqueWater', 'barqueIle', { showWhen: 'jour4', hideWhen: 'vague' }),
     obj('barqueQuai', 16, 25, 'barqueWater', 'barque', { showWhen: 'barqueOk', hideWhen: 'barqueOut' }),
-    npc('jossQuai', 15, 23, 'joss', 'right', 'jossQuai', { showWhen: 'jossSaved' }),
+    npc('jossQuai', 15, 23, 'joss', 'right', 'jossQuai', { showWhen: 'jossSaved', hideWhen: 'chargeGlobal' }),
     npc('minaNuit', 16, 13, 'mina', 'down', 'minaNuit', { showWhen: 'oubli', hideWhen: 'aube' }),
     npc('bettiVague', 16, 17, 'betti', 'down', 'bettiVague', { showWhen: 'vague', hideWhen: 'jossSaved' }),
     // le retour de Joss : tout le monde l'attend sur la passerelle, jusqu'à l'aveu d'Iris
@@ -404,6 +404,8 @@ function cabane(): GameMap {
     obj('etagereJoss', 4, 1, 'tackleShelf', 'etagereJoss'),
     obj('tableJoss', 3, 2, 'cabinTableBook', 'carnetJoss', { spriteWhen: ['carnetRead', 'cabinTable'] }),
     obj('tonneau', 5, 3, 'barrel', 'tonneau'),
+    // la nuit du second chargement, Joss s'est réfugié dans sa cabane
+    npc('jossCabane', 2, 3, 'joss', 'right', 'jossQuai', { showWhen: 'chargeGlobal' }),
   ];
   return { id: 'cabane', name: 'La cabane de Joss', outdoor: false, width: 7, height: 6, rows: b.rows, objects };
 }

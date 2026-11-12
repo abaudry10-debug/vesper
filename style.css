@@ -1653,3 +1653,88 @@ details.thread > summary.has-new .count { color: var(--accent-dark); }
 .chap-num {
   padding-right: 96px;
 }
+
+/* ---------- accueil par chapitre ---------- */
+.new-btn {
+  font-size: 20px;
+  padding: 7px 14px;
+  background: rgba(18, 8, 26, 0.82);
+}
+.buy-btn {
+  font-size: 22px;
+  padding: 12px 14px;
+}
+.play-btn small {
+  color: #5a2a10;
+}
+#title.theme-azura h1 {
+  color: #e8fbff;
+  text-shadow: 0 4px 0 #2a9d9a, 0 8px 0 #14304a;
+}
+#title.theme-azura .kicker {
+  color: #b8a8e8;
+}
+#title.theme-azura .menu.primary {
+  background: #5ff0e0;
+  box-shadow: inset 0 -4px 0 #2a9d9a;
+}
+#title.theme-azura .play-btn small {
+  color: #14404a;
+}
+
+/* la fenêtre des chapitres : deux gros boutons */
+.chap-pick {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 10px;
+  font-family: var(--font);
+  text-align: left;
+  color: #f2e9dc;
+  border: 3px solid var(--ink);
+  border-radius: 6px;
+  background: #2b2236;
+  box-shadow: inset 0 -4px 0 #17111f;
+  cursor: pointer;
+}
+.chap-pick.azura {
+  background: #1a2a3c;
+  box-shadow: inset 0 -4px 0 #0e1826;
+}
+.chap-pick.on {
+  border-color: var(--accent);
+  box-shadow: inset 0 -4px 0 #17111f, 0 0 0 3px rgba(255, 140, 60, 0.35);
+}
+.chap-pick.azura.on {
+  border-color: #5ff0e0;
+  box-shadow: inset 0 -4px 0 #0e1826, 0 0 0 3px rgba(95, 240, 224, 0.3);
+}
+.chap-pick:active {
+  transform: translateY(2px);
+}
+.chap-pick .chap-thumb {
+  flex: none;
+}
+.chap-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.chap-name {
+  font-size: 24px;
+}
+.chap-pick .chap-num {
+  padding-right: 0;
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.chap-pick .chap-state {
+  font-size: 15px;
+  color: var(--teal);
+}

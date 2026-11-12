@@ -55,7 +55,20 @@ function layout() {
   dust = Array.from({ length: 36 }, () => ({ x: Math.random() * W, y: Math.random() * h, v: 3 + Math.random() * 6, a: 0.2 + Math.random() * 0.5 }));
 }
 
+/** Les autres illustrations d'accueil (une par chapitre), déclarées par les chapitres. */
+type SceneFn = (c: CanvasRenderingContext2D, w: number, hh: number, t: number) => void;
+const SCENES: Record<string, SceneFn> = {};
+let sceneId = 'vesper';
+export function registerTitleScene(id: string, fn: SceneFn) {
+  SCENES[id] = fn;
+}
+export function setTitleScene(id: string) {
+  sceneId = id;
+  if (canvas && running) draw(performance.now() / 1000);
+}
+
 function draw(t: number) {
+  if (SCENES[sceneId]) return SCENES[sceneId](ctx, W, h, t);
   const horizon = Math.round(h * 0.6);
 
   // ciel en bandes, avec un tramage entre chaque bande

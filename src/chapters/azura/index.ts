@@ -1,4 +1,5 @@
 // Chapitre 2 : Azura. Pour l'instant, la tranche verticale, jouable en mode développeur.
+import './titleScene.js';
 import { playTheme, sfx } from '../../engine/audio.js';
 import type { Chapter } from '../../engine/chapter.js';
 import { view, type Game } from '../../engine/game.js';

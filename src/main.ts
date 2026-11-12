@@ -6,7 +6,7 @@ import { devEnabled, setupDev } from './engine/dev.js';
 import { azura } from './chapters/azura/index.js';
 import { chapterDone } from './engine/legacy.js';
 import { onPress, releaseAll, setupInput } from './engine/input.js';
-import { relayoutTitleScene, startTitleScene, stopTitleScene } from './engine/title.js';
+import { relayoutTitleScene, setTitleScene, startTitleScene, stopTitleScene } from './engine/title.js';
 import * as ui from './engine/ui.js';
 
 setChapter(vesper);
@@ -67,13 +67,16 @@ $('pause-sound').addEventListener('click', toggleSound);
 refreshSoundLabels();
 
 // ---------- écran titre ----------
-// Un seul bouton principal (Commencer, ou Continuer là où on s'est arrêté), et un écran « Chapitres »
-// avec une carte par chapitre : état, jouer, recommencer ; et, pour Azura, son prix (achat simulé pour l'instant).
+// L'accueil montre un chapitre à la fois (le chapitre 1 par défaut) : son illustration, son titre,
+// Commencer ou Continuer, Nouvelle partie (qui écrase l'ancienne). « Chapitres » ouvre une fenêtre avec
+// un gros bouton par chapitre, pour changer. Azura est payant : tant qu'il n'est pas acheté, on propose
+// de l'acheter (achat simulé pour l'instant).
 const title = $('title');
 const CHAPTERS = [vesper, azura];
-const NAMES: Record<string, { num: string; name: string }> = {
-  [vesper.id]: { num: 'Chapitre 1', name: 'Le Réveil' },
-  [azura.id]: { num: 'Chapitre 2', name: 'Azura' },
+type Chap = typeof vesper;
+const INFO: Record<string, { num: string; name: string; tag: string }> = {
+  [vesper.id]: { num: 'Chapitre 1', name: 'Le Réveil', tag: 'Tu te réveilles seul dans une ville morte.<br />Que s’est-il passé ici ?' },
+  [azura.id]: { num: 'Chapitre 2', name: 'Azura', tag: 'Deux lunes. Une ville au bord du lac.<br />Ici, tout le monde a l’air heureux.' },
 };
 const PRICE = '0,99\u00a0€';
 const store = {
@@ -93,8 +96,8 @@ const store = {
   },
 };
 const owned = () => store.get('vesper.owned.azura') === '1';
-/** Une sauvegarde existe-t-elle pour ce chapitre ? (et où en est-on) */
-function saveOf(c: typeof vesper): { flags: string[] } | null {
+const selected = (): Chap => CHAPTERS.find((c) => c.id === store.get('vesper.selected')) ?? vesper;
+function saveOf(c: Chap): { flags: string[] } | null {
   try {
     const raw = localStorage.getItem(c.saveKey);
     return raw ? (JSON.parse(raw) as { flags: string[] }) : null;
@@ -102,14 +105,27 @@ function saveOf(c: typeof vesper): { flags: string[] } | null {
     return null;
   }
 }
-function progressText(c: typeof vesper): string {
+function progressText(c: Chap): string {
   const sv = saveOf(c);
   if (!sv) return '';
-  if (c.id === azura.id) {
-    const d = [5, 4, 3, 2].find((n) => sv.flags?.includes(`jour${n}`)) ?? 1;
-    return `Jour ${d}`;
-  }
-  return 'En cours';
+  if (c.id === azura.id) return `Jour ${[5, 4, 3, 2].find((n) => sv.flags?.includes(`jour${n}`)) ?? 1}`;
+  return 'Partie en cours';
+}
+
+function refreshTitle() {
+  const c = selected();
+  const az = c.id === azura.id;
+  title.classList.toggle('theme-azura', az);
+  setTitleScene(az ? 'azura' : 'vesper');
+  $('title-chap').textContent = `${INFO[c.id].num} · ${INFO[c.id].name}`;
+  $('title-tag').innerHTML = INFO[c.id].tag;
+  const locked = az && !owned();
+  const sv = saveOf(c);
+  ($('btn-buy') as HTMLButtonElement).hidden = !locked;
+  ($('btn-play') as HTMLButtonElement).hidden = locked;
+  ($('btn-new') as HTMLButtonElement).hidden = locked || !sv;
+  $('btn-play-label').textContent = sv ? 'Continuer' : 'Commencer';
+  $('btn-play-sub').textContent = sv ? progressText(c) : '';
 }
 
 function showTitle() {
@@ -117,19 +133,7 @@ function showTitle() {
   title.hidden = false;
   $('chapters').hidden = true;
   startTitleScene($('title-bg') as HTMLCanvasElement);
-  // le bouton principal : reprendre le dernier chapitre joué, sinon un autre commencé, sinon commencer
-  const last = CHAPTERS.find((c) => c.id === store.get('vesper.last') && saveOf(c)) ?? CHAPTERS.find((c) => saveOf(c));
-  const label = $('btn-play-label'), sub = $('btn-play-sub');
-  if (last) {
-    label.textContent = 'Continuer';
-    sub.textContent = `${NAMES[last.id].num} · ${NAMES[last.id].name} — ${progressText(last)}`;
-  } else if (!chapterDone(vesper.id)) {
-    label.textContent = 'Commencer';
-    sub.textContent = '';
-  } else {
-    label.textContent = 'Jouer';
-    sub.textContent = `${NAMES[azura.id].num} · ${NAMES[azura.id].name}`;
-  }
+  refreshTitle();
   playTheme('title');
 }
 
@@ -142,7 +146,6 @@ function wireGame() {
 
 function startNew() {
   Game.clearSave();
-  store.set('vesper.last', ch().id);
   game = new Game(ctx);
   wireGame();
   title.hidden = true;
@@ -155,7 +158,6 @@ function startNew() {
 
 function continueGame() {
   sfx.select();
-  store.set('vesper.last', ch().id);
   game = new Game(ctx);
   wireGame();
   if (!game.load()) return startNew();
@@ -166,59 +168,53 @@ function continueGame() {
   ui.showPlace(game.map.name);
 }
 
-/** Lancer un chapitre : on reprend sa partie s'il y en a une, sinon on la commence. */
-function play(c: typeof vesper) {
-  setChapter(c);
-  if (Game.hasSave()) continueGame();
-  else startNew();
-}
-
-/** Azura : la suite du chapitre 1. Payant (simulé pour l'instant), et on prévient si le 1 n'est pas fini. */
-function playAzura() {
-  sfx.select();
-  if (!owned()) return buyAzura(playAzura);
-  if (chapterDone(vesper.id) || saveOf(azura)) return play(azura);
-  ui.confirm(
-    'Azura est la suite directe du chapitre 1. Tu ne l’as pas encore terminé : on te conseille de commencer par Le Réveil.',
-    () => play(vesper),
-    () => play(azura),
-    ['Jouer au chapitre 1', 'Lancer Azura quand même'],
-  );
-}
-
-function buyAzura(then?: () => void) {
-  ui.confirm(
-    `Débloquer le chapitre 2, « Azura », pour ${PRICE} ?\n(L’achat n’est pas encore en place : le chapitre est offert pour l’instant.)`,
-    () => {
-      store.set('vesper.owned.azura', '1');
-      sfx.success();
-      renderChapters();
-      if (then) window.setTimeout(then, 300);
-    },
-    undefined,
-    [`Acheter · ${PRICE}`, 'Plus tard'],
-  );
-}
-
-function restart(c: typeof vesper) {
-  sfx.select();
-  ui.confirm(`Recommencer « ${NAMES[c.id].name} » depuis le début ? La partie en cours de ce chapitre sera effacée.`, () => {
+/** Lancer le chapitre choisi : on prévient si on lance Azura sans avoir fini le chapitre 1. */
+function play(fresh: boolean) {
+  const c = selected();
+  const go = () => {
     setChapter(c);
-    Game.clearSave();
-    startNew();
-  });
+    if (fresh) startNew();
+    else if (Game.hasSave()) continueGame();
+    else startNew();
+  };
+  if (c.id === azura.id && !chapterDone(vesper.id) && !saveOf(azura)) {
+    return ui.confirm(
+      'Azura est la suite directe du chapitre 1. Tu ne l’as pas encore terminé : on te conseille de commencer par Le Réveil.',
+      () => {
+        store.set('vesper.selected', vesper.id);
+        refreshTitle();
+      },
+      go,
+      ['Voir le chapitre 1', 'Lancer Azura quand même'],
+    );
+  }
+  go();
 }
 
 $('btn-play').addEventListener('click', () => {
   sfx.select();
-  const last = CHAPTERS.find((c) => c.id === store.get('vesper.last') && saveOf(c)) ?? CHAPTERS.find((c) => saveOf(c));
-  if (last) return last.id === azura.id ? playAzura() : play(last);
-  if (!chapterDone(vesper.id)) return play(vesper);
-  playAzura();
+  play(false);
+});
+$('btn-new').addEventListener('click', () => {
+  sfx.select();
+  const c = selected();
+  ui.confirm(`Commencer une nouvelle partie de « ${INFO[c.id].name} » ? Ta partie en cours sera écrasée.`, () => play(true), undefined, ['Écraser et recommencer', 'Annuler']);
+});
+$('btn-buy').addEventListener('click', () => {
+  sfx.select();
+  ui.confirm(
+    `Acheter le chapitre 2, « Azura », pour ${PRICE} ?\n(L’achat n’est pas encore en place : le chapitre est offert pour l’instant.)`,
+    () => {
+      store.set('vesper.owned.azura', '1');
+      sfx.success();
+      refreshTitle();
+    },
+    undefined,
+    [`Acheter · ${PRICE}`, 'Plus tard'],
+  );
 });
 
-// ---------- l'écran des chapitres ----------
-/** Une petite vignette en pixel art par chapitre : Vesper orange, Azura turquoise et ses deux lunes. */
+// ---------- la fenêtre des chapitres : un gros bouton par chapitre ----------
 function drawThumb(cv: HTMLCanvasElement, id: string) {
   const c = cv.getContext('2d')!;
   const R = (x: number, y: number, w: number, h: number, col: string) => {
@@ -231,13 +227,13 @@ function drawThumb(cv: HTMLCanvasElement, id: string) {
     R(31, 17, 6, 10, '#ffd45e');
     for (const [x, w, h] of [[0, 6, 10], [5, 5, 16], [11, 7, 12], [19, 4, 18], [24, 8, 9], [33, 5, 14], [39, 9, 11]] as const) R(x, 30 - h, w, h, '#2a1426');
     R(0, 28, 48, 2, '#5a2a1a');
-    R(22, 26, 3, 3, '#5ff0e0'); // un petit chien
+    R(22, 26, 3, 3, '#5ff0e0');
   } else {
     ['#0e1430', '#1e2050', '#3a2a6a', '#6a3a7a'].forEach((col, i) => R(0, i * 5, 48, 5, col));
     for (const [x, y] of [[4, 3], [14, 8], [40, 5], [28, 2], [44, 12]] as const) R(x, y, 1, 1, '#d8fffa');
-    R(10, 5, 5, 5, '#f4f4ff'); R(11, 4, 3, 7, '#f4f4ff'); R(9, 6, 7, 3, '#f4f4ff'); // la grande lune
-    R(16, 9, 2, 2, '#b8a8e8'); // la petite
-    for (const [x, w, h] of [[2, 6, 5], [9, 5, 7], [16, 7, 4], [26, 6, 6], [34, 5, 8], [41, 6, 5]] as const) R(x, 20 - h, w, h, '#2a2040');
+    R(10, 5, 5, 5, '#f4f4ff'); R(11, 4, 3, 7, '#f4f4ff'); R(9, 6, 7, 3, '#f4f4ff');
+    R(16, 9, 2, 2, '#b8a8e8');
+    for (const [x, w, h] of [[2, 6, 5], [9, 5, 7], [16, 7, 4], [26, 6, 6], [34, 5, 8], [41, 6, 5]] as const) R(x, 20 - h, w, h, '#c8c4e0');
     R(30, 9, 1, 11, '#2a2040'); R(29, 8, 3, 1, '#5ff0e0');
     R(0, 20, 48, 10, '#1e7a8a');
     for (const [x, y] of [[5, 22], [18, 25], [33, 23], [40, 27]] as const) R(x, y, 4, 1, '#82efe3');
@@ -248,42 +244,23 @@ function renderChapters() {
   const list = $('chapters-list');
   list.innerHTML = '';
   for (const c of CHAPTERS) {
-    const isAz = c.id === azura.id;
+    const az = c.id === azura.id;
     const sv = saveOf(c);
     const done = chapterDone(c.id);
-    const card = document.createElement('div');
-    card.className = `chap-card${isAz ? ' azura' : ''}`;
-    const state = sv ? `En cours · ${progressText(c)}` : done ? '✓ Terminé' : isAz && !owned() ? 'Nouveau chapitre' : 'Pas encore commencé';
-    card.innerHTML = `<canvas class="chap-thumb" width="48" height="30"></canvas>
-      <p class="chap-num">${NAMES[c.id].num}</p><h3>${NAMES[c.id].name}</h3>
-      <p class="chap-state${done && !sv ? ' done' : ''}">${state}</p>
-      <div class="chap-actions"></div>`;
-    drawThumb(card.querySelector('canvas')!, c.id);
-    const actions = card.querySelector('.chap-actions')!;
-    const btn = (label: string, cls: string, fn: () => void) => {
-      const b = document.createElement('button');
-      b.className = `menu ${cls}`;
-      b.textContent = label;
-      b.addEventListener('click', fn);
-      actions.appendChild(b);
-    };
-    if (isAz && !owned()) {
-      const tag = document.createElement('span');
-      tag.className = 'price-tag';
-      tag.textContent = PRICE;
-      card.appendChild(tag);
-      btn(`Débloquer · ${PRICE}`, 'azura-buy', () => buyAzura());
-    } else {
-      if (isAz) {
-        const tag = document.createElement('span');
-        tag.className = 'owned-tag';
-        tag.textContent = '✓ Débloqué';
-        card.appendChild(tag);
-      }
-      btn(sv ? 'Continuer' : done ? 'Rejouer' : 'Jouer', isAz ? 'azura-buy' : 'primary', () => (isAz ? playAzura() : (sfx.select(), play(c))));
-      if (sv) btn('Recommencer', 'ghost', () => restart(c));
-    }
-    list.appendChild(card);
+    const b = document.createElement('button');
+    b.className = `chap-pick${az ? ' azura' : ''}${selected().id === c.id ? ' on' : ''}`;
+    const state = sv ? `En cours · ${progressText(c)}` : done ? '✓ Terminé' : az && !owned() ? 'À débloquer' : 'Pas encore commencé';
+    b.innerHTML = `<canvas class="chap-thumb" width="48" height="30"></canvas>
+      <span class="chap-txt"><span class="chap-num">${INFO[c.id].num}</span><span class="chap-name">${INFO[c.id].name}</span><span class="chap-state">${state}</span></span>
+      ${az ? (owned() ? '<span class="owned-tag">✓ Acheté</span>' : `<span class="price-tag">${PRICE}</span>`) : ''}`;
+    drawThumb(b.querySelector('canvas')!, c.id);
+    b.addEventListener('click', () => {
+      sfx.select();
+      store.set('vesper.selected', c.id);
+      $('chapters').hidden = true;
+      refreshTitle();
+    });
+    list.appendChild(b);
   }
 }
 $('btn-chapters').addEventListener('click', () => {

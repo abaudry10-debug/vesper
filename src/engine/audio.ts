@@ -2,7 +2,7 @@
 // Le navigateur exige un geste de l'utilisateur avant de jouer du son : unlock() est
 // appelé au premier bouton pressé.
 
-type Theme = 'title' | 'outdoor' | 'lab' | 'home' | 'azura' | 'azuraJoie' | 'azuraEpic' | 'none';
+type Theme = 'title' | 'outdoor' | 'lab' | 'home' | 'azura' | 'azuraJoie' | 'azuraEpic' | 'azuraFin' | 'none';
 
 let ac: AudioContext | null = null;
 let master: GainNode;
@@ -278,8 +278,35 @@ function scheduleEpic(t: number) {
   }
 }
 
+// La fin d'Azura : entre la victoire et la perte. Ré majeur, mais qui glisse vers si mineur ; une mélodie
+// de boîte à musique qui monte, puis redescend sans se résoudre ; des nappes chaudes, lentes.
+const FIN_CHORDS: { bass: number; notes: number[] }[] = [
+  { bass: 38, notes: [62, 66, 69, 73] }, // ré maj7
+  { bass: 47, notes: [62, 66, 71, 74] }, // si mineur
+  { bass: 43, notes: [59, 62, 67, 71] }, // sol maj7
+  { bass: 45, notes: [62, 64, 69, 73] }, // la sus
+];
+const FIN_TUNE = [
+  78, 0, 0, 81, 0, 0, 83, 0, 85, 0, 0, 0, 83, 0, 81, 0, 78, 0, 0, 0, 76, 0, 0, 0, 74, 0, 76, 0, 78, 0, 0, 0,
+  78, 0, 0, 81, 0, 0, 86, 0, 85, 0, 0, 0, 81, 0, 78, 0, 76, 0, 0, 0, 74, 0, 0, 0, 73, 0, 0, 0, 0, 0, 0, 0,
+];
+function scheduleFin(t: number) {
+  const space = echo();
+  const chord = FIN_CHORDS[Math.floor(step / 8) % FIN_CHORDS.length];
+  if (step % 8 === 0) {
+    for (const n of chord.notes) tone(musicBus, 'triangle', hz(n - 12), t, STEP * 9, 0.02, { attack: 1.2, release: 2, detune: 5, filter: 1600 });
+    tone(musicBus, 'sine', hz(chord.bass), t, STEP * 8, 0.08, { attack: 0.8, release: 1.6 });
+  }
+  const n = FIN_TUNE[step % FIN_TUNE.length];
+  if (n) {
+    tone(space, 'sine', hz(n), t, STEP * 2.4, 0.04, { attack: 0.02, release: 1.4 });
+    tone(space, 'triangle', hz(n + 12), t, STEP * 0.8, 0.006, { attack: 0.02, release: 0.6 });
+  }
+}
+
 function scheduleStep(t: number) {
   if (theme === 'azura') return scheduleAzura(t);
+  if (theme === 'azuraFin') return scheduleFin(t);
   if (theme === 'azuraJoie') return scheduleJoy(t);
   if (theme === 'azuraEpic') return scheduleEpic(t);
   if (theme === 'outdoor' || theme === 'title') {
@@ -340,7 +367,7 @@ function tick() {
 }
 
 function startAmbience(kind: Theme) {
-  if (kind === 'azuraJoie' || kind === 'azuraEpic') kind = 'azura'; // le même vent léger
+  if (kind === 'azuraJoie' || kind === 'azuraEpic' || kind === 'azuraFin') kind = 'azura'; // le même vent léger
   ambience?.stop();
   ambience = null;
   if (!ac || kind === 'none' || kind === 'home') return;

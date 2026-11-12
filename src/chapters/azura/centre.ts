@@ -189,6 +189,17 @@ export function turnValve(g: Game, id: string) {
   if (g.flags.has('inflowCut')) {
     return ui.say([id === 'vanneA' || id === 'vanneC' ? 'Cette vanne est fermée. Le jet ne coule plus.' : 'Mieux vaut ne plus toucher aux autres vannes.']);
   }
+  // une mauvaise vanne après une bonne : la pression remonte, le système se réarme, tout se rouvre
+  if ((id === 'vanneB' || id === 'vanneD') && (g.flags.has('vanneAFermee') || g.flags.has('vanneCFermee'))) {
+    g.flags.delete('vanneAFermee');
+    g.flags.delete('vanneCFermee');
+    sfx.bump();
+    return ui.say([
+      'Je ferme la vanne. Un long grincement…',
+      'CLAC. Dans tout le réseau, la pression remonte d’un coup. Le système se réarme : toutes les vannes se rouvrent seules.',
+      'Derrière la petite vitre, le jet reprend de plus belle. Tout est à refaire.',
+    ]);
+  }
   if (id === 'vanneD') {
     sfx.bump();
     return ui.say([

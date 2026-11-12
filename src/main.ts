@@ -53,7 +53,8 @@ document.addEventListener('visibilitychange', () => {
 // ---------- son ----------
 function refreshSoundLabels() {
   const label = isMuted() ? 'Son : coupé' : 'Son : activé';
-  $('btn-sound').textContent = label;
+  const b = document.getElementById('btn-sound');
+  if (b) b.textContent = label;
   $('pause-sound').textContent = label;
 }
 function toggleSound() {
@@ -61,7 +62,7 @@ function toggleSound() {
   refreshSoundLabels();
   sfx.select();
 }
-$('btn-sound').addEventListener('click', toggleSound);
+document.getElementById('btn-sound')?.addEventListener('click', toggleSound);
 $('pause-sound').addEventListener('click', toggleSound);
 refreshSoundLabels();
 

@@ -454,22 +454,103 @@ body {
 }
 /* le chapitre 2 : bien séparé du chapitre 1, et plus discret, pour ne pas cliquer dessus par erreur */
 .chap2 {
+  position: relative;
+  overflow: hidden;
   margin-top: 26px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  background: rgba(18, 8, 26, 0.72);
-  border: 2px solid #2a9d9a;
-  color: #bff3f6;
-  font-size: 18px;
-  padding: 8px 12px;
+  padding: 10px 14px 10px 12px;
   white-space: nowrap;
+  color: #e8fbff;
+  font-size: 18px;
+  border: 2px solid #5ff0e0;
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 12% 30%, rgba(255, 255, 255, 0.5) 0 1px, transparent 2px),
+    radial-gradient(circle at 70% 75%, rgba(255, 255, 255, 0.45) 0 1px, transparent 2px),
+    radial-gradient(circle at 88% 20%, rgba(216, 255, 250, 0.5) 0 1px, transparent 2px),
+    radial-gradient(circle at 40% 85%, rgba(216, 255, 250, 0.35) 0 1px, transparent 2px),
+    linear-gradient(135deg, #0b2440 0%, #2a1858 52%, #0c3a44 100%);
+  box-shadow: 0 0 14px rgba(95, 240, 224, 0.45), inset 0 0 18px rgba(184, 168, 232, 0.25);
+  animation: chap2-glow 3.6s ease-in-out infinite;
+}
+/* un reflet qui passe, lentement */
+.chap2::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: -40%;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgba(216, 255, 250, 0.35), transparent);
+  transform: skewX(-20deg);
+  animation: chap2-shine 4.8s ease-in-out infinite;
+  pointer-events: none;
+}
+.chap2-moons {
+  position: relative;
+  width: 30px;
+  height: 26px;
+  flex: none;
+}
+.chap2-moons i {
+  position: absolute;
+  border-radius: 50%;
+}
+.chap2-moons i:first-child {
+  width: 18px;
+  height: 18px;
+  left: 0;
+  top: 4px;
+  background: radial-gradient(circle at 35% 35%, #ffffff, #d8e0ff 55%, #8a8ac8);
+  box-shadow: 0 0 10px rgba(244, 244, 255, 0.7);
+}
+.chap2-moons i:last-child {
+  width: 9px;
+  height: 9px;
+  left: 19px;
+  top: 0;
+  background: radial-gradient(circle at 35% 35%, #f0e8ff, #b8a8e8 60%, #6a5aa8);
+  animation: chap2-orbit 6s ease-in-out infinite;
+}
+.chap2-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.05;
+  flex: 1;
+  text-align: left;
+  font-size: 24px;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 8px rgba(95, 240, 224, 0.8);
+}
+.chap2-text small {
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: #b8a8e8;
+  text-transform: uppercase;
+  text-shadow: none;
 }
 .chap2 b {
   font-weight: normal;
   color: #5ff0e0;
   white-space: nowrap;
+  position: relative;
+  z-index: 1;
+}
+@keyframes chap2-glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(95, 240, 224, 0.35), inset 0 0 18px rgba(184, 168, 232, 0.2); }
+  50% { box-shadow: 0 0 22px rgba(95, 240, 224, 0.7), inset 0 0 22px rgba(184, 168, 232, 0.35); }
+}
+@keyframes chap2-shine {
+  0%, 55% { left: -40%; }
+  100% { left: 130%; }
+}
+@keyframes chap2-orbit {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-3px, 2px); }
 }
 .title-layout .title-top {
   margin-top: 30px;

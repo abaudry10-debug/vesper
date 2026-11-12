@@ -4,7 +4,7 @@
 //  - la fin : les souvenirs du héros (Vesper, puis Azura) qui s'effacent, puis le réveil devant Pixel.
 import type { Game } from '../../engine/game.js';
 import { onPress, heldDir, releaseAll, type Button } from '../../engine/input.js';
-import { playEnding as endingMusic, sfx } from '../../engine/audio.js';
+import { sfx } from '../../engine/audio.js';
 import { R7_MAPS } from './r7.js';
 import { T, tile } from '../../engine/sprites.js';
 import { MEMORIES } from '../vesper/memories.js';
@@ -343,7 +343,6 @@ export function playFinale(g: Game, onEnd: () => void) {
   el.appendChild(cv);
   const c = cv.getContext('2d')!;
   c.imageSmoothingEnabled = false;
-  const stopMusic = playEndingMusic();
   // chaque souvenir : un cadre au centre ; il reste, puis se désagrège grain par grain
   const FW = 150, FH = 100;
   const fx = Math.round((VW - FW) / 2), fy = Math.round((VH - FH) / 2) - 10;
@@ -380,7 +379,6 @@ export function playFinale(g: Game, onEnd: () => void) {
   const WAKE = memEnd + 1.5; // après un fondu au noir
   const t0 = performance.now();
   let raf = 0;
-  let saidHi = false;
   const caption = (s: string, alpha: number, y = fy + FH + 16) => {
     c.globalAlpha = alpha;
     c.font = '8px monospace';
@@ -435,42 +433,11 @@ export function playFinale(g: Game, onEnd: () => void) {
     } else if (t < WAKE) {
       // le noir
     } else {
-      drawWake(c, VW, VH, t - WAKE);
       const w = t - WAKE;
-      if (w > 6.2 && !saidHi) saidHi = true;
-      if (w > 6.2) {
-        // « Salut toi ! »
-        const a = Math.min(1, (w - 6.2) / 0.4);
-        c.globalAlpha = a;
-        c.fillStyle = 'rgba(251,243,223,0.95)';
-        c.fillRect(14, VH - 46, VW - 28, 24);
-        c.strokeStyle = '#14101c';
-        c.lineWidth = 2;
-        c.strokeRect(14, VH - 46, VW - 28, 24);
-        c.font = '10px monospace';
-        c.textAlign = 'center';
-        c.fillStyle = '#14101c';
-        c.fillText('« Salut toi ! »', VW / 2, VH - 31);
-        c.globalAlpha = 1;
-      }
-      if (w > 10.5) {
-        const a = Math.min(1, (w - 10.5) / 1.5);
-        c.fillStyle = `rgba(5,6,12,${a * 0.85})`;
-        c.fillRect(0, 0, VW, VH);
-        c.globalAlpha = a;
-        c.font = '14px monospace';
-        c.textAlign = 'center';
-        c.fillStyle = '#d8fffa';
-        c.fillText('FIN', VW / 2, VH / 2 - 6);
-        c.font = '7px monospace';
-        c.fillStyle = '#b8aec8';
-        c.fillText('VESPER — Chapitre 2 : Azura', VW / 2, VH / 2 + 10);
-        c.globalAlpha = 1;
-      }
-      // après « FIN », on revient tout seul au menu d'accueil
-      if (w > 16) {
+      drawSkyOpens(c, VW, VH, w);
+      // à la fin, on revient tout seul au menu d'accueil
+      if (w > SKY_END) {
         cancelAnimationFrame(raf);
-        stopMusic();
         el.remove();
         g.locked = false;
         onEnd();
@@ -482,70 +449,158 @@ export function playFinale(g: Game, onEnd: () => void) {
   frame();
 }
 
-const playEndingMusic = () => endingMusic();
 
-/** Le réveil : les paupières s'ouvrent, l'image est floue puis nette ; Pixel est là, assis ; il remue la queue. */
-function drawWake(c: CanvasRenderingContext2D, VW: number, VH: number, w: number) {
-  // la scène : l'aube, et Pixel en gros plan
-  const g1 = c.createLinearGradient(0, 0, 0, VH);
-  g1.addColorStop(0, '#5a5a9a');
-  g1.addColorStop(0.55, '#f0b0a0');
-  g1.addColorStop(1, '#e8d0b8');
-  c.fillStyle = g1;
-  c.fillRect(0, 0, VW, VH);
-  c.fillStyle = '#c8b8d8';
-  c.fillRect(0, Math.round(VH * 0.72), VW, VH);
-  c.fillStyle = '#f4f4ff';
-  c.fillRect(Math.round(VW * 0.78), Math.round(VH * 0.12), 4, 4);
-  // Pixel, assis, vu de face (gros pixels)
-  const S = 4;
-  const px = Math.round(VW / 2 - 9 * S), py = Math.round(VH * 0.72 - 22 * S);
-  const P = (x: number, y: number, ww: number, hh: number, col: string) => {
-    c.fillStyle = col;
-    c.fillRect(px + x * S, py + y * S, ww * S, hh * S);
-  };
-  const wag = w > 7.6 ? Math.sin(w * 14) : 0;
-  // la queue, qui remue
-  P(15 + Math.round(wag), 14 - Math.round(Math.abs(wag)), 2, 5, '#5f6b7a');
-  P(16 + Math.round(wag * 1.5), 12 - Math.round(Math.abs(wag)), 2, 3, '#8a96a6');
-  // le corps
-  P(4, 12, 11, 9, '#14101c'); P(5, 13, 9, 7, '#b8c4d0'); P(6, 14, 7, 2, '#d8e0e8');
-  P(5, 19, 3, 3, '#14101c'); P(11, 19, 3, 3, '#14101c'); P(5, 19, 2, 2, '#8a96a6'); P(12, 19, 2, 2, '#8a96a6');
-  P(7, 12, 5, 1, '#2a9d9a'); // le collier
-  // la tête
-  P(3, 2, 13, 11, '#14101c'); P(4, 3, 11, 9, '#c8d0dc'); P(4, 3, 11, 2, '#e0e6ee');
-  P(2, 0, 4, 5, '#14101c'); P(3, 1, 2, 3, '#8a96a6'); // les oreilles
-  P(13, 0, 4, 5, '#14101c'); P(14, 1, 2, 3, '#8a96a6');
-  P(7, 8, 5, 3, '#9aa6b6'); P(9, 8, 1, 1, '#14101c'); // le museau
-  // les yeux : l'un allumé, turquoise, qui clignote parfois
-  const blink = w > 4 && w % 3.2 < 0.12;
-  P(6, 5, 2, 2, blink ? '#5f6b7a' : '#5ff0e0');
-  P(11, 5, 2, 2, blink ? '#5f6b7a' : '#5ff0e0');
-  if (!blink) {
-    c.fillStyle = 'rgba(95,240,224,0.25)';
-    c.fillRect(px + 5 * S, py + 4 * S, 4 * S, 4 * S);
-    c.fillRect(px + 10 * S, py + 4 * S, 4 * S, 4 * S);
-  }
-  // le flou du réveil, qui se dissipe
-  const blur = Math.max(0, 1 - (w - 1.5) / 3.5);
-  if (blur > 0) {
-    c.fillStyle = `rgba(240,200,190,${blur * 0.55})`;
-    c.fillRect(0, 0, VW, VH);
-  }
-  // les paupières : elles s'entrouvrent, se referment, puis s'ouvrent pour de bon
-  const open =
-    w < 1 ? 0 : w < 1.8 ? ease((w - 1) / 0.8) * 0.35 : w < 2.3 ? 0.35 * (1 - ease((w - 1.8) / 0.5)) : w < 3 ? 0 : ease((w - 3) / 1.6);
-  const lid = Math.round((VH / 2) * (1 - open));
+// ---------- le ciel qui s'ouvre ----------
+const SKY_END = 19.5;
+
+/** Le dernier plan : j'ouvre les yeux, allongé dans l'herbe au bord du lac, à l'aube. La caméra part de mon
+ *  visage et recule : Pixel penché sur moi, puis le lac, la ville et ses pylônes turquoise. Les deux lunes se
+ *  séparent, la grande planète à anneaux se lève. « Salut toi ! » Pixel remue la queue, pose la tête sur ma
+ *  poitrine, et « VESPER » s'écrit en grand dans le ciel. */
+function drawSkyOpens(c: CanvasRenderingContext2D, VW: number, VH: number, w: number) {
+  const W = VW, H = VH;
+  const horizon = Math.round(H * 0.56), shore = Math.round(H * 0.68);
+  const face = { x: 96, y: shore + 14 };
+  // la caméra : très près de mon visage, puis elle recule lentement jusqu'au plan large
+  const k = ease((w - 2.6) / 8.5);
+  const zoom = 7 - 6 * k;
+  const cx = face.x + (W / 2 - face.x) * k, cy = face.y + (H / 2 - face.y) * k;
+  c.save();
   c.fillStyle = '#05060c';
-  c.fillRect(0, 0, VW, lid);
-  c.fillRect(0, VH - lid, VW, lid);
-  // le bord des paupières, un peu arrondi
-  if (open > 0 && open < 1) {
-    c.fillStyle = '#05060c';
-    for (let x = 0; x < VW; x++) {
-      const k = Math.pow((x - VW / 2) / (VW / 2), 2) * 10 * (1 - open);
-      c.fillRect(x, lid, 1, k);
-      c.fillRect(x, VH - lid - k, 1, k);
-    }
+  c.fillRect(0, 0, W, H);
+  c.translate(W / 2, H / 2);
+  c.scale(zoom, zoom);
+  c.translate(-cx, -cy);
+  const R = (x: number, y: number, ww: number, hh: number, col: string) => {
+    c.fillStyle = col;
+    c.fillRect(x, y, ww, hh);
+  };
+  const disc = (x: number, y: number, r: number, col: string) => {
+    c.fillStyle = col;
+    c.beginPath();
+    c.arc(x, y, r, 0, Math.PI * 2);
+    c.fill();
+  };
+  // le ciel de l'aube, qui s'éclaire
+  const dawn = ease((w - 2) / 12);
+  const sky = c.createLinearGradient(0, 0, 0, horizon);
+  sky.addColorStop(0, `rgb(${Math.round(26 + 40 * dawn)},${Math.round(24 + 40 * dawn)},${Math.round(70 + 50 * dawn)})`);
+  sky.addColorStop(0.65, `rgb(${Math.round(150 + 80 * dawn)},${Math.round(90 + 70 * dawn)},${Math.round(130 + 30 * dawn)})`);
+  sky.addColorStop(1, `rgb(255,${Math.round(190 + 40 * dawn)},${Math.round(150 + 40 * dawn)})`);
+  c.fillStyle = sky;
+  c.fillRect(-20, -20, W + 40, horizon + 20);
+  for (let i = 0; i < 40; i++) {
+    const a = Math.max(0, 0.8 - dawn) * (0.5 + 0.5 * Math.sin(w * 2 + i));
+    R((i * 53) % W, (i * 37) % (horizon - 10), 1, 1, `rgba(255,255,255,${a})`);
+  }
+  // la grande planète à anneaux, qui se lève derrière la ville
+  const rise = ease((w - 4.5) / 8);
+  const px = 142, py = horizon + 34 - rise * 70;
+  disc(px, py, 30, '#c890b8');
+  disc(px - 6, py - 6, 24, '#e8b0c8');
+  R(px - 18, py - 4, 30, 3, 'rgba(160,90,140,0.6)');
+  R(px - 22, py + 6, 36, 2, 'rgba(160,90,140,0.5)');
+  c.strokeStyle = 'rgba(255,240,220,0.85)';
+  c.lineWidth = 2;
+  c.beginPath();
+  c.ellipse(px, py, 52, 9, -0.18, Math.PI * 0.02, Math.PI * 0.98, true);
+  c.stroke();
+  // les deux lunes : l'une sur l'autre, puis elles se séparent
+  const sep = ease((w - 3.5) / 7);
+  disc(52 - sep * 14, 26 - sep * 6, 9, '#f4f4ff');
+  disc(55 - sep * 14, 23 - sep * 6, 7, '#ffffff');
+  disc(52 + sep * 26, 26 + sep * 10, 5, '#b8a8e8');
+  // la ville, en silhouette, et ses pylônes turquoise
+  const houses: [number, number, number][] = [[6, 14, 18], [24, 20, 26], [46, 16, 20], [64, 26, 34], [92, 18, 22], [112, 22, 28], [136, 16, 18], [154, 24, 30], [180, 18, 24]];
+  for (const [x, ww, hh] of houses) {
+    R(x, horizon - hh, ww, hh, '#3a2a52');
+    R(x, horizon - hh, ww, 2, '#4a3a66');
+    for (let wy = horizon - hh + 5; wy < horizon - 4; wy += 6)
+      for (let wx = x + 3; wx < x + ww - 3; wx += 6) if ((wx + wy) % 4 === 0) R(wx, wy, 2, 2, '#ffd45e');
+  }
+  for (const x of [16, 186]) {
+    R(x, horizon - 58, 2, 58, '#2a2040');
+    R(x - 3, horizon - 58, 8, 2, '#2a2040');
+    const pulse = 0.6 + 0.4 * Math.sin(w * 3 + x);
+    disc(x + 1, horizon - 60, 4 + pulse * 2, `rgba(95,240,224,${0.35 * pulse})`);
+    disc(x + 1, horizon - 60, 2, '#d8fffa');
+  }
+  // le lac, et le reflet de la planète
+  R(-20, horizon, W + 40, shore - horizon, '#2a8a96');
+  R(px - 18, horizon + 3, 36, 2, 'rgba(255,200,220,0.35)');
+  for (let i = 0; i < 26; i++) R((i * 37 + w * 6) % (W + 20) - 10, horizon + 2 + ((i * 11) % (shore - horizon - 3)), 4, 1, 'rgba(216,255,250,0.5)');
+  // l'herbe, au premier plan
+  R(-20, shore, W + 40, H - shore + 20, '#3a7a5a');
+  R(-20, shore, W + 40, 2, '#5aa86a');
+  for (let i = 0; i < 70; i++) {
+    const x = (i * 29) % (W + 10) - 5, y = shore + 3 + ((i * 17) % (H - shore - 4));
+    R(x, y, 1, 2, i % 3 ? '#2a6a4a' : '#6ac88a');
+  }
+  // moi, allongé sur le dos
+  const hx = face.x, hy = face.y;
+  R(hx + 5, hy + 1, 18, 5, '#3a6ab8'); // le corps
+  R(hx + 22, hy + 2, 12, 3, '#3a3448'); // les jambes
+  R(hx + 33, hy + 1, 3, 4, '#2a2436'); // les pieds
+  R(hx - 1, hy - 1, 7, 7, '#f0c39a'); // la tête
+  R(hx - 2, hy - 2, 4, 8, '#5a3a2a'); // les cheveux, dans l'herbe
+  // mes yeux : fermés, puis qui s'ouvrent (un battement)
+  const open = w > 2.1 && !(w > 2.35 && w < 2.55);
+  R(hx + 3, hy + 1, 2, open ? 2 : 1, '#1c1020');
+  if (open) R(hx + 3, hy + 1, 1, 1, '#ffffff');
+  R(hx + 1, hy + 4, 3, 1, w > 10.4 ? '#c86a5a' : '#d8a080'); // la bouche, qui sourit à « Salut toi ! »
+  // Pixel, penché sur moi ; puis sa tête vient se poser sur ma poitrine
+  const lay = ease((w - 12.8) / 1.2);
+  const dx = hx - 16 + lay * 6, dy = hy - 9;
+  const wag = w > 11.2 ? Math.round(Math.sin(w * 16) * 2) : 0;
+  R(dx - 6 + wag, dy - 2 - Math.abs(wag), 2, 5, '#5f6b7a'); // la queue
+  R(dx - 4, dy, 13, 6, '#14101c'); R(dx - 3, dy + 1, 11, 4, '#b8c4d0'); // le corps
+  R(dx - 3, dy + 6, 2, 4, '#14101c'); R(dx + 6, dy + 6, 2, 4, '#14101c'); // les pattes
+  const headX = dx + 9 + lay * 6, headY = dy - 2 + lay * 7;
+  R(headX, headY, 8, 6, '#14101c'); R(headX + 1, headY + 1, 6, 4, '#c8d0dc');
+  R(headX + 1, headY - 2, 2, 3, '#14101c'); R(headX + 5, headY - 2, 2, 3, '#14101c'); // les oreilles
+  R(headX + 6, headY + 3, 3, 2, '#9aa6b6'); // le museau
+  const blink = w % 3.1 < 0.12;
+  R(headX + 4, headY + 2, 1, 1, blink ? '#5f6b7a' : '#5ff0e0');
+  if (!blink) disc(headX + 4.5, headY + 2.5, 2, 'rgba(95,240,224,0.3)');
+  c.restore();
+  // le fondu d'entrée, du noir
+  if (w < 1.6) {
+    c.fillStyle = `rgba(5,6,12,${1 - w / 1.6})`;
+    c.fillRect(0, 0, W, H);
+  }
+  // « Salut toi ! »
+  if (w > 10.4 && w < 14.5) {
+    const a = Math.min(1, (w - 10.4) / 0.4, (14.5 - w) / 0.5);
+    c.globalAlpha = a;
+    c.fillStyle = 'rgba(251,243,223,0.95)';
+    c.fillRect(30, H - 40, W - 60, 22);
+    c.strokeStyle = '#14101c';
+    c.lineWidth = 2;
+    c.strokeRect(30, H - 40, W - 60, 22);
+    c.font = '10px monospace';
+    c.textAlign = 'center';
+    c.fillStyle = '#14101c';
+    c.fillText('« Salut toi ! »', W / 2, H - 25);
+    c.globalAlpha = 1;
+  }
+  // « VESPER », en grand dans le ciel
+  if (w > 14.2) {
+    const a = Math.min(1, (w - 14.2) / 1.6) * Math.min(1, (SKY_END - w) / 1.2);
+    c.globalAlpha = a;
+    c.textAlign = 'center';
+    c.font = 'bold 30px monospace';
+    c.shadowColor = '#5ff0e0';
+    c.shadowBlur = 14;
+    c.fillStyle = '#f4fbff';
+    c.fillText('VESPER', W / 2, H * 0.2);
+    c.shadowBlur = 0;
+    c.font = '7px monospace';
+    c.fillStyle = '#ffffff';
+    c.fillText('Chapitre 2 · Azura', W / 2, H * 0.2 + 13);
+    c.globalAlpha = 1;
+  }
+  if (w > SKY_END - 1.2) {
+    c.fillStyle = `rgba(5,6,12,${Math.min(1, (w - (SKY_END - 1.2)) / 1.2)})`;
+    c.fillRect(0, 0, W, H);
   }
 }

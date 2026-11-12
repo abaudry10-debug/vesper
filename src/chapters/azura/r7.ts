@@ -541,6 +541,7 @@ export function quitR7(g: Game) {
     g.items.delete('liaison');
     g.flags.delete('r7On');
     clearVesperFx(g);
+    g.heroAlpha = 1; // on se revoit tout de suite, sans attendre
     g.warp('pilotes', 8, 3, 'up');
     window.setTimeout(() => {
       restoreBag(g);

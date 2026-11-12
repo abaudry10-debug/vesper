@@ -58,6 +58,7 @@ function backToAzura(g: Game) {
   g.pixel = null;
   setHour(g, 21);
   clearVesperFx(g);
+  g.heroAlpha = 1;
   g.warp('pilotes', 8, 3, 'up');
   window.setTimeout(() => {
     // une fois revenu sur Azura (pas avant : tant qu'on est sur Vesper, le sac reste celui du robot)

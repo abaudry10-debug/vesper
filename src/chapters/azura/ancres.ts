@@ -5,7 +5,7 @@
 // Puis l'aube du jour 5 (la leçon juste), et la fin : le journal s'efface en entier.
 import type { Game } from '../../engine/game.js';
 import type { MapObject } from '../../engine/world.js';
-import { playEnding, sfx } from '../../engine/audio.js';
+import { playEnding, playTheme, sfx } from '../../engine/audio.js';
 import * as ui from '../../engine/ui.js';
 import { T } from '../../engine/sprites.js';
 import { ANCHOR_MEMORIES } from './ancresSouvenirs.js';
@@ -228,8 +228,8 @@ function oskarNight(g: Game) {
     [
       'Oskar est déjà là, devant son mur. Il a tout décroché… sauf cinq fiches, au centre.',
       '« Joss, Nora, Tom, la maîtresse, Mme Ilda. Ceux qui ont le plus lutté contre l’oubli. Ceux qui ont tout noté, tout répété. »',
-      '« Pendant des années, j’ai écrit ce qui comptait pour chacun. On se moquait de moi. »',
-      '« Le déclic, c’est à toi de le trouver. Quelque chose que tu as croisé avec eux, ces derniers jours. »',
+      '« Pendant des années, je les ai observés. J’ai tout noté. On se moquait de moi. »',
+      '« Le déclic, c’est à toi de le trouver. Quelque chose qui compte pour eux. Tu les as côtoyés, ces derniers jours. »',
       'Il décroche un vieux papier jauni, tout en bas du mur.',
       '« Tiens. Le premier bulletin de Nora, jour 1, an 0. Le plus vieux de ma collection. »',
     ],
@@ -275,6 +275,7 @@ export function drawSleepers(g: Game, c: CanvasRenderingContext2D, ox: number, o
 // ---------- la fin ----------
 /** Le dernier pylône s'allume ; puis c'est mon tour d'oublier. */
 function lastScene(g: Game) {
+  playTheme('azuraFin'); // une seule musique, jusqu'au bout
   ui.say(
     [
       'Tous les pylônes brillent. Sur la ville endormie, le silence.',

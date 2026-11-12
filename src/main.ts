@@ -263,6 +263,11 @@ function renderChapters() {
     list.appendChild(b);
   }
 }
+// l'outil de dev peut changer l'état d'achat : l'accueil et la fenêtre des chapitres suivent
+window.addEventListener('vesper:achats', () => {
+  if (!title.hidden) refreshTitle();
+  if (!$('chapters').hidden) renderChapters();
+});
 $('btn-chapters').addEventListener('click', () => {
   sfx.select();
   renderChapters();

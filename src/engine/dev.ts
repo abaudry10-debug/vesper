@@ -206,6 +206,29 @@ export function setupDev(getGame: () => Game, inGame: () => boolean, restarts: D
       }
     }
 
+    // les achats : voir le jeu comme quelqu'un qui n'a pas encore acheté le chapitre 2
+    const shop = section('Achats');
+    const ownedNow = () => {
+      try {
+        return localStorage.getItem('vesper.owned.azura') === '1';
+      } catch {
+        return false;
+      }
+    };
+    const toggle = el('button', `Chapitre 2 : ${ownedNow() ? 'acheté ✓' : 'pas acheté'}`);
+    toggle.addEventListener('click', () => {
+      try {
+        if (ownedNow()) localStorage.removeItem('vesper.owned.azura');
+        else localStorage.setItem('vesper.owned.azura', '1');
+      } catch {
+        /* rien */
+      }
+      toggle.textContent = `Chapitre 2 : ${ownedNow() ? 'acheté ✓' : 'pas acheté'}`;
+      window.dispatchEvent(new Event('vesper:achats'));
+      ui.toast(ownedNow() ? 'Chapitre 2 : acheté' : 'Chapitre 2 : pas encore acheté');
+    });
+    shop.append(toggle);
+
     const end = section('Mode développeur');
     const off = el('button', 'Désactiver');
     off.addEventListener('click', () => {

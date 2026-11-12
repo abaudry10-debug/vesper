@@ -1506,3 +1506,150 @@ details.thread > summary.has-new .count { color: var(--accent-dark); }
 @keyframes az-card-glow { 0% { box-shadow: 0 0 0 rgba(95, 240, 224, 0); } 25% { box-shadow: 0 0 16px rgba(95, 240, 224, 0.75); } 100% { box-shadow: 0 0 0 rgba(95, 240, 224, 0); } }
 .clue.keep { background: #efe3c8; border-left-color: #24264a; }
 .clue.keep strong, .clue.keep p { color: #24264a; font-family: "Snell Roundhand", "Bradley Hand", "Segoe Script", cursive; font-style: italic; font-size: 1.1em; }
+
+/* ---------- accueil : un bouton principal, et les chapitres ---------- */
+.title-bottom {
+  gap: 12px;
+}
+.play-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.play-btn small {
+  font-size: 16px;
+  color: #5a2a10;
+  letter-spacing: 0.04em;
+}
+.play-btn small:empty {
+  display: none;
+}
+.chapters-btn {
+  font-size: 22px;
+  padding: 8px 16px;
+  background: rgba(18, 8, 26, 0.82);
+}
+
+/* l'écran des chapitres : une carte par chapitre, dans le même style pixel que les boutons */
+.chapters-box {
+  width: 100%;
+  max-width: 420px;
+  max-height: 100%;
+  overflow: auto;
+  padding: 16px 14px;
+}
+.chapters-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 12px;
+}
+.chapters-head h2 {
+  margin: 0;
+  font-size: 28px;
+  color: #f2e9dc;
+  letter-spacing: 0.06em;
+}
+.chap-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 4px 12px;
+  margin: 0 0 14px;
+  padding: 10px;
+  border: 3px solid var(--ink);
+  border-radius: 6px;
+  background: #2b2236;
+  box-shadow: inset 0 -4px 0 #17111f;
+}
+.chap-card.azura {
+  background: #1a2a3c;
+  box-shadow: inset 0 -4px 0 #0e1826, inset 0 0 0 2px #2a4a5a;
+}
+.chap-thumb {
+  width: 96px;
+  height: 60px;
+  image-rendering: pixelated;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  grid-row: span 3;
+}
+.chap-num {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.chap-card h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: normal;
+  color: #f2e9dc;
+}
+.chap-state {
+  margin: 0;
+  font-size: 16px;
+  color: var(--teal);
+}
+.chap-state.done {
+  color: #9ae07a;
+}
+.chap-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.chap-actions .menu {
+  flex: 1;
+  font-size: 20px;
+  padding: 7px 10px;
+}
+.chap-actions .menu.ghost {
+  flex: none;
+  font-size: 16px;
+  background: transparent;
+  border-color: #3a2c4a;
+  box-shadow: none;
+  color: var(--muted);
+}
+/* le chapitre payant : la même forme, dans la palette d'Azura */
+.menu.azura-buy {
+  background: #5ff0e0;
+  color: var(--ink);
+  box-shadow: inset 0 -4px 0 #2a9d9a;
+}
+.price-tag {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  padding: 2px 8px;
+  font-size: 15px;
+  color: var(--ink);
+  background: #ffd45e;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  box-shadow: inset 0 -2px 0 #c89a2e;
+}
+.owned-tag {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  padding: 2px 8px;
+  font-size: 15px;
+  color: #d8fffa;
+  background: #1a3a3a;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+}
+
+#confirm-text {
+  white-space: pre-line;
+}
+.chap-num {
+  padding-right: 96px;
+}

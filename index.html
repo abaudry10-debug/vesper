@@ -56,17 +56,12 @@
         <canvas id="title-bg" aria-hidden="true"></canvas>
         <div class="title-box title-layout">
           <div class="title-top">
-            <p class="kicker">Chapitre 1 · Le Réveil</p>
             <h1>VESPER</h1>
-            <p class="tagline">Tu te réveilles seul dans une ville morte.<br />Que s’est-il passé ici ?</p>
+            <p class="tagline">Un réveil.<br />Une planète.<br />Un chien qui n’oublie pas.</p>
           </div>
           <div class="title-bottom">
-            <div class="chap1-block">
-              <p class="chap-label">Chapitre 1 · Le Réveil <b id="chap-1-state"></b></p>
-              <button id="btn-continue" class="menu primary">Continuer</button>
-              <button id="btn-new" class="menu primary">Nouvelle partie</button>
-            </div>
-            <button id="chap-2" class="menu chap2"><span class="chap2-moons" aria-hidden="true"><i></i><i></i></span><span class="chap2-text"><small>Chapitre 2</small>Azura</span><b id="chap-2-state">nouveau</b></button>
+            <button id="btn-play" class="menu primary play-btn"><span id="btn-play-label">Commencer</span><small id="btn-play-sub"></small></button>
+            <button id="btn-chapters" class="menu chapters-btn">Chapitres</button>
           </div>
         </div>
       </section>
@@ -184,6 +179,13 @@
       </section>
 
       <!-- confirmation -->
+      <section id="chapters" class="overlay" hidden>
+        <div class="chapters-box panel">
+          <header class="chapters-head"><h2>Chapitres</h2><button id="chapters-close" class="menu small">Fermer</button></header>
+          <div id="chapters-list"></div>
+        </div>
+      </section>
+
       <section id="confirm" class="overlay" hidden>
         <div class="title-box panel">
           <p id="confirm-text" class="tagline"></p>

@@ -67,28 +67,70 @@ $('pause-sound').addEventListener('click', toggleSound);
 refreshSoundLabels();
 
 // ---------- écran titre ----------
+// Un seul bouton principal (Commencer, ou Continuer là où on s'est arrêté), et un écran « Chapitres »
+// avec une carte par chapitre : état, jouer, recommencer ; et, pour Azura, son prix (achat simulé pour l'instant).
 const title = $('title');
-const btnContinue = $('btn-continue') as HTMLButtonElement;
-
-function showTitle() {
-  setChapter(vesper); // l'écran titre est celui du chapitre 1
-  title.hidden = false;
-  startTitleScene($('title-bg') as HTMLCanvasElement);
-  btnContinue.hidden = !Game.hasSave();
-  $('chap-1-state').textContent = chapterDone(ch().id) ? '✓ terminé' : Game.hasSave() ? '· en cours' : '';
-  $('btn-new').textContent = Game.hasSave() ? 'Nouvelle partie' : 'Commencer';
-  // le chapitre 2 : ouvert à tous ; sa propre sauvegarde décide « Continuer » ou « Commencer »
-  setChapter(azura);
-  $('chap-2-state').textContent = Game.hasSave() ? 'continuer ▶' : chapterDone(vesper.id) ? 'nouveau ▶' : '▶';
-  setChapter(vesper);
-  playTheme('title');
+const CHAPTERS = [vesper, azura];
+const NAMES: Record<string, { num: string; name: string }> = {
+  [vesper.id]: { num: 'Chapitre 1', name: 'Le Réveil' },
+  [azura.id]: { num: 'Chapitre 2', name: 'Azura' },
+};
+const PRICE = '0,99\u00a0€';
+const store = {
+  get(k: string) {
+    try {
+      return localStorage.getItem(k);
+    } catch {
+      return null;
+    }
+  },
+  set(k: string, v: string) {
+    try {
+      localStorage.setItem(k, v);
+    } catch {
+      /* rien */
+    }
+  },
+};
+const owned = () => store.get('vesper.owned.azura') === '1';
+/** Une sauvegarde existe-t-elle pour ce chapitre ? (et où en est-on) */
+function saveOf(c: typeof vesper): { flags: string[] } | null {
+  try {
+    const raw = localStorage.getItem(c.saveKey);
+    return raw ? (JSON.parse(raw) as { flags: string[] }) : null;
+  } catch {
+    return null;
+  }
+}
+function progressText(c: typeof vesper): string {
+  const sv = saveOf(c);
+  if (!sv) return '';
+  if (c.id === azura.id) {
+    const d = [5, 4, 3, 2].find((n) => sv.flags?.includes(`jour${n}`)) ?? 1;
+    return `Jour ${d}`;
+  }
+  return 'En cours';
 }
 
-function askNewGame() {
-  sfx.select();
-  if (Game.hasSave()) {
-    ui.confirm('Une partie est déjà sauvegardée. La remplacer par une nouvelle ?', startNew);
-  } else startNew();
+function showTitle() {
+  setChapter(vesper);
+  title.hidden = false;
+  $('chapters').hidden = true;
+  startTitleScene($('title-bg') as HTMLCanvasElement);
+  // le bouton principal : reprendre le dernier chapitre joué, sinon un autre commencé, sinon commencer
+  const last = CHAPTERS.find((c) => c.id === store.get('vesper.last') && saveOf(c)) ?? CHAPTERS.find((c) => saveOf(c));
+  const label = $('btn-play-label'), sub = $('btn-play-sub');
+  if (last) {
+    label.textContent = 'Continuer';
+    sub.textContent = `${NAMES[last.id].num} · ${NAMES[last.id].name} — ${progressText(last)}`;
+  } else if (!chapterDone(vesper.id)) {
+    label.textContent = 'Commencer';
+    sub.textContent = '';
+  } else {
+    label.textContent = 'Jouer';
+    sub.textContent = `${NAMES[azura.id].num} · ${NAMES[azura.id].name}`;
+  }
+  playTheme('title');
 }
 
 function wireGame() {
@@ -100,9 +142,11 @@ function wireGame() {
 
 function startNew() {
   Game.clearSave();
+  store.set('vesper.last', ch().id);
   game = new Game(ctx);
   wireGame();
   title.hidden = true;
+  $('chapters').hidden = true;
   stopTitleScene();
   game.blackout = true;
   playTheme('none');
@@ -111,37 +155,146 @@ function startNew() {
 
 function continueGame() {
   sfx.select();
+  store.set('vesper.last', ch().id);
   game = new Game(ctx);
   wireGame();
   if (!game.load()) return startNew();
   title.hidden = true;
+  $('chapters').hidden = true;
   stopTitleScene();
   game.startMusic();
   ui.showPlace(game.map.name);
 }
 
-$('btn-new').addEventListener('click', askNewGame);
-function launchAzura() {
-  setChapter(azura);
+/** Lancer un chapitre : on reprend sa partie s'il y en a une, sinon on la commence. */
+function play(c: typeof vesper) {
+  setChapter(c);
   if (Game.hasSave()) continueGame();
   else startNew();
 }
-$('chap-2').addEventListener('click', () => {
+
+/** Azura : la suite du chapitre 1. Payant (simulé pour l'instant), et on prévient si le 1 n'est pas fini. */
+function playAzura() {
   sfx.select();
-  // pas de blocage, mais on prévient ceux qui n'ont pas fini le chapitre 1
-  if (chapterDone(vesper.id)) return launchAzura();
-  setChapter(azura);
-  const started = Game.hasSave();
-  setChapter(vesper);
-  if (started) return launchAzura();
+  if (!owned()) return buyAzura(playAzura);
+  if (chapterDone(vesper.id) || saveOf(azura)) return play(azura);
   ui.confirm(
     'Azura est la suite directe du chapitre 1. Tu ne l’as pas encore terminé : on te conseille de commencer par Le Réveil.',
-    () => (Game.hasSave() ? continueGame() : askNewGame()),
-    launchAzura,
+    () => play(vesper),
+    () => play(azura),
     ['Jouer au chapitre 1', 'Lancer Azura quand même'],
   );
+}
+
+function buyAzura(then?: () => void) {
+  ui.confirm(
+    `Débloquer le chapitre 2, « Azura », pour ${PRICE} ?\n(L’achat n’est pas encore en place : le chapitre est offert pour l’instant.)`,
+    () => {
+      store.set('vesper.owned.azura', '1');
+      sfx.success();
+      renderChapters();
+      if (then) window.setTimeout(then, 300);
+    },
+    undefined,
+    [`Acheter · ${PRICE}`, 'Plus tard'],
+  );
+}
+
+function restart(c: typeof vesper) {
+  sfx.select();
+  ui.confirm(`Recommencer « ${NAMES[c.id].name} » depuis le début ? La partie en cours de ce chapitre sera effacée.`, () => {
+    setChapter(c);
+    Game.clearSave();
+    startNew();
+  });
+}
+
+$('btn-play').addEventListener('click', () => {
+  sfx.select();
+  const last = CHAPTERS.find((c) => c.id === store.get('vesper.last') && saveOf(c)) ?? CHAPTERS.find((c) => saveOf(c));
+  if (last) return last.id === azura.id ? playAzura() : play(last);
+  if (!chapterDone(vesper.id)) return play(vesper);
+  playAzura();
 });
-btnContinue.addEventListener('click', continueGame);
+
+// ---------- l'écran des chapitres ----------
+/** Une petite vignette en pixel art par chapitre : Vesper orange, Azura turquoise et ses deux lunes. */
+function drawThumb(cv: HTMLCanvasElement, id: string) {
+  const c = cv.getContext('2d')!;
+  const R = (x: number, y: number, w: number, h: number, col: string) => {
+    c.fillStyle = col;
+    c.fillRect(x, y, w, h);
+  };
+  if (id === vesper.id) {
+    ['#2a1430', '#5a2238', '#a8402c', '#e8742c', '#ffb050'].forEach((col, i) => R(0, i * 6, 48, 6, col));
+    R(30, 18, 8, 8, '#ffd45e');
+    R(31, 17, 6, 10, '#ffd45e');
+    for (const [x, w, h] of [[0, 6, 10], [5, 5, 16], [11, 7, 12], [19, 4, 18], [24, 8, 9], [33, 5, 14], [39, 9, 11]] as const) R(x, 30 - h, w, h, '#2a1426');
+    R(0, 28, 48, 2, '#5a2a1a');
+    R(22, 26, 3, 3, '#5ff0e0'); // un petit chien
+  } else {
+    ['#0e1430', '#1e2050', '#3a2a6a', '#6a3a7a'].forEach((col, i) => R(0, i * 5, 48, 5, col));
+    for (const [x, y] of [[4, 3], [14, 8], [40, 5], [28, 2], [44, 12]] as const) R(x, y, 1, 1, '#d8fffa');
+    R(10, 5, 5, 5, '#f4f4ff'); R(11, 4, 3, 7, '#f4f4ff'); R(9, 6, 7, 3, '#f4f4ff'); // la grande lune
+    R(16, 9, 2, 2, '#b8a8e8'); // la petite
+    for (const [x, w, h] of [[2, 6, 5], [9, 5, 7], [16, 7, 4], [26, 6, 6], [34, 5, 8], [41, 6, 5]] as const) R(x, 20 - h, w, h, '#2a2040');
+    R(30, 9, 1, 11, '#2a2040'); R(29, 8, 3, 1, '#5ff0e0');
+    R(0, 20, 48, 10, '#1e7a8a');
+    for (const [x, y] of [[5, 22], [18, 25], [33, 23], [40, 27]] as const) R(x, y, 4, 1, '#82efe3');
+  }
+}
+
+function renderChapters() {
+  const list = $('chapters-list');
+  list.innerHTML = '';
+  for (const c of CHAPTERS) {
+    const isAz = c.id === azura.id;
+    const sv = saveOf(c);
+    const done = chapterDone(c.id);
+    const card = document.createElement('div');
+    card.className = `chap-card${isAz ? ' azura' : ''}`;
+    const state = sv ? `En cours · ${progressText(c)}` : done ? '✓ Terminé' : isAz && !owned() ? 'Nouveau chapitre' : 'Pas encore commencé';
+    card.innerHTML = `<canvas class="chap-thumb" width="48" height="30"></canvas>
+      <p class="chap-num">${NAMES[c.id].num}</p><h3>${NAMES[c.id].name}</h3>
+      <p class="chap-state${done && !sv ? ' done' : ''}">${state}</p>
+      <div class="chap-actions"></div>`;
+    drawThumb(card.querySelector('canvas')!, c.id);
+    const actions = card.querySelector('.chap-actions')!;
+    const btn = (label: string, cls: string, fn: () => void) => {
+      const b = document.createElement('button');
+      b.className = `menu ${cls}`;
+      b.textContent = label;
+      b.addEventListener('click', fn);
+      actions.appendChild(b);
+    };
+    if (isAz && !owned()) {
+      const tag = document.createElement('span');
+      tag.className = 'price-tag';
+      tag.textContent = PRICE;
+      card.appendChild(tag);
+      btn(`Débloquer · ${PRICE}`, 'azura-buy', () => buyAzura());
+    } else {
+      if (isAz) {
+        const tag = document.createElement('span');
+        tag.className = 'owned-tag';
+        tag.textContent = '✓ Débloqué';
+        card.appendChild(tag);
+      }
+      btn(sv ? 'Continuer' : done ? 'Rejouer' : 'Jouer', isAz ? 'azura-buy' : 'primary', () => (isAz ? playAzura() : (sfx.select(), play(c))));
+      if (sv) btn('Recommencer', 'ghost', () => restart(c));
+    }
+    list.appendChild(card);
+  }
+}
+$('btn-chapters').addEventListener('click', () => {
+  sfx.select();
+  renderChapters();
+  $('chapters').hidden = false;
+});
+$('chapters-close').addEventListener('click', () => {
+  sfx.select();
+  $('chapters').hidden = true;
+});
 
 // ---------- pause ----------
 const pause = $('pause');
@@ -192,7 +345,11 @@ $('dialog').addEventListener('pointerdown', (ev) => {
 onPress((b) => {
   if (!$('confirm').hidden) return;
   if (!title.hidden) {
-    if (b === 'a') (btnContinue.hidden ? askNewGame : continueGame)();
+    if (!$('chapters').hidden) {
+      if (b === 'b' || b === 'menu') $('chapters').hidden = true;
+      return;
+    }
+    if (b === 'a') ($('btn-play') as HTMLButtonElement).click();
     return;
   }
   if (!pause.hidden) {

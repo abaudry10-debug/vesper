@@ -240,6 +240,11 @@ function drawThumb(cv: HTMLCanvasElement, id: string) {
   }
 }
 
+// un petit cadenas en pixels, discret : le chapitre n'est pas inclus, sans afficher de prix ici
+const LOCK = `<span class="lock-tag" aria-label="À débloquer"><svg viewBox="0 0 7 8" width="14" height="16" shape-rendering="crispEdges">
+  <path d="M2 0h3v1h1v3h-1v-3h-3v3h-1v-3h1z" fill="currentColor"/>
+  <path d="M0 3h7v5h-7z" fill="currentColor"/><path d="M3 5h1v2h-1z" fill="#123"/></svg></span>`;
+
 function renderChapters() {
   const list = $('chapters-list');
   list.innerHTML = '';
@@ -252,7 +257,7 @@ function renderChapters() {
     const state = sv ? `En cours · ${progressText(c)}` : done ? '✓ Terminé' : az && !owned() ? 'À débloquer' : 'Pas encore commencé';
     b.innerHTML = `<canvas class="chap-thumb" width="48" height="30"></canvas>
       <span class="chap-txt"><span class="chap-num">${INFO[c.id].num}</span><span class="chap-name">${INFO[c.id].name}</span><span class="chap-state">${state}</span></span>
-      ${az ? (owned() ? '<span class="owned-tag">✓ Acheté</span>' : `<span class="price-tag">${PRICE}</span>`) : ''}`;
+      ${az ? (owned() ? '<span class="owned-tag">✓ Acheté</span>' : LOCK) : ''}`;
     drawThumb(b.querySelector('canvas')!, c.id);
     b.addEventListener('click', () => {
       sfx.select();

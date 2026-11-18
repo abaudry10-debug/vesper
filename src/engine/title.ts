@@ -56,7 +56,7 @@ function layout() {
 }
 
 /** Les autres illustrations d'accueil (une par chapitre), déclarées par les chapitres. */
-type SceneFn = (c: CanvasRenderingContext2D, w: number, hh: number, t: number) => void;
+type SceneFn = (c: CanvasRenderingContext2D, w: number, hh: number, t: number, lift?: number) => void;
 const SCENES: Record<string, SceneFn> = {};
 let sceneId = 'vesper';
 export function registerTitleScene(id: string, fn: SceneFn) {
@@ -67,7 +67,71 @@ export function setTitleScene(id: string) {
   if (canvas && running) draw(performance.now() / 1000);
 }
 
+// ---------- l'arrivée : la caméra descend du fond de l'espace jusqu'à l'illustration ----------
+// Utilisée au passage d'un chapitre au suivant. Les étoiles filent pendant la descente, puis la
+// caméra ralentit et se pose exactement sur l'illustration de l'accueil.
+let intro: { start: number; dur: number; done: () => void } | null = null;
+const deepRnd = rng(907);
+const deep = Array.from({ length: 110 }, () => ({ x: deepRnd(), y: deepRnd(), z: 0.25 + deepRnd() * 0.75, tw: deepRnd() * 6 }));
+const easeInOut = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+
+/** Joue l'arrivée sur l'illustration courante ; la promesse se résout quand la caméra est posée. */
+export function playTitleIntro(dur = 12): Promise<void> {
+  return new Promise((res) => {
+    intro = { start: performance.now() / 1000, dur, done: res };
+  });
+}
+/** Passe directement à la fin de l'arrivée (toucher l'écran pendant la descente). */
+export function skipTitleIntro() {
+  if (!intro) return;
+  const done = intro.done;
+  intro = null;
+  done();
+}
+export const titleIntroPlaying = () => intro !== null;
+
+function drawIntro(t: number) {
+  const it = intro!;
+  const p = Math.min(1, (t - it.start) / it.dur);
+  const D = h * 2.2; // hauteur de la descente
+  const pos = (q: number) => D * easeInOut(Math.min(1, Math.max(0, q)));
+  const cam = pos(p);
+  const speed = (pos(p + 0.01) - pos(p - 0.01)) / 0.02 / it.dur; // pixels par seconde
+  const lift = D - cam;
+
+  // le fond de l'espace, qui bleuit à l'approche du ciel d'Azura
+  const g = ctx.createLinearGradient(0, lift - h * 1.2, 0, lift);
+  g.addColorStop(0, '#010208');
+  g.addColorStop(1, '#090c26');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, h);
+  // les étoiles lointaines : elles filent vers le haut, en traînées quand on va vite
+  const span = h * 1.6;
+  for (const s of deep) {
+    let y = (s.y * span - cam * s.z * 0.9) % span;
+    if (y < 0) y += span;
+    y -= h * 0.3;
+    if (y > lift + 4) continue;
+    const len = Math.min(26, speed * s.z * 0.035);
+    const a = (0.35 + 0.65 * s.z) * (0.7 + 0.3 * Math.sin(t * 3 + s.tw));
+    ctx.fillStyle = `rgba(255,255,255,${a.toFixed(2)})`;
+    ctx.fillRect(Math.round(s.x * W), Math.round(y), 1, Math.max(1, Math.round(len)));
+  }
+  SCENES[sceneId]?.(ctx, W, h, t, lift);
+  // on sort du noir de la fin du chapitre précédent
+  const black = 1 - Math.min(1, p / 0.14);
+  if (black > 0) {
+    ctx.fillStyle = `rgba(0,0,0,${black.toFixed(3)})`;
+    ctx.fillRect(0, 0, W, h);
+  }
+  if (p >= 1) {
+    intro = null;
+    it.done();
+  }
+}
+
 function draw(t: number) {
+  if (intro) return drawIntro(t);
   if (SCENES[sceneId]) return SCENES[sceneId](ctx, W, h, t);
   const horizon = Math.round(h * 0.6);
 
@@ -166,7 +230,7 @@ function draw(t: number) {
 let lastDraw = 0;
 function loop(now: number) {
   if (!running) return;
-  if (now - lastDraw > 66) {
+  if (intro || now - lastDraw > 66) {
     // ~15 images par seconde : assez pour l'ambiance, léger pour la batterie
     lastDraw = now;
     draw(now / 1000);

@@ -12,10 +12,13 @@ function rng(seed: number) {
   };
 }
 
-registerTitleScene('azura', (c, W, H, t) => {
+// `lift` : la caméra est encore haut dans le ciel (passage du chapitre 1 au 2) ; le sol est décalé de
+// `lift` pixels vers le bas, le ciel et ses astres moins, pour donner de la profondeur.
+registerTitleScene('azura', (c, W, H, t, lift = 0) => {
+  let dy = 0; // décalage vertical du plan qu'on dessine
   const px = (x: number, y: number, w: number, h: number, col: string) => {
     c.fillStyle = col;
-    c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+    c.fillRect(Math.round(x), Math.round(y + dy), Math.round(w), Math.round(h));
   };
   const disc = (cx: number, cy: number, r: number, col: (d: number, x: number, y: number) => string | '') => {
     for (let y = -r; y <= r; y++)
@@ -31,13 +34,15 @@ registerTitleScene('azura', (c, W, H, t) => {
   // le ciel, en bandes tramées : nuit en haut, aube rose à l'horizon
   const bands = ['#090c26', '#0e1434', '#161a44', '#211f56', '#2e2464', '#40296e', '#582f76', '#74387c', '#94467e', '#b8577e', '#d8708a', '#ee9a9e'];
   const bh = horizon / bands.length;
+  dy = lift;
   bands.forEach((col, i) => {
     px(0, i * bh, W, bh + 1, col);
     if (i > 0) {
       c.fillStyle = bands[i - 1];
-      for (let y = Math.round(i * bh); y < Math.round(i * bh) + 2; y++) for (let x = y % 2; x < W; x += 2) c.fillRect(x, y, 1, 1);
+      for (let y = Math.round(i * bh); y < Math.round(i * bh) + 2; y++) for (let x = y % 2; x < W; x += 2) c.fillRect(x, y + Math.round(dy), 1, 1);
     }
   });
+  dy = lift * 0.45;
   const st = rng(11);
   for (let i = 0; i < 34; i++) {
     const sx = Math.floor(st() * W), sy = Math.floor(st() * horizon * 0.55);
@@ -45,9 +50,11 @@ registerTitleScene('azura', (c, W, H, t) => {
   }
 
   // la grande planète à anneaux
+  dy = lift * 0.55;
   const pr = Math.round(Math.min(W, H) * 0.17);
   const pcx = Math.round(W * 0.7), pcy = Math.round(horizon - pr * 0.55);
-  disc(pcx, pcy, pr, (d, x, y) => (y > pr * 0.55 ? '' : d < pr * 0.55 && x + y < 0 ? '#f4c8d8' : (y + 40) % 7 < 2 ? '#c88aa8' : x + y > pr * 0.6 ? '#9a6088' : '#e0a8c0'));
+  // elle se couche derrière la ville : pendant la descente, on la voit en entier avant qu'elle ne passe sous l'horizon
+  disc(pcx, pcy, pr, (d, x, y) => (y > pr * 0.55 + lift * 0.45 ? '' : d < pr * 0.55 && x + y < 0 ? '#f4c8d8' : (y + 40) % 7 < 2 ? '#c88aa8' : x + y > pr * 0.6 ? '#9a6088' : '#e0a8c0'));
   for (let a = Math.PI * 1.02; a < Math.PI * 1.98; a += 0.01) {
     px(pcx + Math.cos(a) * pr * 1.75, pcy + Math.sin(a) * pr * 0.32 + 2, 1, 1, '#f8e8d8');
   }
@@ -55,12 +62,14 @@ registerTitleScene('azura', (c, W, H, t) => {
   for (let a = 0.05; a < Math.PI * 0.95; a += 0.01) px(pcx + Math.cos(a) * pr * 1.75, pcy + Math.sin(a) * pr * 0.32 + 2, 1, 1, '#fff4e8');
 
   // les deux lunes, presque l'une sur l'autre
+  dy = lift * 0.3;
   const mx = Math.round(W * 0.8), my = Math.round(H * 0.045) + 6;
   disc(mx, my, 6, (d, x, y) => (x + y < -3 ? '#ffffff' : d > 5 ? '#c8d0f0' : '#eef0ff'));
   const drift = Math.sin(t * 0.25) * 1.5;
   disc(mx + 7 + drift, my + 4, 3, (d) => (d > 2 ? '#8a7ac8' : '#b8a8e8'));
 
   // des collines lointaines
+  dy = lift;
   for (let x = 0; x < W; x++) {
     const hh = Math.round(6 + Math.sin(x * 0.05) * 4 + Math.sin(x * 0.13 + 1) * 2);
     px(x, horizon - hh, 1, hh, '#4a2e66');
@@ -122,9 +131,9 @@ registerTitleScene('azura', (c, W, H, t) => {
 
   // le héros et Pixel, de dos, qui regardent le lac
   const cx = Math.round(W / 2);
-  c.drawImage(hero('up', 0), cx - 10, shore - 14);
+  c.drawImage(hero('up', 0), cx - 10, Math.round(shore - 14 + dy));
   const wag = Math.floor(t * 3) % 2;
-  c.drawImage(dogSprite('left', { pose: 'stand', tail: wag ? 0 : 1 }), cx + 4, shore - 13);
+  c.drawImage(dogSprite('left', { pose: 'stand', tail: wag ? 0 : 1 }), cx + 4, Math.round(shore - 13 + dy));
 
   // des lucioles turquoise qui montent
   const lf = rng(31);

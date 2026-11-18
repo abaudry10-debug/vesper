@@ -6,7 +6,7 @@ import { devEnabled, setupDev } from './engine/dev.js';
 import { azura } from './chapters/azura/index.js';
 import { chapterDone } from './engine/legacy.js';
 import { onPress, releaseAll, setupInput } from './engine/input.js';
-import { relayoutTitleScene, setTitleScene, startTitleScene, stopTitleScene } from './engine/title.js';
+import { relayoutTitleScene, setTitleScene, startTitleScene, stopTitleScene, playTitleIntro, skipTitleIntro, titleIntroPlaying } from './engine/title.js';
 import * as ui from './engine/ui.js';
 
 setChapter(vesper);
@@ -139,10 +139,25 @@ function showTitle() {
 
 function wireGame() {
   game.onFinished = () => {
+    const finished = ch().id;
     Game.clearSave();
-    showTitle();
+    if (finished === vesper.id) bridgeToAzura();
+    else showTitle();
   };
 }
+
+/** Le passage du chapitre 1 au 2 : la caméra descend du fond de l'espace jusqu'à l'accueil d'Azura,
+ *  puis les textes et les boutons apparaissent. L'accueil reste ensuite sur Azura par défaut. */
+function bridgeToAzura() {
+  store.set('vesper.selected', azura.id);
+  showTitle();
+  playTheme('azuraJoie');
+  title.classList.add('intro');
+  void playTitleIntro(12).then(() => title.classList.remove('intro'));
+}
+title.addEventListener('pointerdown', () => {
+  if (titleIntroPlaying()) skipTitleIntro();
+});
 
 function startNew() {
   Game.clearSave();
@@ -336,6 +351,8 @@ onPress((b) => {
       if (b === 'b' || b === 'menu') $('chapters').hidden = true;
       return;
     }
+    if (titleIntroPlaying()) return skipTitleIntro();
+    if (title.classList.contains('intro')) return;
     if (b === 'a') ($('btn-play') as HTMLButtonElement).click();
     return;
   }
@@ -415,4 +432,11 @@ const restartChapter = (c: typeof vesper) => () => {
 setupDev(() => game, () => title.hidden === true, [
   { label: 'Chapitre 1 · Vesper', run: restartChapter(vesper) },
   { label: 'Chapitre 2 · Azura', run: restartChapter(azura) },
+  {
+    label: 'Passage du chapitre 1 au 2',
+    run: () => {
+      setChapter(vesper);
+      bridgeToAzura();
+    },
+  },
 ]);

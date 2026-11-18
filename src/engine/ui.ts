@@ -788,7 +788,6 @@ export async function playFinale(pixelSprite: HTMLCanvasElement, onBlack?: () =>
   }
   const warp = Array.from({ length: 90 }, () => ({ a: rnd() * Math.PI * 2, d: rnd(), s: 0.4 + rnd() * 0.9 }));
   const motes = Array.from({ length: 40 }, () => ({ x: rnd() * 30 - 15, s: 0.4 + rnd(), o: rnd() }));
-  const clouds = Array.from({ length: 6 }, (_, i) => ({ x: rnd() * W, y: H * (0.12 + i * 0.07), w: 12 + rnd() * 16, v: 1.5 + rnd() * 2.5 }));
   const cx = Math.round(W / 2);
   const groundY = Math.round(H * 0.7);
 
@@ -909,40 +908,47 @@ export async function playFinale(pixelSprite: HTMLCanvasElement, onBlack?: () =>
     }
     // 6. l'éclair blanc (18,5 → 20 s)
     if (t >= 18.5 && t < 20.2) fill('#ffffff');
-    // 7. Azura : l'aube sur un monde bleu (20 → 26 s)
+    // 7. Azura : le ciel que le héros verra en ouvrant les yeux au début du chapitre 2 (20 → 26 s) —
+    // même ciel bleu, même planète pâle à anneaux, mêmes deux lunes (cf. skyOpening, chapitre Azura)
     if (t >= 20) {
-      const k = win(t, 20, 26);
-      for (let y = 0; y < H; y++) {
-        const v = y / H;
-        const r = Math.round(40 + 140 * v + 60 * Math.max(0, v - 0.55));
-        const g = Math.round(110 + 110 * v);
-        const b = Math.round(220 + 30 * v - 40 * Math.max(0, v - 0.6));
-        dot(0, y, `rgb(${r},${g},${b})`, 1, W, 1);
-      }
-      // le soleil d'Azura se lève
-      const sunY = H * 0.62 - ease(k) * H * 0.1;
-      disc(cx + 18, sunY, 10, '#fff4c8', 0.35);
-      disc(cx + 18, sunY, 7, '#fffbe8', 1);
-      // nuages qui dérivent
-      for (const cl of clouds) {
-        const x = ((cl.x + (t - 20) * cl.v) % (W + 40)) - 20;
-        dot(x, cl.y, '#ffffff', 0.9, cl.w, 2);
-        dot(x + 3, cl.y - 2, '#ffffff', 0.9, cl.w - 7, 2);
-        dot(x + 6, cl.y - 3, '#ffffff', 0.9, Math.max(2, cl.w - 13), 1);
-      }
-      // collines bleu-vert, en deux plans
-      for (let x = 0; x < W; x++) {
-        const h1 = H * 0.66 + Math.sin(x / 11) * 4 + Math.sin(x / 5.3) * 1.5;
-        const h2 = H * 0.76 + Math.sin(x / 8 + 2) * 5;
-        dot(x, h1, '#4f8fa8', 1, 1, H);
-        dot(x, h2, '#2f6a6a', 1, 1, H);
-      }
-      // des oiseaux au loin
-      for (let i = 0; i < 3; i++) {
-        const bx = ((t - 20) * (6 + i) + i * 25) % (W + 10) - 5;
-        const by = H * (0.3 + i * 0.05) + Math.sin(t * 2 + i) * 2;
-        const flap = Math.floor(t * 5 + i) % 2;
-        dot(bx, by, '#203040', 1, 1, 1); dot(bx - 1, by - flap, '#203040', 1, 1, 1); dot(bx + 1, by - flap, '#203040', 1, 1, 1);
+      const sx = W / 120, sy = H / 200; // mêmes proportions que l'ouverture du chapitre 2
+      const g = c.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, '#2f7fd6');
+      g.addColorStop(0.6, '#6fbef0');
+      g.addColorStop(1, '#bfe8ff');
+      c.fillStyle = g;
+      c.fillRect(0, 0, W, H);
+      const round = (x: number, y: number, r: number, col: string) => {
+        c.fillStyle = col;
+        c.beginPath(); c.arc(x * sx, y * sy, r * sx, 0, Math.PI * 2); c.fill();
+      };
+      // le soleil, doux, en haut à droite
+      round(99, 21, 13, 'rgba(255,248,214,0.3)');
+      round(99, 21, 7, 'rgba(255,252,236,0.9)');
+      // la planète géante cerclée d'anneaux, qui monte doucement
+      const rise = (1 - ease(win(t, 20, 26))) * 10;
+      round(30, 70 + rise, 26, 'rgba(220,235,255,0.55)');
+      c.fillStyle = 'rgba(180,200,240,0.5)';
+      c.fillRect(14 * sx, (62 + rise) * sy, 10 * sx, 3 * sy);
+      c.fillRect(30 * sx, (78 + rise) * sy, 14 * sx, 3 * sy);
+      c.fillRect(20 * sx, (84 + rise) * sy, 8 * sx, 2 * sy);
+      c.strokeStyle = 'rgba(240,248,255,0.7)';
+      c.lineWidth = 2 * sx;
+      c.beginPath(); c.ellipse(30 * sx, (70 + rise) * sy, 44 * sx, 8 * sx, -0.35, 0, Math.PI * 2); c.stroke();
+      // les deux lunes
+      round(84, 120, 7, 'rgba(245,245,255,0.85)');
+      c.fillStyle = 'rgba(200,205,230,0.9)';
+      c.fillRect(81 * sx, 117 * sy, 2 * sx, 2 * sy); c.fillRect(86 * sx, 122 * sy, 3 * sx, 2 * sy);
+      round(64, 44, 3, 'rgba(245,235,255,0.7)');
+      // les nuages qui dérivent
+      for (let i = 0; i < 7; i++) {
+        const k = { x: (i * 47) % 140 - 20, y: 20 + i * 24, w: 18 + (i * 13) % 22, s: 2 + (i % 3) };
+        const x = (((k.x + (t - 20) * k.s) % 160) - 20) * sx;
+        c.fillStyle = 'rgba(255,255,255,0.9)';
+        c.fillRect(Math.round(x), k.y * sy, k.w * sx, 4 * sy);
+        c.fillRect(Math.round(x + 3 * sx), (k.y - 3) * sy, (k.w - 8) * sx, 3 * sy);
+        c.fillStyle = 'rgba(200,225,245,0.9)';
+        c.fillRect(Math.round(x + 2 * sx), (k.y + 4) * sy, (k.w - 3) * sx, sy);
       }
       fill('#ffffff', 1 - ease(win(t, 20, 22.4))); // le blanc se dissout dans le ciel
       fill('#000', ease(win(t, 25.2, 26.4)));

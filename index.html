@@ -15,9 +15,121 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="icon-180.png" type="image/png" />
     <link rel="apple-touch-icon" href="icon-180.png" />
+    <link rel="preload" href="fonts/VT323-Regular.ttf" as="font" type="font/ttf" crossorigin />
+    <!-- écran de chargement : ses styles sont ici pour s'afficher avant tout le reste -->
+    <style>
+      #boot {
+        --p: 0;
+        --glow: #ff8a3d;
+        --sky: rgba(255, 138, 61, 0.13);
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(120% 55% at 50% 100%, var(--sky), transparent 70%),
+          #0b0812;
+        color: #f3e6c8;
+        font-family: 'VT323', ui-monospace, 'Courier New', monospace;
+        transition: opacity 0.55s ease;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      #boot.az { --glow: #5ff0e0; --sky: rgba(95, 240, 224, 0.12); }
+      #boot.out { opacity: 0; pointer-events: none; }
+      #boot .stars { position: absolute; inset: 0; overflow: hidden; }
+      #boot .stars i {
+        position: absolute; width: 2px; height: 2px; background: #f3e6c8;
+        animation: boot-twinkle 2.4s steps(2) infinite;
+      }
+      #boot .stage { width: 100%; display: grid; justify-items: center; gap: 0; }
+      #boot .name { margin: 0 0 104px; font-size: 40px; letter-spacing: 0.42em; padding-left: 0.42em; opacity: 0.92; }
+      #boot .path { position: relative; width: min(260px, 72vw); height: 4px; background: #261d33; }
+      #boot .lit {
+        position: absolute; left: 0; top: 0; bottom: 0;
+        width: calc(var(--p) * 100%);
+        background: var(--glow);
+        box-shadow: 0 0 10px var(--glow);
+        transition: width 0.6s cubic-bezier(0.3, 0.7, 0.4, 1);
+      }
+      #boot .dog {
+        position: absolute; bottom: -6px;
+        left: calc(var(--p) * (100% - 80px));
+        width: 80px; height: 80px;
+        background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAQCAYAAACm53kpAAACRUlEQVR4AcyWsUpDQRBF17QWKtipWNiJNjaWgna2+hP+gIJgZSEWFlZBy5RiaSdYCBYRMYVJKSikFNQviHsmmefk5e1mkwhR3tmZnb13NzsmISWX+Dc7Pd8C5EQgTwU9oCcCeSroAT0RyFNBD+iJQJ7cgL2DI/SCzaWQMFiPzROsIrEem8tiwmA9Nk9qAN0qnx7LMTaXQsJgPTZPsIrEemwuiwmD9dgca1IDEFbrL85CbRCsl3wQL1o8FmqDYL3k6k1uwFOt4WBybloiG9BNYgp44b/5kxugl9z/bme2i6/Nz1a72n8s8vd3/SqK/KOc39MA/qut2nYLqufLEjm+Xm84WCxfSlxfWaUs2HwYv2zSGYbxj3J+ie5xKOdrfLx/c0CNeL226LZuKxn6hfjx1ZxAQ8QLzPGA5jH/uM8vLc3PTOgFeMG8tWd3HpxloXLjYONsyu0+vzv0gF7R+aD+cZ+ffQT0AnxRhbhqHup9gzHkpR7zj+v8rAF6Iz7nMVQXijEva/iOTi6CX5poYuCPEfOylvf2NIDPdww2iF0g5mUNfww0MfCOer71dzVA34b6U5FIDTiYOTGE6nQdPTWgxpzIBYl58jr01AAtc2KIIh01CHm6GqAifYEa+9V1nchhQF7kZw1YD6E+jarTuUat5yPrnAG6Rg7MWSdCvgGbXrRl8aJNsDVyXyt6ROsXsn3IAQ+Qd/Ch58l8aMErZE9yi68XPZnfL4ovH3UPX5cn34A7qfYfQrpQPb9jSBeq/5m/s1F2zg8AAAD//3ZlSLoAAAAGSURBVAMAmu4yljP/9QQAAAAASUVORK5CYII=) 0 0 / 320px 80px no-repeat;
+        image-rendering: pixelated;
+        animation: boot-trot 0.5s steps(4) infinite;
+        transition: left 0.6s cubic-bezier(0.3, 0.7, 0.4, 1);
+      }
+      #boot .line { margin: 26px 0 0; min-height: 1.2em; padding: 0 16px; font-size: 19px; color: #8b7f99; text-align: center; }
+      #boot .retry { display: none; margin-top: 10px; font-size: 18px; color: var(--glow); }
+      #boot.stuck .retry { display: block; }
+      @keyframes boot-trot { to { background-position: -320px 0; } }
+      @keyframes boot-twinkle { 50% { opacity: 0.25; } }
+      @media (prefers-reduced-motion: reduce) {
+        #boot .dog, #boot .stars i { animation: none; }
+      }
+    </style>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- écran de chargement : Pixel trottine le long du chemin pendant que le jeu se prépare -->
+    <div id="boot" aria-label="Chargement">
+      <div class="stars"></div>
+      <div class="stage">
+        <p class="name">VESPER</p>
+        <div class="path"><div class="lit"></div><div class="dog"></div></div>
+        <p class="line"></p>
+        <p class="retry">Touche l’écran pour réessayer</p>
+      </div>
+    </div>
+    <script>
+      (function () {
+        var b = document.getElementById('boot'), t0 = performance.now(), p = 0, out = false;
+        var az = false;
+        try { az = localStorage.getItem('vesper.selected') === 'azura'; } catch (e) {}
+        if (az) b.classList.add('az');
+        var lines = az
+          ? ['Les deux lunes se lèvent sur Azura…', 'La marée monte dans la ville blanche…', 'Pixel rêve d’un ciel turquoise…']
+          : ['Pixel flaire le chemin…', 'Le soleil se couche sur Vesper…', 'Le vent soulève la poussière…'];
+        b.querySelector('.line').textContent = lines[Math.floor(Math.random() * lines.length)];
+        // quelques étoiles, placées au hasard
+        var sky = b.querySelector('.stars');
+        for (var i = 0; i < 26; i++) {
+          var s = document.createElement('i');
+          s.style.left = (Math.random() * 100).toFixed(1) + '%';
+          s.style.top = (Math.random() * 62).toFixed(1) + '%';
+          s.style.opacity = (0.25 + Math.random() * 0.6).toFixed(2);
+          s.style.animationDelay = (-Math.random() * 2.4).toFixed(2) + 's';
+          sky.appendChild(s);
+        }
+        function step(v) { if (v > p) { p = v; b.style.setProperty('--p', String(p)); } }
+        window.__boot = {
+          step: step,
+          done: function () {
+            if (out) return;
+            out = true;
+            step(1);
+            // Pixel finit sa course, puis l'écran s'efface ; jamais moins d'une seconde, pour ne pas clignoter
+            var wait = Math.max(650, 1150 - (performance.now() - t0));
+            setTimeout(function () {
+              b.classList.add('out');
+              setTimeout(function () { b.remove(); }, 600);
+            }, wait);
+          },
+        };
+        step(0.12);
+        document.addEventListener('DOMContentLoaded', function () { step(0.35); });
+        if (document.fonts && document.fonts.load) document.fonts.load('20px VT323').then(function () { step(0.55); }, function () {});
+        // si le jeu ne démarre pas (réseau coupé…), on propose de recharger
+        setTimeout(function () {
+          if (out) return;
+          b.classList.add('stuck');
+          b.addEventListener('click', function () { location.reload(); });
+        }, 12000);
+      })();
+    </script>
     <main id="app">
       <div id="screen">
         <canvas id="game"></canvas>

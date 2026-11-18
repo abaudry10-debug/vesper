@@ -382,6 +382,10 @@ ui.setupKeypadTouch();
 ui.setupRadioTouch();
 resize();
 showTitle();
+// l'écran de chargement (index.html) s'efface une fois la première image de l'accueil dessinée
+const boot = (window as unknown as { __boot?: { step(p: number): void; done(): void } }).__boot;
+boot?.step(0.85);
+requestAnimationFrame(() => requestAnimationFrame(() => boot?.done()));
 
 let last = performance.now();
 function loop(now: number) {

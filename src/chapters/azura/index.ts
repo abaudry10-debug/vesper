@@ -758,9 +758,11 @@ function tideRises(g: Game, h: number) {
       'L’eau commence à monter. Des gens quittent en hâte le bord du lac.',
       `Il est ${h} h. D’après le bulletin, elle devrait déjà être pleine.`,
       'La sirène reste muette. Les gens évacuent par habitude, sans même y penser.',
+      'Il se fait tard. Je verrai ça demain, à tête reposée… Rentrons dormir chez Betti.',
     ],
     () => {
       g.api.clue('azMaree');
+      g.api.clue('azlNuit2');
       g.save();
     },
   );

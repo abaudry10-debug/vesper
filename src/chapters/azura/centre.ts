@@ -11,7 +11,7 @@ import { CORE, CORE_IMG } from './tiles.js';
 import { levelNow } from './time.js';
 import { openBreaker } from './panneaux.js';
 
-const state = new WeakMap<Game, { cutAt?: number; drainAt?: number; powerAt?: number }>();
+const state = new WeakMap<Game, { cutAt?: number; drainAt?: number; powerAt?: number; surgeAt?: number; fails?: number }>();
 const st = (g: Game) => {
   let s = state.get(g);
   if (!s) state.set(g, (s = {}));
@@ -38,6 +38,7 @@ function serverWater(g: Game) {
   const s = st(g);
   let jet = 1, level = 0.58;
   if (g.flags.has('inflowCut')) jet = s.cutAt === undefined ? 0 : Math.max(0, 1 - (g.time - s.cutAt) / 2.4);
+  else if (s.surgeAt !== undefined && g.time - s.surgeAt < 3.2) jet = 1.7; // la pression remonte d'un coup
   else if (g.flags.has('vanneAFermee') || g.flags.has('vanneCFermee')) jet = 0.45; // un seul des deux tuyaux coupé
   if (g.flags.has('drained')) level = 0;
   else if (s.drainAt !== undefined) level = 0.58 * Math.max(0, 1 - (g.time - s.drainAt) / 4.5);
@@ -113,6 +114,12 @@ export function renderCentre(g: Game, c: CanvasRenderingContext2D, w: number, h:
   } else if (g.map.id === 'pompes') {
     drawServerView(g, c, 10 * T - ox, 4 - oy, T, 2 * T - 6, 8);
     frame(10 * T - ox, 4 - oy, T, 2 * T - 6);
+    // fausse manœuvre : le gyrophare rouge de la salle tourne quelques secondes
+    const sa = st(g).surgeAt;
+    if (sa !== undefined && g.time - sa < 3.2 && Math.floor((g.time - sa) * 4) % 2 === 0) {
+      c.fillStyle = 'rgba(255,48,48,0.14)';
+      c.fillRect(0, 0, w, h);
+    }
   } else if (g.map.id === 'serveurs') {
     renderServerRoom(g, c, w, h, ox, oy);
   }
@@ -180,40 +187,46 @@ function renderServerRoom(g: Game, c: CanvasRenderingContext2D, w: number, h: nu
 }
 
 // ---------- les actions ----------
-// Quatre vannes. En suivant les tuyaux : A (en haut) mène au refroidissement des serveurs, B aux fontaines,
-// C à la dérivation de secours (qui double le refroidissement), D (en bas) à la culture.
-// Il faut fermer A et C, sans jamais couper la culture.
-const OTHER: Record<string, string> = { vanneA: 'vanneCFermee', vanneC: 'vanneAFermee' };
+// Quatre vannes, sans étiquette. En suivant les tuyaux : A (en haut) mène au refroidissement des serveurs,
+// B aux fontaines, C à la dérivation de secours, D (en bas) à la culture. Il faut fermer C, PUIS A : la plaque
+// de la dérivation dit qu'elle « s'ouvre en grand si le refroidissement est coupé ». Couper A en premier, ou
+// toucher une mauvaise vanne, fait remonter la pression : l'alarme, le jet qui redouble, tout se rouvre.
+// Ainsi, essayer au hasard coûte plus cher que de lire les plaques.
+
+/** Une fausse manœuvre : la pression remonte, tout se rouvre ; au bout de deux, le héros se reprend. */
+function valveFail(g: Game, lines: string[]) {
+  const s = st(g);
+  g.flags.delete('vanneAFermee');
+  g.flags.delete('vanneCFermee');
+  s.surgeAt = g.time;
+  s.fails = (s.fails ?? 0) + 1;
+  sfx.bump();
+  const n = s.fails;
+  ui.say(lines, () => {
+    if (n === 2 || n === 5)
+      window.setTimeout(() => ui.say(['Je tourne les vannes au petit bonheur… Ça ne mènera à rien.', 'Il faudrait d’abord suivre chaque tuyau jusqu’au bout, et lire les plaques.']), 500);
+  });
+}
 
 export function turnValve(g: Game, id: string) {
   if (g.flags.has('inflowCut')) {
     return ui.say([id === 'vanneA' || id === 'vanneC' ? 'Cette vanne est fermée. Le jet ne coule plus.' : 'Mieux vaut ne plus toucher aux autres vannes.']);
   }
-  // une mauvaise vanne après une bonne : la pression remonte, le système se réarme, tout se rouvre
-  if ((id === 'vanneB' || id === 'vanneD') && (g.flags.has('vanneAFermee') || g.flags.has('vanneCFermee'))) {
-    g.flags.delete('vanneAFermee');
-    g.flags.delete('vanneCFermee');
-    sfx.bump();
-    return ui.say([
-      'Je ferme la vanne. Un long grincement…',
-      'CLAC. Dans tout le réseau, la pression remonte d’un coup. Le système se réarme : toutes les vannes se rouvrent seules.',
-      'Derrière la petite vitre, le jet reprend de plus belle. Tout est à refaire.',
-    ]);
-  }
+  const rearm = 'CLAC. Dans tout le réseau, la pression remonte d’un coup. Le système se réarme : toutes les vannes se rouvrent seules.';
   if (id === 'vanneD') {
-    sfx.bump();
-    return ui.say([
+    return valveFail(g, [
       'Je ferme la vanne. Un long grincement.',
       'Une alarme hurle : « CUVES DE CULTURE — CIRCULATION COUPÉE ».',
-      'Je la rouvre en vitesse. L’alarme se tait.',
+      rearm,
+      'Derrière la petite vitre, le jet reprend de plus belle.',
     ]);
   }
   if (id === 'vanneB') {
-    sfx.bump();
-    return ui.say([
+    return valveFail(g, [
       'Je ferme la vanne. Un long grincement.',
+      'Quelque part en ville, les fontaines ont dû s’arrêter… L’alarme se met à hurler.',
+      rearm,
       'Derrière la petite vitre, le jet continue de tomber dans la salle des serveurs.',
-      'Ce n’est pas la bonne. Quelque part en ville, les fontaines ont dû s’arrêter un instant… Je la rouvre.',
     ]);
   }
   const mine = id === 'vanneA' ? 'vanneAFermee' : 'vanneCFermee';
@@ -222,9 +235,18 @@ export function turnValve(g: Game, id: string) {
     sfx.select();
     return ui.say(['Je rouvre la vanne. Derrière la petite vitre, le jet reprend de plus belle.']);
   }
+  // le refroidissement coupé alors que la dérivation est ouverte : elle prend le relais, en grand
+  if (id === 'vanneA' && !g.flags.has('vanneCFermee')) {
+    return valveFail(g, [
+      'Je ferme la vanne. Le tuyau tremble, puis se tait…',
+      'Un sifflement, de l’autre côté de la salle. Un autre tuyau se met à cogner.',
+      'Derrière la petite vitre, le jet redouble !',
+      rearm,
+    ]);
+  }
   g.flags.add(mine);
   sfx.select();
-  if (!g.flags.has(OTHER[id])) {
+  if (id === 'vanneC') {
     return ui.say(['Je ferme la vanne. Le tuyau tremble, puis se tait.'], () => {
       window.setTimeout(() => ui.say(['Derrière la petite vitre, le jet faiblit… mais continue de couler.', 'Un autre tuyau l’alimente encore.']), 900);
     });

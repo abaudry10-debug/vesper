@@ -49,7 +49,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azChargeGlobal', thread: 'arrivee', title: 'Le second chargement', text: 'Après Betti, Iris a chargé toute la colonie par les pylônes, pendant le sommeil. Tous les dossiers ont accroché… sauf cinq.' },
   { id: 'azMedecin', thread: 'arrivee', title: 'Le carnet du médecin', text: '« Transfert réussi : 4 211 sur 4 212. Sujet 07 : signal non reçu. » Puis : « Anomalies de mémoire chez certains sujets. Prévoir un second chargement depuis la copie locale, pour fixer les souvenirs. » Et, sous un croquis à la main : « Courbe d’effacement : lente une dizaine d’années, puis brutale. » Le carnet s’arrête à l’an 3.' },
   { id: 'az07', thread: 'arrivee', title: 'Sujet 07', text: 'Dans la salle de culture, une cuve à part : « SUJET 07 — Signal non reçu. Cuve maintenue en attente. » Moi. Voilà pourquoi je me suis réveillé onze ans après les autres.' },
-  { id: 'azJet', thread: 'arrivee', title: 'Le tuyau éclaté', text: 'Deux tuyaux alimentaient la salle des serveurs : le refroidissement et la dérivation de secours. Il a fallu fermer les deux vannes, sans jamais couper la culture.' },
+  { id: 'azJet', thread: 'arrivee', title: 'Le tuyau éclaté', text: 'Deux tuyaux alimentaient la salle des serveurs : le refroidissement et la dérivation de secours. Il a fallu fermer la dérivation d’abord, puis le refroidissement, sans toucher aux autres.' },
   { id: 'azIris', thread: 'arrivee', title: 'La commandante', text: 'Iris Aurel, commandante de la mission Aurore : « Le centre de clonage ? Fermé depuis l’accident de l’an 3. Il n’y a plus rien à voir. » Elle a détourné les yeux.' },
   { id: 'azVidange', thread: 'arrivee', title: 'La salle vidée', text: 'L’arrivée d’eau coupée, la manivelle en place, la pompe a vidé la salle des serveurs vers la rivière, une fois la marée redescendue.' },
   { id: 'azPX07', thread: 'arrivee', title: 'PX-07', text: 'Le serveur du centre : copie locale des souvenirs perdue dans l’inondation de l’an 3, second chargement annulé. Récupération demandée à la source, sur Vesper, par AU-01 : dossier vide, tout est parti vers l’appareil PX-07. Oskar : « AU-01, c’est la commandante. Elle savait. » Avec cette copie, on pourrait refaire le chargement, correctement.' },
@@ -73,6 +73,7 @@ export const CLUES_AZ: Clue[] = [
   { id: 'azlAide', thread: 'leads', title: 'Un coup de main', text: 'Betti a besoin de bras, cet après-midi, à l’atelier.', doneWhen: 'helpDone' },
   { id: 'azl4', thread: 'leads', title: 'Une nuit chez Betti', text: 'Betti me prête son lit, dans l’atelier, en bas près du lac. Le soir, la ville est belle : je peux m’y promener avant de dormir.', doneWhen: 'jour2' },
   { id: 'azl6', thread: 'leads', title: 'Voir l’eau monter', text: 'Le bulletin des eaux, sur la place, donne l’heure du jour. Un banc permet d’attendre. Ensuite, dormir chez Betti, le soir venu.', doneWhen: 'tideWitnessed' },
+  { id: 'azlNuit2', thread: 'leads', title: 'Une longue journée', text: 'Il se fait tard. Rentrer dormir à l’atelier de Betti, en bas près du lac. On verra demain.', doneWhen: 'jour3' },
   { id: 'azl7', thread: 'leads', title: 'Le carnet de Joss', text: 'Le carnet de Joss est enfermé dans sa cabane de pêche, sur la rive sud de la rivière, au chemin des crêtes. Joss a perdu la clé : il pêchait devant la cabane.', doneWhen: 'carnetRead' },
   { id: 'azl12', thread: 'leads', title: 'Une journée calme ?', text: 'Joss est parti pêcher sur son île, de l’autre côté du lac. Le bulletin annonce une journée calme. Mais le carnet de Joss parlait d’une grande marée, tous les trente jours… Regarder les lunes, sur la tour de l’horloge.', doneWhen: 'j4Moons' },
   { id: 'azl13', thread: 'leads', title: 'Prévenir la ville', text: 'Une grande marée, vers 9 h, et personne ne s’en doute. Il faut prévenir tout le monde du danger.', doneWhen: 'sireneOn' },
@@ -557,7 +558,7 @@ export const SCRIPTS_AZ: Record<string, Script> = {
     api.say(['Une table ensevelie sous les papiers. Des bulletins des eaux, des dizaines. Tous identiques.', 'Des heures notées au crayon, barrées, réécrites. Des plans du centre de clonage.', 'Une tasse froide. Étiquette : « TASSE ».']),
   litOskar: (api) =>
     api.say(['Un lit défait. Un post-it collé dessus : « LIT ».']),
-  sortieSecours: (api) => api.say(['Une plaque : « DÉRIVATION DE SECOURS → REFROIDISSEMENT ».', 'Elle rejoint, elle aussi, la salle des serveurs.']),
+  sortieSecours: (api) => api.say(['Une plaque : « DÉRIVATION DE SECOURS → REFROIDISSEMENT ».', 'Gravé en dessous : « S’ouvre en grand si le refroidissement est coupé. »', 'Elle rejoint, elle aussi, la salle des serveurs.']),
   armoireSecours: (api) => {
     if (api.has('crankTaken')) return api.say(['L’armoire de secours. Une trousse, une lampe. La place de la manivelle est vide.']);
     api.say(['Une armoire rouge : « SECOURS ».', 'Dedans : une trousse, une lampe… et une grosse manivelle, étiquetée « VIDANGE ».', 'Je la prends.'], () => {

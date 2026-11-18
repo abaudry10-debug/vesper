@@ -63,7 +63,7 @@ export const JOURNEY_AZ: JourneyStep[] = [
     label: 'Jour 3 — réveil',
     at: { map: 'atelier', x: 7, y: 5, dir: 'left' },
     flags: ['tideWitnessed', 'jour3'],
-    clues: ['azMaree', 'azLunes', 'azl7'],
+    clues: ['azMaree', 'azlNuit2', 'azLunes', 'azl7'],
     counters: { heure: 11 },
     opt: { flags: ['maquetteTaken'], items: ['maquette'] },
   },

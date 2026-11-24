@@ -1,8 +1,9 @@
 // Les documents qu'on ouvre en grand : le schéma du transfert, dans la salle des serveurs (un écran) ;
 // la courbe d'effacement, en relevé numérique (console des pilotes) ou croquée à la main (carnet du médecin).
 import { drawDigits } from './timepass.js';
+import { pxLines, pxText, pxTextWidth } from '../../engine/pixfont.js';
 
-function popup(id: string, html: string, canvas: { w: number; h: number; pixel: boolean }, done: () => void) {
+function popup(id: string, html: string, canvas: { w: number; h: number; pixel: boolean; crisp?: boolean }, done: () => void) {
   if (!document.getElementById('az-doc-style')) {
     const st = document.createElement('style');
     st.id = 'az-doc-style';
@@ -20,7 +21,8 @@ function popup(id: string, html: string, canvas: { w: number; h: number; pixel: 
 .az-doc ol li{margin-bottom:4px}
 .az-doc ol b{color:#ffd45e;font-weight:normal}
 .az-doc .note{font-family:var(--font);font-size:15px;color:#b8aec8;line-height:1.25;margin:0 0 10px}
-.az-doc .hand{font-family:"Snell Roundhand","Bradley Hand","Segoe Script","Comic Sans MS",cursive;font-size:17px;color:#2a2a4a;background:#efe3c8;padding:8px 10px;margin:0 0 10px;line-height:1.3;border-radius:2px}
+.az-doc .hand{font-family:var(--font);font-size:19px;color:#2c2c54;background:#efe3c8;padding:8px 10px;margin:0 0 10px;line-height:1.15;border:2px solid #14101c;box-shadow:inset 0 -3px 0 #d8c8a8}
+.az-doc canvas.crisp{margin:0 auto 8px}
 .az-doc .menu{width:100%}`;
     document.head.appendChild(st);
   }
@@ -36,6 +38,16 @@ function popup(id: string, html: string, canvas: { w: number; h: number; pixel: 
     canvas.pixel ? cvHtml : `<div class="zoomer">${cvHtml}</div><p class="hint">Touche le dessin pour zoomer.</p>`,
   ).replace('<canvas>', cvHtml)}<button class="menu primary">Fermer</button></div>`;
   const zoomer = el.querySelector('.zoomer') as HTMLElement | null;
+  if (canvas.crisp) {
+    // pixel art net : un agrandissement entier (×2, ×3…) quand la place le permet
+    const cv = el.querySelector('canvas') as HTMLCanvasElement;
+    cv.classList.add('crisp');
+    requestAnimationFrame(() => {
+      const avail = cv.parentElement!.clientWidth;
+      const k2 = Math.floor(avail / canvas.w);
+      if (k2 >= 2) cv.style.width = `${canvas.w * k2}px`;
+    });
+  }
   if (zoomer) zoomer.onclick = () => zoomer.classList.toggle('on');
   host.appendChild(el);
   const close = () => {
@@ -229,245 +241,200 @@ export function openCurveDigital(done: () => void) {
   for (const t of [0, 3, 6, 9, 12]) drawDigits(c, String(t), X(t), 64, 1, t === 3 ? '#ffd45e' : '#5a7a8a', t === 3 ? '#fff0b0' : '#7a9aaa');
 }
 
-/** Le croquis du médecin, dans son carnet (écrit en l'an 3) : ce qu'il a mesuré, et ce qu'il prévoit. */
+/** Le croquis du médecin, dans son carnet (écrit en l'an 3) : ce qu'il a mesuré, et ce qu'il prévoit. En pixel art. */
 export function openCurveHand(done: () => void) {
+  const W = 164, H = 108;
   const c = popup(
     'az-croquis',
     `<h3>LE CARNET DU MÉDECIN</h3><canvas></canvas>
-    <p class="hand">Mesuré sur 30 sujets, an 0 → an 3.<br>La pente est faible… mais elle se creuse.<br>Si rien n’est fait : <u>effondrement vers l’an 10-11</u>.<br><b>Second chargement — au plus vite !</b></p>`,
-    { w: 320, h: 190, pixel: false },
+    <p class="hand">Mesuré sur 30 sujets, de l’an 0 à l’an 3.<br>La pente est faible… mais elle se creuse.<br>Un mauvais chargement rend la pente plus raide.<br>Si rien n’est fait : effondrement vers l’an 10-11.<br>Second chargement — au plus vite !</p>`,
+    { w: W, h: H, pixel: true, crisp: true },
     done,
   );
-  let seed = 7;
-  const rnd = () => {
-    const v = Math.sin(seed++ * 12.9898) * 43758.5453;
-    return v - Math.floor(v);
-  };
-  // le papier, ligné
-  c.fillStyle = '#efe3c8';
-  c.fillRect(0, 0, 320, 190);
-  c.strokeStyle = 'rgba(90,120,170,0.25)';
-  c.lineWidth = 1;
-  for (let y = 18; y < 190; y += 16) {
-    c.beginPath(); c.moveTo(0, y + 0.5); c.lineTo(320, y + 0.5); c.stroke();
-  }
-  c.strokeStyle = 'rgba(200,80,80,0.35)';
-  c.beginPath(); c.moveTo(28.5, 0); c.lineTo(28.5, 190); c.stroke();
-  // un trait à la main : on tremble un peu
-  const ink = '#24264a';
-  const line = (pts: [number, number][], width = 1.6, dash: number[] = []) => {
-    c.strokeStyle = ink;
-    c.lineWidth = width;
-    c.lineCap = 'round';
-    c.setLineDash(dash);
-    c.beginPath();
-    pts.forEach(([x, y], i) => (i ? c.lineTo(x + (rnd() - 0.5) * 1.2, y + (rnd() - 0.5) * 1.2) : c.moveTo(x, y)));
-    c.stroke();
-    c.setLineDash([]);
-  };
-  const seg = (x0: number, y0: number, x1: number, y1: number, w = 1.6) => {
-    const pts: [number, number][] = [];
-    for (let i = 0; i <= 10; i++) pts.push([x0 + ((x1 - x0) * i) / 10, y0 + ((y1 - y0) * i) / 10]);
-    line(pts, w);
-  };
-  const X = (t: number) => 52 + t * 20; // 0..12 ans
-  const Y = (m: number) => 30 + (1 - m) * 120;
-  // les axes, et leurs flèches
-  seg(50, 154, 300, 152); seg(300, 152, 293, 148); seg(300, 152, 293, 157);
-  seg(52, 156, 51, 22); seg(51, 22, 47, 29); seg(51, 22, 56, 29);
-  c.fillStyle = ink;
-  c.font = 'italic 15px "Snell Roundhand","Bradley Hand","Segoe Script","Comic Sans MS",cursive';
-  c.fillText('mémoire', 34, 16);
-  c.fillText('années', 262, 187);
+  const INK = '#2c2c54', RED = '#b8404a', SOFT = '#7a7aa0';
+  // le papier, ligné, la marge rouge
+  R(c, 0, 0, W, H, '#efe3c8');
+  for (let y = 9; y < H; y += 10) R(c, 0, y, W, 1, '#d6d2d8');
+  R(c, 12, 0, 1, H, '#e2a8a0');
+  R(c, 0, H - 2, W, 2, '#d8c8a8');
+  const X = (t: number) => 24 + Math.round(t * 11); // 0..12 ans
+  const Y = (m: number) => 16 + Math.round((1 - m) * 66);
+  // les axes et leurs flèches
+  R(c, 22, 84, 136, 1, INK); R(c, 155, 82, 1, 5, INK); R(c, 156, 83, 1, 3, INK);
+  R(c, 22, 12, 1, 73, INK); R(c, 20, 13, 5, 1, INK); R(c, 21, 12, 3, 1, INK);
+  pxText(c, 'mémoire', 16, 2, INK);
   for (const t of [0, 3, 6, 9, 12]) {
-    seg(X(t), 150, X(t), 156, 1.2);
-    c.fillText(String(t), X(t) - 4, 172);
+    R(c, X(t), 85, 1, 2, INK);
+    const lab = String(t);
+    pxText(c, lab, X(t) - Math.floor(pxTextWidth(lab) / 2), 89, INK);
   }
-  // ce qu'il a mesuré (an 0 → 3) : trait plein, avec ses points de mesure
-  const pts: [number, number][] = [];
-  for (let t = 0; t <= 3; t += 0.25) pts.push([X(t), Y(memoryLeft(t))]);
-  line(pts, 2);
-  for (let t = 0; t <= 3; t += 0.5) {
-    const x = X(t), y = Y(memoryLeft(t)) + (rnd() - 0.5) * 3;
-    seg(x - 3, y - 3, x + 3, y + 3, 1.2); seg(x - 3, y + 3, x + 3, y - 3, 1.2);
+  pxText(c, 'années', W - 4 - pxTextWidth('années'), 99, SOFT);
+  // aujourd'hui (an 3)
+  for (let y = 22; y < 84; y += 2) R(c, X(3), y, 1, 1, SOFT);
+  pxText(c, 'auj.', X(3) + 3, 74, SOFT);
+  // ce qu'il a mesuré : un trait plein, et ses croix de mesure
+  let prev = Y(memoryLeft(0));
+  for (let x = X(0); x <= X(3); x++) {
+    const y = Y(memoryLeft((x - 24) / 11));
+    R(c, x, Math.min(prev, y), 1, Math.abs(y - prev) + 1, INK);
+    prev = y;
+  }
+  for (const t of [0, 1, 2, 3]) {
+    const x = X(t), y = Y(memoryLeft(t)) - 3;
+    for (let k = -1; k <= 1; k++) { R(c, x + k, y + k, 1, 1, INK); R(c, x + k, y - k, 1, 1, INK); }
   }
   // ce qu'il prévoit : en pointillés
-  const pred: [number, number][] = [];
-  for (let t = 3; t <= 12; t += 0.2) pred.push([X(t), Y(memoryLeft(t))]);
-  line(pred, 1.6, [5, 4]);
-  // aujourd'hui (an 3)
-  seg(X(3), 152, X(3), 40, 1);
-  c.fillText('auj. (an 3)', X(3) + 5, Y(0.62));
-  // l'effondrement, entouré deux fois
-  c.strokeStyle = ink;
-  c.lineWidth = 1.3;
-  for (let k = 0; k < 2; k++) {
-    c.beginPath();
-    c.ellipse(X(10.9) + k * 2, Y(0.5) + k, 26 + k * 3, 52 - k * 4, 0.1 * k, 0, Math.PI * 2);
-    c.stroke();
+  for (let x = X(3) + 2; x <= X(12); x++) {
+    const y0 = Y(memoryLeft((x - 1 - 24) / 11)), y1 = Y(memoryLeft((x - 24) / 11));
+    if (Math.floor(x / 2) % 2 === 0) R(c, x, Math.min(y0, y1), 1, Math.abs(y1 - y0) + 1, SOFT);
   }
-  c.fillText('?!', X(11) + 26, Y(0.5) - 34);
-  c.fillText('mauvais chargement = pente plus raide', X(3.4), Y(0.42));
-  c.fillText('tout part', X(6.4), Y(0.3));
-  c.fillText("d'un coup", X(6.4), Y(0.3) + 15);
-  seg(X(8.8), Y(0.3) - 4, X(9.7), Y(0.38), 1.2);
+  // l'effondrement, entouré d'un trait
+  const ex = X(10.9), ey = Y(0.5), rx = 8, ry = 24;
+  for (let i = 0; i < 90; i++) {
+    const a = (i / 90) * Math.PI * 2;
+    R(c, Math.round(ex + Math.cos(a) * rx), Math.round(ey + Math.sin(a) * ry), 1, 1, RED);
+  }
+  pxText(c, '?!', ex + 9, ey - 26, RED);
+  pxLines(c, ['tout part', "d'un coup"], 66, 56, INK);
+  R(c, 121, 61, 8, 1, INK); R(c, 127, 60, 1, 1, INK); R(c, 127, 62, 1, 1, INK);
 }
 
 // ---------- le mur d'Oskar ----------
-/** Le liège d'Oskar : ce qu'il a remarqué, relié par des fils rouges. Il voit que tout le monde oublie… sans comprendre pourquoi. */
-export function openOskarWall(done: () => void) {
-  const W = 360, H = 250;
-  const c = popup('az-mur', `<h3>LE MUR D’OSKAR</h3><canvas></canvas>`, { w: W, h: H, pixel: false }, done);
-  const HAND = '"Snell Roundhand","Bradley Hand","Segoe Script","Comic Sans MS",cursive';
-  let seed = 3;
+// En pixel art, comme le reste du jeu : un liège, des fiches de couleur punaisées, des fils rouges.
+const CORK = '#a8743f';
+function corkBoard(c: CanvasRenderingContext2D, W: number, H: number, seed: number, holes = 0) {
+  let s = seed;
   const rnd = () => {
-    const v = Math.sin(seed++ * 78.233) * 43758.5453;
+    const v = Math.sin(s++ * 78.233) * 43758.5453;
     return v - Math.floor(v);
   };
-  // le liège
-  c.fillStyle = '#a8743f';
-  c.fillRect(0, 0, W, H);
-  for (let i = 0; i < 900; i++) {
-    c.fillStyle = rnd() < 0.5 ? 'rgba(90,55,25,0.35)' : 'rgba(210,160,100,0.3)';
-    c.fillRect(rnd() * W, rnd() * H, 1 + rnd() * 2, 1 + rnd());
+  R(c, 0, 0, W, H, CORK);
+  for (let i = 0; i < (W * H) / 9; i++) R(c, Math.floor(rnd() * W), Math.floor(rnd() * H), 1, 1, rnd() < 0.55 ? '#8e5e30' : '#c08a52');
+  for (let i = 0; i < holes; i++) R(c, 6 + Math.floor(rnd() * (W - 12)), 6 + Math.floor(rnd() * (H - 12)), 1, 1, '#3a2010');
+  // le cadre en bois
+  R(c, 0, 0, W, 3, '#4a3020'); R(c, 0, H - 3, W, 3, '#4a3020'); R(c, W - 3, 0, 3, H, '#4a3020');
+  R(c, 0, 0, 3, H, '#4a3020');
+  R(c, 3, 3, W - 6, 1, '#6e4a2c'); R(c, 3, 3, 1, H - 6, '#6e4a2c');
+  return rnd;
+}
+interface Note { x: number; y: number; w: number; h: number; col: string }
+/** Une fiche : son ombre sur le liège, le papier, un pli plus sombre en bas. */
+function note(c: CanvasRenderingContext2D, n: Note) {
+  R(c, n.x + 1, n.y + 1, n.w, n.h, '#5a3a1e');
+  R(c, n.x, n.y, n.w, n.h, n.col);
+  R(c, n.x, n.y + n.h - 1, n.w, 1, 'rgba(0,0,0,0.12)');
+}
+function pinAt(c: CanvasRenderingContext2D, x: number, y: number) {
+  R(c, x - 1, y - 1, 3, 3, '#e83a3a');
+  R(c, x, y + 2, 2, 1, '#7a0a0a'); R(c, x + 2, y, 1, 2, '#7a0a0a');
+  R(c, x - 1, y - 1, 1, 1, '#ffb0b0');
+}
+/** Un fil rouge, un peu détendu, d'une punaise à l'autre. */
+function thread(c: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number) {
+  const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) * 2;
+  const sag = 6 + n / 40;
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    const x = Math.round(x0 + (x1 - x0) * t);
+    const y = Math.round(y0 + (y1 - y0) * t + Math.sin(t * Math.PI) * sag);
+    R(c, x, y + 1, 1, 1, '#6a1410');
+    R(c, x, y, 1, 1, '#d82a24');
   }
-  c.strokeStyle = '#4a3020';
-  c.lineWidth = 6;
-  c.strokeRect(3, 3, W - 6, H - 6);
+}
 
-  interface Card { x: number; y: number; w: number; h: number; col: string; rot: number; draw: () => void }
-  const cards: Card[] = [];
-  const write = (lines: string[], x: number, y: number, size: number, col = '#24264a', font = HAND, lh = 1.15) => {
-    c.fillStyle = col;
-    c.font = `${font === HAND ? 'italic ' : ''}${size}px ${font}`;
-    lines.forEach((l, i) => c.fillText(l, x, y + i * size * lh));
-  };
-  const card = (x: number, y: number, w: number, h: number, col: string, draw: () => void) => {
-    cards.push({ x, y, w, h, col, rot: (rnd() - 0.5) * 0.09, draw });
-  };
+/** Le liège d'Oskar : ce qu'il a remarqué, relié par des fils rouges. Il voit que tout le monde oublie… sans comprendre pourquoi. */
+export function openOskarWall(done: () => void) {
+  const W = 164, H = 272;
+  const c = popup('az-mur', `<h3>LE MUR D’OSKAR</h3><canvas></canvas>`, { w: W, h: H, pixel: true, crisp: true }, done);
+  corkBoard(c, W, H, 3);
+  const INK = '#2c2c54', RED = '#c02a2a';
+  const L = 9, Rt = 86, CW = 70; // deux colonnes de fiches
+  const notes: Note[] = [
+    { x: L, y: 10, w: CW, h: 54, col: '#f2e9dc' }, // 0 le bulletin
+    { x: L, y: 72, w: CW, h: 68, col: '#fffdf4' }, // 1 ses relevés
+    { x: Rt + 4, y: 78, w: CW - 8, h: 26, col: '#fff0a0' }, // 2 an 3
+    { x: L, y: 148, w: CW, h: 46, col: '#e4eef4' }, // 3 le centre
+    { x: Rt, y: 212, w: CW, h: 48, col: '#f2e9dc' }, // 4 le second chargement
+    { x: Rt, y: 10, w: CW, h: 58, col: '#f8f8f0' }, // 5 Iris
+    { x: Rt, y: 114, w: CW, h: 46, col: '#e0f0e0' }, // 6 Nora
+    { x: L, y: 200, w: CW, h: 66, col: '#fff07a' }, // 7 Mme Ilda
+    { x: Rt, y: 168, w: CW, h: 36, col: '#ffd0e0' }, // 8 le lac
+  ];
+  const pin = (k: number): [number, number] => [notes[k].x + Math.floor(notes[k].w / 2), notes[k].y + 3];
+  for (const [a, b] of [[0, 1], [0, 2], [1, 2], [2, 3], [2, 4], [5, 2], [5, 3], [6, 7], [6, 0], [8, 1], [7, 2]]) {
+    const [x0, y0] = pin(a), [x1, y1] = pin(b);
+    thread(c, x0, y0, x1, y1);
+  }
+  notes.forEach((n) => note(c, n));
+  const at = (k: number, lines: string[], col = INK, dy = 0) => pxLines(c, lines, notes[k].x + 4, notes[k].y + 7 + dy, col);
   // 0 — les bulletins, tous pareils
-  card(16, 18, 96, 66, '#f2e9dc', () => {
-    write(['BULLETIN', 'Pleine eau :', '6 h · 18 h'], 6, 20, 9, '#3a5a6a', 'monospace', 1.35);
-    c.strokeStyle = '#d02a2a'; c.lineWidth = 2;
-    c.beginPath(); c.ellipse(32, 41, 28, 8, -0.1, 0, Math.PI * 2); c.stroke();
-    write(['Depuis quand ??'], 6, 62, 11, '#d02a2a');
-  });
+  at(0, ['bulletin'], '#3a5a6a');
+  at(0, ['6h · 18h'], INK, 10);
+  for (let i = 0; i < 40; i++) {
+    const a = (i / 40) * Math.PI * 2;
+    R(c, Math.round(notes[0].x + 26 + Math.cos(a) * 25), Math.round(notes[0].y + 20 + Math.sin(a) * 7), 1, 1, RED);
+  }
+  at(0, ['depuis', 'quand ??'], RED, 22);
   // 1 — ses propres relevés
-  card(130, 12, 100, 86, '#fffdf4', () => {
-    write(['Mes relevés :', 'J1 : 6 h', 'J2 : 7 h', 'J3 : 8 h'], 8, 22, 12);
-    write(['ça ne colle pas !'], 8, 78, 12, '#d02a2a');
-    c.fillStyle = '#d02a2a'; c.fillRect(8, 81, 84, 1);
-  });
-  // 2 — an 3
-  card(146, 116, 70, 42, '#fff0a0', () => write(['AN 3'], 10, 34, 22, '#24264a'));
+  at(1, ['mes relevés', 'j1 : 6h', 'j2 : 7h', 'j3 : 8h']);
+  at(1, ['ça colle', 'pas !'], RED, 40);
+  // 2 — an 3, en grand
+  pxText(c, 'AN 3', notes[2].x + Math.floor((notes[2].w - pxTextWidth('AN 3', 2)) / 2), notes[2].y + 6, INK, 2);
   // 3 — le centre
-  card(18, 112, 108, 48, '#e8f0f4', () => write(['Centre de clonage :', 'fermé… pourquoi ?'], 6, 24, 11));
+  at(3, ['centre de', 'clonage :', 'fermé...', 'pourquoi ?']);
   // 4 — le second chargement
-  card(128, 184, 118, 44, '#f2e9dc', () => write(['Second chargement ??', '(le médecin en parlait)'], 6, 22, 11));
-  // 5 — Iris
-  card(258, 14, 78, 98, '#f8f8f0', () => {
-    c.fillStyle = '#2a2436'; c.fillRect(7, 7, 64, 60);
-    const px = (x: number, y: number, w: number, h: number, col: string) => { c.fillStyle = col; c.fillRect(7 + x * 4, 7 + y * 4, w * 4, h * 4); };
+  at(4, ['second', 'chargement', '?? dit le', 'médecin']);
+  // 5 — Iris : un petit portrait, et deux mots
+  {
+    const ox = notes[5].x + 19, oy = notes[5].y + 5;
+    const px = (x: number, y: number, w: number, h: number, col: string) => R(c, ox + x * 2, oy + y * 2, w * 2, h * 2, col);
+    R(c, ox - 1, oy - 1, 34, 32, '#2a2436');
     px(0, 0, 16, 15, '#6a7aa0');
     px(5, 3, 6, 2, '#d8d0c8'); px(5, 5, 6, 5, '#e8c8a0'); px(6, 7, 1, 1, '#24264a'); px(9, 7, 1, 1, '#24264a');
     px(7, 9, 2, 1, '#a86a5a'); px(3, 10, 10, 5, '#3a4a7a'); px(7, 11, 2, 1, '#ffd45e');
-    write(['ELLE SAIT.'], 12, 88, 14, '#d02a2a');
-  });
+    pxText(c, 'elle sait.', notes[5].x + Math.floor((notes[5].w - pxTextWidth('elle sait.')) / 2), notes[5].y + 41, RED);
+  }
   // 6 — Nora
-  card(250, 128, 98, 58, '#e0f0e0', () => write(['Nora a oublié', 'le nom de', 'sa sœur.'], 8, 22, 12));
-  // 7 — Mme Ilda (un post-it)
-  card(16, 174, 104, 64, '#fff07a', () => write(['Mme Ilda m’a dit', 'bonjour 3 fois.', 'Comme si j’étais', 'nouveau.'], 6, 21, 11));
-  // 8 — le post-it à moitié arraché
-  card(258, 194, 88, 48, '#ffd0e0', () => write(['Lac, 6 h : RIEN.', 'Eau à 8 h.', 'NOTER TOUT.'], 6, 20, 10));
-
-  // les fils rouges, tendus d'une punaise à l'autre (dessous les fiches)
-  const pin = (k: number): [number, number] => [cards[k].x + cards[k].w / 2, cards[k].y + 4];
-  c.strokeStyle = '#d82020';
-  c.lineWidth = 1.6;
-  for (const [a, b] of [[0, 1], [0, 2], [1, 2], [2, 3], [2, 4], [5, 2], [5, 3], [6, 7], [6, 0], [8, 1], [7, 2]]) {
-    const [x0, y0] = pin(a), [x1, y1] = pin(b);
-    c.beginPath();
-    c.moveTo(x0, y0);
-    c.quadraticCurveTo((x0 + x1) / 2, (y0 + y1) / 2 + 10, x1, y1);
-    c.stroke();
-  }
-  // les fiches, un peu de travers
-  for (const k of cards) {
-    c.save();
-    c.translate(k.x + k.w / 2, k.y + k.h / 2);
-    c.rotate(k.rot);
-    c.translate(-k.w / 2, -k.h / 2);
-    c.fillStyle = 'rgba(0,0,0,0.3)';
-    c.fillRect(3, 3, k.w, k.h);
-    c.fillStyle = k.col;
-    c.fillRect(0, 0, k.w, k.h);
-    k.draw();
-    c.restore();
-  }
-  // les punaises, par-dessus tout
-  for (let k = 0; k < cards.length; k++) {
+  at(6, ['nora a', 'oublié le', 'nom de sa', 'soeur.']);
+  // 7 — Mme Ilda
+  at(7, ['mme ilda :', 'bonjour', '3 fois !', 'comme si', "j'étais", 'nouveau.']);
+  // 8 — le lac
+  at(8, ['lac, 6h :', 'rien.', 'eau à 8h.']);
+  notes.forEach((_, k) => {
     const [x, y] = pin(k);
-    c.fillStyle = '#7a0a0a'; c.beginPath(); c.arc(x + 1, y + 1, 3.5, 0, Math.PI * 2); c.fill();
-    c.fillStyle = '#e83a3a'; c.beginPath(); c.arc(x, y, 3.5, 0, Math.PI * 2); c.fill();
-    c.fillStyle = '#ffb0b0'; c.fillRect(x - 1.5, y - 1.5, 1.5, 1.5);
-  }
+    pinAt(c, x, y);
+  });
 }
 
 /** La nuit du second chargement : le mur d'Oskar, réduit à cinq fiches. Une ancre retrouvée, un tampon. */
 export function openAnchorWall(done: boolean[], cb: () => void) {
-  const W = 360, H = 250;
-  const c = popup('az-ancres', `<h3>LES CINQ FICHES D’OSKAR</h3><canvas></canvas>`, { w: W, h: H, pixel: false }, cb);
-  const HAND = '"Snell Roundhand","Bradley Hand","Segoe Script","Comic Sans MS",cursive';
-  let seed = 11;
-  const rnd = () => {
-    const v = Math.sin(seed++ * 78.233) * 43758.5453;
-    return v - Math.floor(v);
-  };
-  c.fillStyle = '#a8743f';
-  c.fillRect(0, 0, W, H);
-  for (let i = 0; i < 900; i++) {
-    c.fillStyle = rnd() < 0.5 ? 'rgba(90,55,25,0.35)' : 'rgba(210,160,100,0.3)';
-    c.fillRect(rnd() * W, rnd() * H, 1 + rnd() * 2, 1 + rnd());
-  }
-  // les trous des punaises qu'il a retirées
-  for (let i = 0; i < 26; i++) { c.fillStyle = 'rgba(40,20,10,0.6)'; c.fillRect(10 + rnd() * (W - 20), 8 + rnd() * (H - 16), 2, 2); }
-  c.strokeStyle = '#4a3020';
-  c.lineWidth = 6;
-  c.strokeRect(3, 3, W - 6, H - 6);
+  const W = 164, H = 276;
+  const c = popup('az-ancres', `<h3>LES CINQ FICHES D’OSKAR</h3><canvas></canvas>`, { w: W, h: H, pixel: true, crisp: true }, cb);
+  corkBoard(c, W, H, 11, 30);
+  const INK = '#2c2c54', TEAL = '#1f8a86';
   const cards: [string, string[], string][] = [
-    ['JOSS', ['Dort : dans sa cabane', 'de pêche, au bord de l’eau.'], '#fffdf4'],
-    ['NORA VEY', ['Dort : sous un lampadaire,', 'sur la place.'], '#e0f0e0'],
-    ['TOM', ['Dort : au pied de la tour', 'de l’horloge.'], '#fff0a0'],
-    ['LA MAÎTRESSE', ['Dort : à l’école,', 'à son bureau.'], '#ffd0e0'],
-    ['MME ILDA', ['Dort : devant son étal,', 'sur la place.'], '#e8f0f4'],
+    ['joss', ['dans sa', 'cabane, au', 'bord de', "l'eau."], '#fffdf4'],
+    ['nora vey', ['sous un', 'lampadaire,', 'sur la', 'place.'], '#e0f0e0'],
+    ['tom', ['au pied de', 'la tour de', "l'horloge."], '#fff0a0'],
+    ['maîtresse', ["à l'école,", 'à son', 'bureau.'], '#ffd0e0'],
+    ['mme ilda', ['devant son', 'étal, sur', 'la place.'], '#e4eef4'],
   ];
-  const pos: [number, number][] = [[18, 16], [190, 16], [104, 92], [18, 166], [190, 166]];
+  const pos: [number, number][] = [[8, 9], [84, 9], [46, 97], [8, 185], [84, 185]];
   cards.forEach(([name, lines, col], i) => {
     const [x, y] = pos[i];
-    const w = 152, h = 70;
-    c.save();
-    c.translate(x + w / 2, y + h / 2);
-    c.rotate((rnd() - 0.5) * 0.08);
-    c.translate(-w / 2, -h / 2);
-    c.fillStyle = 'rgba(0,0,0,0.3)'; c.fillRect(3, 3, w, h);
-    c.fillStyle = col; c.fillRect(0, 0, w, h);
-    c.fillStyle = '#24264a';
-    c.font = `bold 13px ${HAND}`;
-    c.fillText(name, 8, 18);
-    c.font = `italic 11px ${HAND}`;
-    lines.forEach((l, k) => c.fillText(l, 8, 32 + k * 11));
+    const n = { x, y, w: 72, h: 82, col };
+    note(c, n);
+    pxText(c, name, x + 4, y + 7, '#8a2a3a');
+    R(c, x + 4, y + 15, pxTextWidth(name), 1, '#8a2a3a');
+    pxText(c, 'dort :', x + 4, y + 19, '#6a6a8a');
+    pxLines(c, lines, x + 4, y + 29, INK);
     if (done[i]) {
-      // le tampon : « SOUVENU »
-      c.save();
-      c.translate(110, 44);
-      c.rotate(-0.25);
-      c.strokeStyle = 'rgba(42,157,154,0.9)'; c.lineWidth = 2.5;
-      c.strokeRect(-36, -12, 72, 24);
-      c.fillStyle = 'rgba(42,157,154,0.95)'; c.font = 'bold 13px monospace';
-      c.fillText('SOUVENU', -29, 5);
-      c.restore();
+      // le tampon « SOUVENU », en travers du bas de la fiche
+      const sw = pxTextWidth('souvenu') + 6, sx = x + n.w - sw - 3, sy = y + n.h - 14;
+      R(c, sx, sy, sw, 13, TEAL);
+      R(c, sx + 1, sy + 1, sw - 2, 11, col);
+      pxText(c, 'souvenu', sx + 3, sy + 3, TEAL);
     }
-    c.restore();
-    c.fillStyle = '#e83a3a'; c.beginPath(); c.arc(x + w / 2, y + 4, 3.5, 0, Math.PI * 2); c.fill();
+    pinAt(c, x + 36, y + 3);
   });
 }

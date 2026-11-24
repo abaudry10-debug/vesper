@@ -1407,9 +1407,9 @@ export const azura: Chapter = {
         ui.say(['La cabane de pêche de Joss, sur ses pilotis. Des planches, un toit vert, un filet qui sèche.']);
         return true;
       }
-      // le ponton : on pêche, ou on regarde l'eau
+      // le ponton : on regarde l'eau (pour pêcher, il faut sortir la canne du sac)
       if (!obj && atJetty(g)) {
-        if (g.items.has('canne')) startFishing(g);
+        if (g.items.has('canne')) ui.say(['Le ponton de Joss. L’eau est claire, juste en dessous.', 'La canne de Joss est dans mon sac.']);
         else if (g.flags.has('jour3') && !g.flags.has('cabaneOpen') && !g.items.has('cleCabane')) ui.say(['L’eau est claire, ici. Quelque chose brille, au fond.', 'Trop loin pour la main.']);
         else ui.say(['Le ponton de Joss. L’eau est claire : on voit passer de petits poissons.']);
         return true;
